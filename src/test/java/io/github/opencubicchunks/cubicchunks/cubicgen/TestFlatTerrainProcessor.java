@@ -31,14 +31,14 @@ import java.io.IOException;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import io.github.opencubicchunks.cubicchunks.api.core.CubePrimer;
+import io.github.opencubicchunks.cubicchunks.api.CubePrimer;
+import io.github.opencubicchunks.cubicchunks.api.ICubicWorld;
+import io.github.opencubicchunks.cubicchunks.api.util.Coords;
 import net.minecraft.world.World;
 import org.junit.Before;
 import org.junit.Test;
 
 import io.github.opencubicchunks.cubicchunks.testutil.MinecraftEnvironment;
-import io.github.opencubicchunks.cubicchunks.core.util.Coords;
-import io.github.opencubicchunks.cubicchunks.api.core.ICubicWorld;
 import io.github.opencubicchunks.cubicchunks.cubicgen.flat.FlatGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.flat.FlatTerrainProcessor;
 import io.github.opencubicchunks.cubicchunks.cubicgen.flat.Layer;
