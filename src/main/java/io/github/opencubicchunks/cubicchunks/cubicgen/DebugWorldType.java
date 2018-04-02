@@ -27,14 +27,14 @@ import static io.github.opencubicchunks.cubicchunks.api.util.Coords.blockToCube;
 import static io.github.opencubicchunks.cubicchunks.api.util.Coords.cubeToMinBlock;
 
 import com.flowpowered.noise.module.source.Perlin;
-import io.github.opencubicchunks.cubicchunks.api.CubePrimer;
-import io.github.opencubicchunks.cubicchunks.api.ICube;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
+import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.api.util.Box;
 import io.github.opencubicchunks.cubicchunks.api.util.Coords;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.api.util.IntRange;
-import io.github.opencubicchunks.cubicchunks.api.ICubicWorldType;
-import io.github.opencubicchunks.cubicchunks.api.ICubeGenerator;
+import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorldType;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.ICubeGenerator;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;

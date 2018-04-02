@@ -31,8 +31,8 @@ import java.io.IOException;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import io.github.opencubicchunks.cubicchunks.api.CubePrimer;
-import io.github.opencubicchunks.cubicchunks.api.ICubicWorld;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
+import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld;
 import io.github.opencubicchunks.cubicchunks.api.util.Coords;
 import net.minecraft.world.World;
 import org.junit.Before;

@@ -24,7 +24,7 @@
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder;
 
 import io.github.opencubicchunks.cubicchunks.api.util.Coords;
-import io.github.opencubicchunks.cubicchunks.api.ICube;
+import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
 import io.github.opencubicchunks.cubicchunks.cubicgen.cache.HashCache;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;

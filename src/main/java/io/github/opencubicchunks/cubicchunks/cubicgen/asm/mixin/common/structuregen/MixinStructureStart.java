@@ -27,8 +27,8 @@ import static io.github.opencubicchunks.cubicchunks.api.util.Coords.localToBlock
 
 import com.google.common.base.Preconditions;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
-import io.github.opencubicchunks.cubicchunks.api.ICubicWorld;
-import io.github.opencubicchunks.cubicchunks.api.ICube;
+import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld;
+import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.feature.ICubicStructureStart;
 import net.minecraft.nbt.NBTTagCompound;

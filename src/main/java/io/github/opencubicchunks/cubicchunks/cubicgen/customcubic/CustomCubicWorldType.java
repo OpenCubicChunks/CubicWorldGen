@@ -23,8 +23,8 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic;
 
-import io.github.opencubicchunks.cubicchunks.api.ICubeGenerator;
-import io.github.opencubicchunks.cubicchunks.api.ICubicWorldType;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.ICubeGenerator;
+import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorldType;
 import io.github.opencubicchunks.cubicchunks.api.util.IntRange;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui;

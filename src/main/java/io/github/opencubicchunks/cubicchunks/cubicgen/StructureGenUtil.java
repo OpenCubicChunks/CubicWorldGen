@@ -23,8 +23,8 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen;
 
-import io.github.opencubicchunks.cubicchunks.api.CubePrimer;
-import io.github.opencubicchunks.cubicchunks.api.ICube;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
+import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.api.util.Coords;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.state.IBlockState;

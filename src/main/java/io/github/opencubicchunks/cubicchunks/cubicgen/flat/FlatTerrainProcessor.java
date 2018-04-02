@@ -23,12 +23,12 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.flat;
 
-import io.github.opencubicchunks.cubicchunks.api.CubeGeneratorsRegistry;
-import io.github.opencubicchunks.cubicchunks.api.CubePrimer;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.CubeGeneratorsRegistry;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.CubePopulatorEvent;
 import io.github.opencubicchunks.cubicchunks.api.util.Box;
 import io.github.opencubicchunks.cubicchunks.api.util.Coords;
-import io.github.opencubicchunks.cubicchunks.api.ICube;
+import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.BasicCubeGenerator;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.state.IBlockState;
@@ -38,7 +38,6 @@ import net.minecraftforge.common.MinecraftForge;
 
 import java.util.Map.Entry;
 import java.util.NavigableMap;
-import java.util.Random;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 

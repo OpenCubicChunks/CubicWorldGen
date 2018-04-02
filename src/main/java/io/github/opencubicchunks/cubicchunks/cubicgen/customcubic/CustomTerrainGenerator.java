@@ -25,8 +25,8 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic;
 
 import static io.github.opencubicchunks.cubicchunks.api.util.Coords.blockToLocal;
 
-import io.github.opencubicchunks.cubicchunks.api.CubeGeneratorsRegistry;
-import io.github.opencubicchunks.cubicchunks.api.CubePrimer;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.CubeGeneratorsRegistry;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.BasicCubeGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
@@ -34,7 +34,7 @@ import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.CubePopulato
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
 import io.github.opencubicchunks.cubicchunks.api.util.Coords;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
-import io.github.opencubicchunks.cubicchunks.api.ICube;
+import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.IBiomeBlockReplacer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.BiomeSource;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.IBuilder;
