@@ -26,7 +26,6 @@ package io.github.opencubicchunks.cubicchunks.cubicgen;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.withSettings;
 
 import java.io.IOException;
 
@@ -34,7 +33,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 import io.github.opencubicchunks.cubicchunks.api.core.CubePrimer;
 import net.minecraft.world.World;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 

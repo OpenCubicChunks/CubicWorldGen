@@ -26,7 +26,7 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.common.biome;
 import static java.lang.Math.abs;
 
 import com.google.common.collect.Sets;
-import io.github.opencubicchunks.cubicchunks.core.CubicChunks;
+import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.IBuilder;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.NoiseSource;
 import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
@@ -123,8 +123,8 @@ public class SurfaceDefaultReplacer implements IBiomeBlockReplacer {
 
     public static IBiomeBlockReplacerProvider provider() {
         return new IBiomeBlockReplacerProvider() {
-            private final ResourceLocation HORIZONTAL_GRADIENT_DEC = CubicChunks.location("horizontal_gradient_depth_decrease_weight");
-            private final ResourceLocation OCEAN_LEVEL = CubicChunks.location("water_level");
+            private final ResourceLocation HORIZONTAL_GRADIENT_DEC = CustomCubicMod.location("horizontal_gradient_depth_decrease_weight");
+            private final ResourceLocation OCEAN_LEVEL = CustomCubicMod.location("water_level");
 
             @Override
             public IBiomeBlockReplacer create(World world, CubicBiome cubicBiome, BiomeBlockReplacerConfig conf) {

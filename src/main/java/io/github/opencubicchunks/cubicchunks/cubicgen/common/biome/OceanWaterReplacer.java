@@ -24,7 +24,7 @@
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.biome;
 
 import com.google.common.collect.Sets;
-import io.github.opencubicchunks.cubicchunks.core.CubicChunks;
+import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -61,8 +61,8 @@ public class OceanWaterReplacer implements IBiomeBlockReplacer {
 
     public static IBiomeBlockReplacerProvider provider() {
         return new IBiomeBlockReplacerProvider() {
-            private final ResourceLocation OCEAN_BLOCK = CubicChunks.location("ocean_block");
-            private final ResourceLocation OCEAN_LEVEL = CubicChunks.location("water_level");
+            private final ResourceLocation OCEAN_BLOCK = CustomCubicMod.location("ocean_block");
+            private final ResourceLocation OCEAN_LEVEL = CustomCubicMod.location("water_level");
 
             @Override public IBiomeBlockReplacer create(World world, CubicBiome biome, BiomeBlockReplacerConfig conf) {
                 IBlockState oceanBlock = Block.getBlockFromName(conf.getString(OCEAN_BLOCK)).getDefaultState();
@@ -73,7 +73,7 @@ public class OceanWaterReplacer implements IBiomeBlockReplacer {
             @Override public Set<ConfigOptionInfo> getPossibleConfigOptions() {
                 return Sets.newHashSet(
                         new ConfigOptionInfo(OCEAN_BLOCK, Blocks.WATER.getRegistryName().toString()),
-                        new ConfigOptionInfo(OCEAN_LEVEL, 63)
+                        new ConfigOptionInfo(OCEAN_LEVEL, 63.0)
                 );
             }
         };

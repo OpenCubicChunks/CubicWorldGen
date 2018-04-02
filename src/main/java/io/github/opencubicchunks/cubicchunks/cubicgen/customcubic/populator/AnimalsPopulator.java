@@ -23,11 +23,10 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator;
 
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
-import io.github.opencubicchunks.cubicchunks.core.util.CubePos;
-import io.github.opencubicchunks.cubicchunks.core.world.CubeWorldEntitySpawner;
-import io.github.opencubicchunks.cubicchunks.core.world.cube.Cube;
+import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
+import io.github.opencubicchunks.cubicchunks.api.ICube;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.WorldGenEntitySpawner;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -42,8 +41,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class AnimalsPopulator implements ICubicPopulator {
 
     @Override public void generate(World world, Random random, CubePos pos, Biome biome) {
-        CubeWorldEntitySpawner.initialWorldGenSpawn((WorldServer) world, biome,
+        WorldGenEntitySpawner.initialWorldGenSpawn((WorldServer) world, biome,
                 pos.getXCenter(), pos.getYCenter(), pos.getZCenter(),
-                Cube.SIZE, Cube.SIZE, Cube.SIZE, random);
+                ICube.SIZE, ICube.SIZE, ICube.SIZE, random);
     }
 }

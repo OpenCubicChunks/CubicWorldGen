@@ -23,10 +23,10 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic;
 
-import io.github.opencubicchunks.cubicchunks.core.CubicChunks;
-import io.github.opencubicchunks.cubicchunks.core.util.IntRange;
-import io.github.opencubicchunks.cubicchunks.api.core.ICubeGenerator;
-import io.github.opencubicchunks.cubicchunks.core.world.type.ICubicWorldType;
+import io.github.opencubicchunks.cubicchunks.api.ICubeGenerator;
+import io.github.opencubicchunks.cubicchunks.api.ICubicWorldType;
+import io.github.opencubicchunks.cubicchunks.api.util.IntRange;
+import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
@@ -93,7 +93,7 @@ public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
             new CustomCubicGui(guiCreateWorld).display();
         } else {
             mc.displayGuiScreen(new GuiErrorScreen("MalisisCore not found!",
-                    "You need to install MalisisCore version at least " + CubicChunks
+                    "You need to install MalisisCore version at least " + CustomCubicMod
                             .MALISIS_VERSION + " to use world customization"));
         }
     }

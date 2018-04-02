@@ -23,11 +23,10 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator;
 
-import io.github.opencubicchunks.cubicchunks.api.core.ICubicWorld;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
+import io.github.opencubicchunks.cubicchunks.api.ICubicWorld;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
-import io.github.opencubicchunks.cubicchunks.core.util.CubePos;
-import io.github.opencubicchunks.cubicchunks.core.world.cube.Cube;
+import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
+import io.github.opencubicchunks.cubicchunks.api.ICube;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -43,10 +42,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class SurfaceSnowPopulator implements ICubicPopulator {
 
     @Override public void generate(World world, Random random, CubePos pos, Biome biome) {
-        for (int dx = 0; dx < Cube.SIZE; ++dx) {
-            for (int dz = 0; dz < Cube.SIZE; ++dz) {
-                int xOffset = dx + Cube.SIZE / 2;
-                int zOffset = dz + Cube.SIZE / 2;
+        for (int dx = 0; dx < ICube.SIZE; ++dx) {
+            for (int dz = 0; dz < ICube.SIZE; ++dz) {
+                int xOffset = dx + ICube.SIZE / 2;
+                int zOffset = dz + ICube.SIZE / 2;
                 BlockPos aboveTop = ((ICubicWorld) world).getSurfaceForCube(pos, xOffset, zOffset, 0, ICubicWorld.SurfaceType
                         .BLOCKING_MOVEMENT);
                 if (aboveTop == null) {

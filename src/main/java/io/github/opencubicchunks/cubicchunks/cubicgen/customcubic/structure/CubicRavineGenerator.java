@@ -23,16 +23,16 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure;
 
-import static io.github.opencubicchunks.cubicchunks.core.util.Coords.cubeToMinBlock;
-import static io.github.opencubicchunks.cubicchunks.core.util.Coords.localToBlock;
+import static io.github.opencubicchunks.cubicchunks.api.util.Coords.cubeToMinBlock;
+import static io.github.opencubicchunks.cubicchunks.api.util.Coords.localToBlock;
 import static net.minecraft.util.math.MathHelper.cos;
 import static net.minecraft.util.math.MathHelper.floor;
 import static net.minecraft.util.math.MathHelper.sin;
 
-import io.github.opencubicchunks.cubicchunks.api.core.CubePrimer;
-import io.github.opencubicchunks.cubicchunks.core.util.CubePos;
-import io.github.opencubicchunks.cubicchunks.core.util.StructureGenUtil;
-import io.github.opencubicchunks.cubicchunks.core.world.cube.Cube;
+import io.github.opencubicchunks.cubicchunks.api.CubePrimer;
+import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
+import io.github.opencubicchunks.cubicchunks.api.ICube;
+import io.github.opencubicchunks.cubicchunks.cubicgen.StructureGenUtil;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -146,9 +146,9 @@ public class CubicRavineGenerator extends CubicStructureGenerator {
         if (rand.nextInt(RAVINE_RARITY) != 0 || structureY > MAX_CUBE_Y) {
             return;
         }
-        double startX = localToBlock(structureX, rand.nextInt(Cube.SIZE));
-        double startY = localToBlock(structureY, rand.nextInt(Cube.SIZE));
-        double startZ = localToBlock(structureZ, rand.nextInt(Cube.SIZE));
+        double startX = localToBlock(structureX, rand.nextInt(ICube.SIZE));
+        double startY = localToBlock(structureY, rand.nextInt(ICube.SIZE));
+        double startZ = localToBlock(structureZ, rand.nextInt(ICube.SIZE));
 
         float vertDirectionAngle = rand.nextFloat() * (float) Math.PI * 2.0F;
         float horizDirectionAngle = (rand.nextFloat() - 0.5F) * 2.0F / 8.0F;
@@ -238,7 +238,7 @@ public class CubicRavineGenerator extends CubicStructureGenerator {
             double zDist = ravineZ - generatedCubePos.getZCenter();
             double maxStepsDist = maxWalkedDistance - walkedDistance;
 
-            double maxDistToCube = baseRavineSize + RAVINE_SIZE_ADD + Cube.SIZE;
+            double maxDistToCube = baseRavineSize + RAVINE_SIZE_ADD + ICube.SIZE;
             //can this cube be reached at all?
             //if even after going max distance allowed by remaining steps, it's still too far - stop
             //NOTE: don't check yDist, this is optimization and with Y scale stretched as much as with ravines
@@ -264,12 +264,12 @@ public class CubicRavineGenerator extends CubicStructureGenerator {
         double genCubeCenterX = generatedCubePos.getXCenter();
         double genCubeCenterY = generatedCubePos.getYCenter();
         double genCubeCenterZ = generatedCubePos.getZCenter();
-        if (ravineX < genCubeCenterX - Cube.SIZE - ravineSizeHoriz * 2.0D ||
-                ravineY < genCubeCenterY - Cube.SIZE - ravineSizeVert * 2.0D ||
-                ravineZ < genCubeCenterZ - Cube.SIZE - ravineSizeHoriz * 2.0D ||
-                ravineX > genCubeCenterX + Cube.SIZE + ravineSizeHoriz * 2.0D ||
-                ravineY > genCubeCenterY + Cube.SIZE + ravineSizeVert * 2.0D ||
-                ravineZ > genCubeCenterZ + Cube.SIZE + ravineSizeHoriz * 2.0D) {
+        if (ravineX < genCubeCenterX - ICube.SIZE - ravineSizeHoriz * 2.0D ||
+                ravineY < genCubeCenterY - ICube.SIZE - ravineSizeVert * 2.0D ||
+                ravineZ < genCubeCenterZ - ICube.SIZE - ravineSizeHoriz * 2.0D ||
+                ravineX > genCubeCenterX + ICube.SIZE + ravineSizeHoriz * 2.0D ||
+                ravineY > genCubeCenterY + ICube.SIZE + ravineSizeVert * 2.0D ||
+                ravineZ > genCubeCenterZ + ICube.SIZE + ravineSizeHoriz * 2.0D) {
             return;
         }
         int minLocalX = floor(ravineX - ravineSizeHoriz) - generatedCubePos.getMinBlockX() - 1;
@@ -280,9 +280,9 @@ public class CubicRavineGenerator extends CubicStructureGenerator {
         int maxLocalZ = floor(ravineZ + ravineSizeHoriz) - generatedCubePos.getMinBlockZ() + 1;
 
         //skip is if everything is outside of that cube
-        if (maxLocalX <= 0 || minLocalX >= Cube.SIZE ||
-                maxLocalY <= 0 || minLocalY >= Cube.SIZE ||
-                maxLocalZ <= 0 || minLocalZ >= Cube.SIZE) {
+        if (maxLocalX <= 0 || minLocalX >= ICube.SIZE ||
+                maxLocalY <= 0 || minLocalY >= ICube.SIZE ||
+                maxLocalZ <= 0 || minLocalZ >= ICube.SIZE) {
             return;
         }
         StructureBoundingBox boundingBox = new StructureBoundingBox(minLocalX, minLocalY, minLocalZ, maxLocalX, maxLocalY, maxLocalZ);
@@ -330,7 +330,7 @@ public class CubicRavineGenerator extends CubicStructureGenerator {
                     //most of these blocks beyond the not-stretched height range are never carved out
                     //the result is that instead the ravine isn't very small at the bottom,
                     //but ends with actual floor instead
-                    double widthDecreaseFactor = this.widthDecreaseFactors[(localY + generatedCubeY * Cube.SIZE) & 0xFF];
+                    double widthDecreaseFactor = this.widthDecreaseFactors[(localY + generatedCubeY * ICube.SIZE) & 0xFF];
                     if ((distX * distX + distZ * distZ) * widthDecreaseFactor + distY * distY / STRETCH_Y_FACTOR >= 1.0D) {
                         continue;
                     }
@@ -352,7 +352,7 @@ public class CubicRavineGenerator extends CubicStructureGenerator {
         float[] values = new float[1024];
         float value = 1.0F;
 
-        for (int i = 0; i < Cube.SIZE*Cube.SIZE; ++i) {
+        for (int i = 0; i < ICube.SIZE*ICube.SIZE; ++i) {
             //~33% probability that the value will change at that height
             if (i == 0 || rand.nextInt(3) == 0) {
                 //value = 1.xxx, lower = higher probability -> Wider parts are more common.

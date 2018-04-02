@@ -23,11 +23,10 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator;
 
-import io.github.opencubicchunks.cubicchunks.api.core.ICubicWorld;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
+import io.github.opencubicchunks.cubicchunks.api.ICube;
+import io.github.opencubicchunks.cubicchunks.api.ICubicWorld;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
-import io.github.opencubicchunks.cubicchunks.core.util.CubePos;
-import io.github.opencubicchunks.cubicchunks.core.world.cube.Cube;
+import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -49,8 +48,8 @@ public class SnowBiomeDecorator implements ICubicPopulator {
 
         if (snow.superIcy) {
             for (int i = 0; i < 3; ++i) {
-                int xOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
-                int zOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
+                int xOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
+                int zOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
                 BlockPos blockPos = cworld.getSurfaceForCube(pos, xOffset, zOffset, 0, ICubicWorld.SurfaceType.SOLID);
                 if (blockPos != null) {
                     snow.iceSpike.generate((World) world, random, blockPos);
@@ -58,8 +57,8 @@ public class SnowBiomeDecorator implements ICubicPopulator {
             }
 
             for (int l = 0; l < 2; ++l) {
-                int xOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
-                int zOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
+                int xOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
+                int zOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
                 BlockPos blockPos = cworld.getSurfaceForCube(pos, xOffset, zOffset, 0, ICubicWorld.SurfaceType.SOLID);
                 if (blockPos != null) {
                     snow.icePatch.generate((World) world, random, blockPos);

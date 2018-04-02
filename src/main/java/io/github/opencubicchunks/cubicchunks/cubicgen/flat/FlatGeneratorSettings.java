@@ -28,7 +28,6 @@ import java.util.TreeMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import io.github.opencubicchunks.cubicchunks.core.CubicChunks;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 
@@ -37,14 +36,14 @@ public class FlatGeneratorSettings {
     public TreeMap<Integer, Layer> layers = new TreeMap<Integer, Layer>();
 
     public FlatGeneratorSettings() {
-        addLayer(CubicChunks.MIN_BLOCK_Y + 1, Blocks.BEDROCK.getDefaultState());
+        addLayer(Integer.MIN_VALUE + 1, Blocks.BEDROCK.getDefaultState());
         addLayer(-8, Blocks.STONE.getDefaultState());
         addLayer(-1, Blocks.DIRT.getDefaultState());
         addLayer(0, Blocks.GRASS.getDefaultState());
     }
 
     public void addLayer(int toY, IBlockState block) {
-        int fromY = CubicChunks.MIN_BLOCK_Y;
+        int fromY = Integer.MIN_VALUE + 1;
         if (layers.floorEntry(toY) != null) {
             fromY = layers.floorEntry(toY).getValue().toY;
         }

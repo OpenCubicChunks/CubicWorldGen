@@ -23,12 +23,12 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common.structuregen;
 
-import static io.github.opencubicchunks.cubicchunks.core.util.Coords.localToBlock;
+import static io.github.opencubicchunks.cubicchunks.api.util.Coords.localToBlock;
 
 import com.google.common.base.Preconditions;
-import io.github.opencubicchunks.cubicchunks.core.util.CubePos;
-import io.github.opencubicchunks.cubicchunks.api.core.ICubicWorld;
-import io.github.opencubicchunks.cubicchunks.core.world.cube.Cube;
+import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
+import io.github.opencubicchunks.cubicchunks.api.ICubicWorld;
+import io.github.opencubicchunks.cubicchunks.api.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.feature.ICubicStructureStart;
 import net.minecraft.nbt.NBTTagCompound;
@@ -110,13 +110,13 @@ public abstract class MixinStructureStart implements ICubicStructureStart {
                 Preconditions.checkNotNull(rand);
                 this.markAvailableHeightDone = true;
                 this.minDepth = minDepth;
-                this.randY = rand.nextInt(Cube.SIZE);
+                this.randY = rand.nextInt(ICube.SIZE);
             }
             return;
         }
         int maxY = conf.getAverageHeight() - minDepth;
         int originalY = this.boundingBox.minY;
-        int newY = localToBlock(getChunkPosY(), rand == null ? this.randY : rand.nextInt(Cube.SIZE));
+        int newY = localToBlock(getChunkPosY(), rand == null ? this.randY : rand.nextInt(ICube.SIZE));
 
         int newYMaxBound = boundingBox.getYSize() + newY;
         if (newYMaxBound > maxY) {

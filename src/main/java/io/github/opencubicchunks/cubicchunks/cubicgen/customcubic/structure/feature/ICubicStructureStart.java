@@ -23,8 +23,8 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.feature;
 
-import io.github.opencubicchunks.cubicchunks.core.util.CubePos;
-import io.github.opencubicchunks.cubicchunks.core.util.XYZAddressable;
+import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
+import io.github.opencubicchunks.cubicchunks.api.util.XYZAddressable;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import net.minecraft.world.World;
 

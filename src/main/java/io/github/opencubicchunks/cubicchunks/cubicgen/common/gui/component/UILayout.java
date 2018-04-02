@@ -25,7 +25,7 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import io.github.opencubicchunks.cubicchunks.core.util.MathUtil;
+import io.github.opencubicchunks.cubicchunks.api.util.MathUtil;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import net.malisis.core.client.gui.Anchor;
 import net.malisis.core.client.gui.ClipArea;

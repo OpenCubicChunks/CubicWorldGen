@@ -23,21 +23,19 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator;
 
-import static io.github.opencubicchunks.cubicchunks.core.util.Coords.blockToCube;
+import static io.github.opencubicchunks.cubicchunks.api.util.Coords.blockToCube;
 
-import io.github.opencubicchunks.cubicchunks.core.util.CubePos;
-import io.github.opencubicchunks.cubicchunks.core.util.MathUtil;
-import io.github.opencubicchunks.cubicchunks.core.world.cube.Cube;
+import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
+import io.github.opencubicchunks.cubicchunks.api.util.MathUtil;
+import io.github.opencubicchunks.cubicchunks.api.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenerator;
 
 import java.util.Random;
 
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
@@ -55,13 +53,13 @@ public class PopulatorUtils {
             if (random.nextDouble() > probability) {
                 continue;
             }
-            int yOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
+            int yOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
             int blockY = pos.getMinBlockY() + yOffset;
             if (blockY > maxBlockY || blockY < minBlockY) {
                 continue;
             }
-            int xOffset = random.nextInt(Cube.SIZE);
-            int zOffset = random.nextInt(Cube.SIZE);
+            int xOffset = random.nextInt(ICube.SIZE);
+            int zOffset = random.nextInt(ICube.SIZE);
             generator.generate((World) world, random, new BlockPos(pos.getMinBlockX() + xOffset, blockY, pos.getMinBlockZ() + zOffset));
         }
     }
@@ -80,7 +78,7 @@ public class PopulatorUtils {
         int iMean = Math.round((float) (mean * factor + cfg.heightOffset));
 		double scaledStdDev = stdDevFactor * factor;
         for (int i = 0; i < count; ++i) {
-            int yOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
+            int yOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
             int blockY = pos.getMinBlockY() + yOffset;
             //skip all potential spawns outside the spawn range
             if((blockY > maxBlockY) || (blockY < minBlockY)){
@@ -91,8 +89,8 @@ public class PopulatorUtils {
             if (random.nextDouble() > (probability * modifier)) {
                 continue;
             }
-            int xOffset = random.nextInt(Cube.SIZE);
-            int zOffset = random.nextInt(Cube.SIZE);
+            int xOffset = random.nextInt(ICube.SIZE);
+            int zOffset = random.nextInt(ICube.SIZE);
             generator.generate((World) world, random, new BlockPos(pos.getMinBlockX() + xOffset, blockY, pos.getMinBlockZ() + zOffset));
         }
     }

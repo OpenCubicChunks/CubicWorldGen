@@ -24,7 +24,7 @@
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 
 import com.google.common.eventbus.Subscribe;
-import io.github.opencubicchunks.cubicchunks.core.util.CooldownTimer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.CooldownTimer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import net.malisis.core.client.gui.Anchor;
 import net.malisis.core.client.gui.GuiRenderer;

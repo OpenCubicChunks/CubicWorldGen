@@ -23,8 +23,8 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure;
 
-import io.github.opencubicchunks.cubicchunks.api.core.CubePrimer;
-import io.github.opencubicchunks.cubicchunks.core.util.CubePos;
+import io.github.opencubicchunks.cubicchunks.api.CubePrimer;
+import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.world.World;
 

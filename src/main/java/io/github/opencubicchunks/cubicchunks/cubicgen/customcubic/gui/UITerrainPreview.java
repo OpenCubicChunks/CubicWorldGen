@@ -28,8 +28,8 @@ import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisG
 
 import com.flowpowered.noise.NoiseQuality;
 import com.flowpowered.noise.Utils;
-import io.github.opencubicchunks.cubicchunks.core.CubicChunks;
-import io.github.opencubicchunks.cubicchunks.core.util.MathUtil;
+import io.github.opencubicchunks.cubicchunks.api.util.MathUtil;
+import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIShaderComponent;
 import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
@@ -381,7 +381,7 @@ public class UITerrainPreview extends UIShaderComponent<UITerrainPreview> implem
         // Note: the actual resource location name used will be "shaders/program/" + resourceName + ".json"
         ShaderManager shader = null;
         try {
-            shader = new ShaderManager(Minecraft.getMinecraft().getResourceManager(), CubicChunks.MODID + ":custom-cubic-preview");
+            shader = new ShaderManager(Minecraft.getMinecraft().getResourceManager(), CustomCubicMod.MODID + ":custom-cubic-preview");
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

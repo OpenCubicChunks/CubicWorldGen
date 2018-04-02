@@ -23,18 +23,18 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic;
 
-import static io.github.opencubicchunks.cubicchunks.core.util.Coords.blockToLocal;
+import static io.github.opencubicchunks.cubicchunks.api.util.Coords.blockToLocal;
 
-import io.github.opencubicchunks.cubicchunks.core.CubicChunks;
+import io.github.opencubicchunks.cubicchunks.api.CubeGeneratorsRegistry;
+import io.github.opencubicchunks.cubicchunks.api.CubePrimer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.BasicCubeGenerator;
+import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.CubePopulatorEvent;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
-import io.github.opencubicchunks.cubicchunks.core.util.Coords;
-import io.github.opencubicchunks.cubicchunks.core.util.CubePos;
-import io.github.opencubicchunks.cubicchunks.core.world.cube.Cube;
-import io.github.opencubicchunks.cubicchunks.core.worldgen.generator.BasicCubeGenerator;
-import io.github.opencubicchunks.cubicchunks.core.worldgen.generator.CubeGeneratorsRegistry;
-import io.github.opencubicchunks.cubicchunks.api.core.CubePrimer;
+import io.github.opencubicchunks.cubicchunks.api.util.Coords;
+import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
+import io.github.opencubicchunks.cubicchunks.api.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.IBiomeBlockReplacer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.BiomeSource;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.IBuilder;
@@ -157,7 +157,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         return primer;
     }
 
-    @Override public void populate(Cube cube) {
+    @Override public void populate(ICube cube) {
         /**
          * If event is not canceled we will use default biome decorators and
          * cube populators from registry.
@@ -171,7 +171,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
             // that depends only in world seed and cube X/Z
             // but using this for surface generation doesn't cause any
             // noticeable issues
-            Random rand = new Random(cube.cubeRandomSeed());
+            Random rand = Coords.coordsSeedRandom(cube.getWorld().getSeed(), cube.getX(), cube.getY(), cube.getZ());
 
             ICubicPopulator decorator = cubicBiome.getDecorator();
             decorator.generate(world, rand, pos, cubicBiome.getBiome());
@@ -182,7 +182,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
     }
 
     @Override
-    public void recreateStructures(Cube cube) {
+    public void recreateStructures(ICube cube) {
         this.strongholds.generate(world, null, cube.getCoords());
     }
 
@@ -206,7 +206,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         // when debugging is enabled, allow reloading generator settings after pressing L
         // no need to restart after applying changes.
         // Seed it changed to some constant because world isn't easily accessible here
-        if (CubicChunks.DEBUG_ENABLED && FMLCommonHandler.instance().getSide().isClient() && Keyboard.isKeyDown(Keyboard.KEY_L)) {
+        if (CustomCubicMod.DEBUG_ENABLED && FMLCommonHandler.instance().getSide().isClient() && Keyboard.isKeyDown(Keyboard.KEY_L)) {
             initGenerator(42);
         }
 

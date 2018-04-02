@@ -23,15 +23,15 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.feature;
 
-import static io.github.opencubicchunks.cubicchunks.core.util.Coords.blockCeilToCube;
-import static io.github.opencubicchunks.cubicchunks.core.util.Coords.blockToCube;
-import static io.github.opencubicchunks.cubicchunks.core.util.Coords.cubeToCenterBlock;
+import static io.github.opencubicchunks.cubicchunks.api.util.Coords.blockCeilToCube;
+import static io.github.opencubicchunks.cubicchunks.api.util.Coords.blockToCube;
+import static io.github.opencubicchunks.cubicchunks.api.util.Coords.cubeToCenterBlock;
 import static java.lang.Math.cos;
 import static java.lang.Math.round;
 import static java.lang.Math.sin;
 
 import com.google.common.collect.Lists;
-import io.github.opencubicchunks.cubicchunks.core.util.CubePos;
+import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;

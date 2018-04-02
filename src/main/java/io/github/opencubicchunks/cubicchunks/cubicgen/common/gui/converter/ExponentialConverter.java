@@ -23,8 +23,8 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.converter;
 
-import static io.github.opencubicchunks.cubicchunks.core.util.MathUtil.lerp;
-import static io.github.opencubicchunks.cubicchunks.core.util.MathUtil.unlerp;
+import static io.github.opencubicchunks.cubicchunks.api.util.MathUtil.lerp;
+import static io.github.opencubicchunks.cubicchunks.api.util.MathUtil.unlerp;
 import static java.lang.Math.log;
 import static java.lang.Math.pow;
 

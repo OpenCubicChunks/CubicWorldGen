@@ -23,19 +23,18 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure;
 
-import static io.github.opencubicchunks.cubicchunks.core.util.Coords.cubeToMinBlock;
-import static io.github.opencubicchunks.cubicchunks.core.util.Coords.localToBlock;
-import static io.github.opencubicchunks.cubicchunks.core.util.StructureGenUtil.normalizedDistance;
-import static io.github.opencubicchunks.cubicchunks.core.util.StructureGenUtil.scanWallsForBlock;
+import static io.github.opencubicchunks.cubicchunks.api.util.Coords.cubeToMinBlock;
+import static io.github.opencubicchunks.cubicchunks.api.util.Coords.localToBlock;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.StructureGenUtil.normalizedDistance;
 import static java.lang.Math.max;
 import static net.minecraft.util.math.MathHelper.cos;
 import static net.minecraft.util.math.MathHelper.floor;
 import static net.minecraft.util.math.MathHelper.sin;
 
-import io.github.opencubicchunks.cubicchunks.api.core.CubePrimer;
-import io.github.opencubicchunks.cubicchunks.core.util.CubePos;
-import io.github.opencubicchunks.cubicchunks.core.util.StructureGenUtil;
-import io.github.opencubicchunks.cubicchunks.core.world.cube.Cube;
+import io.github.opencubicchunks.cubicchunks.api.CubePrimer;
+import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
+import io.github.opencubicchunks.cubicchunks.api.ICube;
+import io.github.opencubicchunks.cubicchunks.cubicgen.StructureGenUtil;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -168,9 +167,9 @@ public class CubicCaveGenerator extends CubicStructureGenerator {
         int nodes = this.rand.nextInt(this.rand.nextInt(this.rand.nextInt(MAX_INIT_NODES + 1) + 1) + 1);
 
         for (int node = 0; node < nodes; ++node) {
-            double branchStartX = localToBlock(cubeXOrigin, this.rand.nextInt(Cube.SIZE));
-            double branchStartY = localToBlock(cubeYOrigin, this.rand.nextInt(Cube.SIZE));
-            double branchStartZ = localToBlock(cubeZOrigin, this.rand.nextInt(Cube.SIZE));
+            double branchStartX = localToBlock(cubeXOrigin, this.rand.nextInt(ICube.SIZE));
+            double branchStartY = localToBlock(cubeYOrigin, this.rand.nextInt(ICube.SIZE));
+            double branchStartZ = localToBlock(cubeZOrigin, this.rand.nextInt(ICube.SIZE));
             int subBranches = 1;
 
             if (this.rand.nextInt(LARGE_NODE_RARITY) == 0) {
@@ -329,7 +328,7 @@ public class CubicCaveGenerator extends CubicStructureGenerator {
             double zDist = caveZ - generatedCubePos.getZCenter();
             double maxStepsDist = maxWalkedDistance - walkedDistance;
             //CHANGE: multiply max(1, vertCaveSizeMod)
-            double maxDistToCube = baseCaveSize * max(1, vertCaveSizeMod) + CAVE_SIZE_ADD + Cube.SIZE;
+            double maxDistToCube = baseCaveSize * max(1, vertCaveSizeMod) + CAVE_SIZE_ADD + ICube.SIZE;
 
             //can this cube be reached at all?
             //if even after going max distance allowed by remaining steps, it's still too far - stop
@@ -357,12 +356,12 @@ public class CubicCaveGenerator extends CubicStructureGenerator {
 
         //Can current step position affect currently modified cube?
         //TODO: is multiply by 2 needed?
-        if (caveX < genCubeCenterX - Cube.SIZE - caveSizeHoriz * 2.0D ||
-                caveY < genCubeCenterY - Cube.SIZE - caveSizeVert * 2.0D ||
-                caveZ < genCubeCenterZ - Cube.SIZE - caveSizeHoriz * 2.0D ||
-                caveX > genCubeCenterX + Cube.SIZE + caveSizeHoriz * 2.0D ||
-                caveY > genCubeCenterY + Cube.SIZE + caveSizeVert * 2.0D ||
-                caveZ > genCubeCenterZ + Cube.SIZE + caveSizeHoriz * 2.0D) {
+        if (caveX < genCubeCenterX - ICube.SIZE - caveSizeHoriz * 2.0D ||
+                caveY < genCubeCenterY - ICube.SIZE - caveSizeVert * 2.0D ||
+                caveZ < genCubeCenterZ - ICube.SIZE - caveSizeHoriz * 2.0D ||
+                caveX > genCubeCenterX + ICube.SIZE + caveSizeHoriz * 2.0D ||
+                caveY > genCubeCenterY + ICube.SIZE + caveSizeVert * 2.0D ||
+                caveZ > genCubeCenterZ + ICube.SIZE + caveSizeHoriz * 2.0D) {
             return;
         }
         int minLocalX = floor(caveX - caveSizeHoriz) - generatedCubePos.getMinBlockX() - 1;
@@ -373,16 +372,16 @@ public class CubicCaveGenerator extends CubicStructureGenerator {
         int maxLocalZ = floor(caveZ + caveSizeHoriz) - generatedCubePos.getMinBlockZ() + 1;
 
         //skip is if everything is outside of that cube
-        if (maxLocalX <= 0 || minLocalX >= Cube.SIZE ||
-                maxLocalY <= 0 || minLocalY >= Cube.SIZE ||
-                maxLocalZ <= 0 || minLocalZ >= Cube.SIZE) {
+        if (maxLocalX <= 0 || minLocalX >= ICube.SIZE ||
+                maxLocalY <= 0 || minLocalY >= ICube.SIZE ||
+                maxLocalZ <= 0 || minLocalZ >= ICube.SIZE) {
             return;
         }
         StructureBoundingBox boundingBox = new StructureBoundingBox(minLocalX, minLocalY, minLocalZ, maxLocalX, maxLocalY, maxLocalZ);
 
         StructureGenUtil.clampBoundingBoxToLocalCube(boundingBox);
 
-        boolean hitLiquid = scanWallsForBlock(cube, boundingBox,
+        boolean hitLiquid = StructureGenUtil.scanWallsForBlock(cube, boundingBox,
                 (b) -> b.getBlock() == Blocks.LAVA || b.getBlock() == Blocks.FLOWING_LAVA);
 
         if (!hitLiquid) {

@@ -23,9 +23,8 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator;
 
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
-import io.github.opencubicchunks.cubicchunks.core.util.CubePos;
+import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;

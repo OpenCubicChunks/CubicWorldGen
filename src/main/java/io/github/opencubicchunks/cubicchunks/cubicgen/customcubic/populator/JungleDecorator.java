@@ -23,11 +23,10 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator;
 
-import io.github.opencubicchunks.cubicchunks.api.core.ICubicWorld;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
+import io.github.opencubicchunks.cubicchunks.api.ICubicWorld;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
-import io.github.opencubicchunks.cubicchunks.core.util.CubePos;
-import io.github.opencubicchunks.cubicchunks.core.world.cube.Cube;
+import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
+import io.github.opencubicchunks.cubicchunks.api.ICube;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -47,8 +46,8 @@ public class JungleDecorator implements ICubicPopulator {
 
         // see red mushroom generator in DefaultDecorator for explanation of that 10
         if (random.nextInt(10) == 0) {
-            int xOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
-            int zOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
+            int xOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
+            int zOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
             BlockPos blockPos = ((ICubicWorld) world).getSurfaceForCube(pos, xOffset, zOffset, 0, ICubicWorld.SurfaceType.OPAQUE);
             if (blockPos != null) {
                 (new WorldGenMelon()).generate((World) world, random, blockPos);

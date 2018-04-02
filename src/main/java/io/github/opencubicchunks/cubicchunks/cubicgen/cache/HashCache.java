@@ -21,39 +21,50 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator;
+package io.github.opencubicchunks.cubicchunks.cubicgen.cache;
 
-import io.github.opencubicchunks.cubicchunks.api.ICubicWorld;
-import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
-import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
-import io.github.opencubicchunks.cubicchunks.api.ICube;
 import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.gen.feature.WorldGenDesertWells;
 
-import java.util.Random;
+import java.util.function.Function;
+import java.util.function.ToIntFunction;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class DesertDecorator implements ICubicPopulator {
+public class HashCache<K, V> {
 
-    @Override public void generate(World world, Random random, CubePos pos, Biome biome) {
-        if (random.nextInt(1000) == 0) {
-            int xOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
-            int zOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
-            BlockPos blockpos = ((ICubicWorld) world).getSurfaceForCube(pos, xOffset, zOffset, 0, ICubicWorld.SurfaceType.OPAQUE);
-            if (blockpos != null) {
-                (new WorldGenDesertWells()).generate((World) world, random, blockpos.up());
-            }
+    private final V[] cache;
+    private final K[] keys;
+    private final ToIntFunction<K> hashFunction;
+    private final Function<K, V> source;
+
+    @SuppressWarnings("uncecked")
+    private HashCache(int size, ToIntFunction<K> hashCode, Function<K, V> source) {
+        this.cache = (V[]) new Object[size];
+        this.keys = (K[]) new Object[size];
+        this.hashFunction = hashCode;
+        this.source = source;
+    }
+
+    public V get(K key) {
+        int index = index(hashFunction.applyAsInt(key));
+        if (!key.equals(keys[index])) {
+            keys[index] = key;
+            cache[index] = source.apply(key);
         }
+        return cache[index];
+    }
 
-        // TODO: fossils
-        /*if (random.nextInt(64) == 0) {
-            (new WorldGenFossils()).generate((World) world, random, blockpos);
-        }*/
+    private int index(int hash) {
+        return Math.floorMod(hash, cache.length);
+    }
+
+    public static <K, V> HashCache<K, V> create(int size, Function<K, V> source) {
+        return create(size, k -> k.hashCode(), source);
+    }
+
+    public static <K, V> HashCache<K, V> create(int size, ToIntFunction<K> hashCode, Function<K, V> source) {
+        return new HashCache<>(size, hashCode, source);
     }
 }

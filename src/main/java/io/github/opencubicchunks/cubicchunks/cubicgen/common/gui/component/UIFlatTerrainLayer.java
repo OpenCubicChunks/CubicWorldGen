@@ -23,7 +23,6 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 
-import io.github.opencubicchunks.cubicchunks.core.CubicChunks;
 import net.malisis.core.client.gui.Anchor;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
@@ -144,11 +143,6 @@ public class UIFlatTerrainLayer extends UIContainer<UIFlatTerrainLayer> {
         } catch (NumberFormatException e) {
             e.printStackTrace();
         }
-        if (fromY < CubicChunks.MIN_BLOCK_Y) {
-            fromY = CubicChunks.MIN_BLOCK_Y;
-        } else if (fromY > CubicChunks.MAX_BLOCK_Y) {
-            fromY = CubicChunks.MAX_BLOCK_Y;
-        }
         return fromY;
     }
 
@@ -158,11 +152,6 @@ public class UIFlatTerrainLayer extends UIContainer<UIFlatTerrainLayer> {
             toY = Integer.parseInt(toField.getText());
         } catch (NumberFormatException e) {
             e.printStackTrace();
-        }
-        if (toY < CubicChunks.MIN_BLOCK_Y) {
-            toY = CubicChunks.MIN_BLOCK_Y;
-        } else if (toY > CubicChunks.MAX_BLOCK_Y + 1) {
-            toY = CubicChunks.MAX_BLOCK_Y + 1;
         }
         return toY;
     }

@@ -23,11 +23,10 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator;
 
-import io.github.opencubicchunks.cubicchunks.api.core.ICubicWorld;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
+import io.github.opencubicchunks.cubicchunks.api.ICubicWorld;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
-import io.github.opencubicchunks.cubicchunks.core.util.CubePos;
-import io.github.opencubicchunks.cubicchunks.core.world.cube.Cube;
+import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
+import io.github.opencubicchunks.cubicchunks.api.ICube;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.BlockDoublePlant;
 import net.minecraft.util.math.BlockPos;
@@ -49,8 +48,8 @@ public class TaigaDecorator implements ICubicPopulator {
             int count = random.nextInt(3);
 
             for (int i = 0; i < count; ++i) {
-                int xOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
-                int zOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
+                int xOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
+                int zOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
                 BlockPos blockPos = ((ICubicWorld) world).getSurfaceForCube(pos, xOffset, zOffset, 0, ICubicWorld.SurfaceType.SOLID);
                 if (blockPos != null) {
                     taiga.FOREST_ROCK_GENERATOR.generate((World) world, random, blockPos);

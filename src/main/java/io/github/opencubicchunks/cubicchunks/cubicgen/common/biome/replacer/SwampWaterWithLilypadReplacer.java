@@ -23,9 +23,9 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer;
 
+import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.IBiomeBlockReplacer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.IBiomeBlockReplacerProvider;
-import io.github.opencubicchunks.cubicchunks.core.CubicChunks;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -40,7 +40,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public class SwampWaterWithLilypadReplacer implements IBiomeBlockReplacer {
 
-    private static final ResourceLocation OCEAN_LEVEL = CubicChunks.location("water_level");
+    private static final ResourceLocation OCEAN_LEVEL = CustomCubicMod.location("water_level");
 
     private final NoiseGeneratorPerlin noiseGen;
     private final int seaLevel;

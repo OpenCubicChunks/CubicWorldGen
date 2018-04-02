@@ -23,13 +23,13 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui;
 
-import io.github.opencubicchunks.cubicchunks.core.util.ReflectionUtil;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.IDragTickable;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UILayout;
 import net.malisis.core.client.gui.MalisisGui;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
 import net.malisis.core.util.MouseButton;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
@@ -99,7 +99,12 @@ public abstract class ExtraGui extends MalisisGui {
         }
         if (comp instanceof UIContainer<?>) {
             UIContainer<?> cont = (UIContainer<?>) comp;
-            Set<UIComponent<?>> components = ReflectionUtil.getField(cont, componentsField);
+            Set<UIComponent<?>> components = null;
+            try {
+                components = (Set<UIComponent<?>>) componentsField.get(cont);
+            } catch (IllegalAccessException e) {
+                throw new Error(e);
+            }
             components.forEach(this::layout);
         }
         if (comp instanceof UILayout<?>) {

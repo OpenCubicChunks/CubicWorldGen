@@ -23,11 +23,10 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator;
 
-import io.github.opencubicchunks.cubicchunks.api.core.ICubicWorld;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
+import io.github.opencubicchunks.cubicchunks.api.ICubicWorld;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
-import io.github.opencubicchunks.cubicchunks.core.util.CubePos;
-import io.github.opencubicchunks.cubicchunks.core.world.cube.Cube;
+import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
+import io.github.opencubicchunks.cubicchunks.api.ICube;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.BlockDoublePlant;
 import net.minecraft.util.math.BlockPos;
@@ -63,10 +62,10 @@ public class ForestDecorator implements ICubicPopulator {
 
     public void addMushrooms(World world, Random random, CubePos pos, Biome biome) {
         final int gridSize = 4;
-        for (int xGrid = 0; xGrid < Cube.SIZE / gridSize; ++xGrid) {
-            for (int zGrid = 0; zGrid < Cube.SIZE / gridSize; ++zGrid) {
-                int xOffset = xGrid * gridSize + 1 + Cube.SIZE / 2 + random.nextInt(gridSize / 2 + 1);
-                int zOffset = zGrid * gridSize + 1 + Cube.SIZE / 2 + random.nextInt(gridSize / 2 + 1);
+        for (int xGrid = 0; xGrid < ICube.SIZE / gridSize; ++xGrid) {
+            for (int zGrid = 0; zGrid < ICube.SIZE / gridSize; ++zGrid) {
+                int xOffset = xGrid * gridSize + 1 + ICube.SIZE / 2 + random.nextInt(gridSize / 2 + 1);
+                int zOffset = zGrid * gridSize + 1 + ICube.SIZE / 2 + random.nextInt(gridSize / 2 + 1);
                 BlockPos blockpos = ((ICubicWorld) world).getSurfaceForCube(pos, xOffset, zOffset, 0, ICubicWorld.SurfaceType.OPAQUE);
                 if (blockpos == null) {
                     continue;
@@ -102,8 +101,8 @@ public class ForestDecorator implements ICubicPopulator {
                 if (random.nextInt(7) != 0) {
                     continue;
                 }
-                int xOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
-                int zOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
+                int xOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
+                int zOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
 
                 BlockPos blockPos = ((ICubicWorld) world).getSurfaceForCube(pos, xOffset, zOffset, 0, ICubicWorld.SurfaceType.OPAQUE);
 

@@ -23,10 +23,10 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder;
 
-import io.github.opencubicchunks.cubicchunks.core.util.Coords;
-import io.github.opencubicchunks.cubicchunks.core.util.cache.HashCache;
-import io.github.opencubicchunks.cubicchunks.core.world.cube.Cube;
+import io.github.opencubicchunks.cubicchunks.api.util.Coords;
+import io.github.opencubicchunks.cubicchunks.api.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
+import io.github.opencubicchunks.cubicchunks.cubicgen.cache.HashCache;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.BiomeBlockReplacerConfig;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.IBiomeBlockReplacer;
@@ -162,7 +162,7 @@ public class BiomeSource {
         return mapToCubic(biomeGen.getBiomes(null,
                 Coords.cubeToMinBlock(pos.x),
                 Coords.cubeToMinBlock(pos.z),
-                Cube.SIZE, Cube.SIZE));
+                ICube.SIZE, ICube.SIZE));
     }
 
     private CubicBiome[] generateBiomeSections(ChunkPos pos) {

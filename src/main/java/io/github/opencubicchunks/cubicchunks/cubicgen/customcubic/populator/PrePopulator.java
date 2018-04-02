@@ -23,10 +23,9 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator;
 
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
+import io.github.opencubicchunks.cubicchunks.api.ICube;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
-import io.github.opencubicchunks.cubicchunks.core.util.CubePos;
-import io.github.opencubicchunks.cubicchunks.core.world.cube.Cube;
+import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.init.Biomes;
@@ -53,11 +52,11 @@ public class PrePopulator implements ICubicPopulator {
         }
 
         if (random.nextInt(cfg.lavaLakeRarity) == 0 && cfg.lavaLakes) {
-            int yOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
+            int yOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
             int blockY = pos.getMinBlockY() + yOffset;
             if (random.nextDouble() <= lavaLakeProbability(cfg, blockY)) {
-                int xOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
-                int zOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
+                int xOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
+                int zOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
 
                 if (blockY < cfg.waterLevel || random.nextInt(cfg.aboveSeaLavaLakeRarity) == 0) {
                     BlockPos blockPos = pos.getMinBlockPos().add(xOffset, yOffset, zOffset);

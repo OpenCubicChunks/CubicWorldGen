@@ -28,7 +28,7 @@ import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisG
 
 import com.google.common.eventbus.Subscribe;
 import com.google.gson.JsonSyntaxException;
-import io.github.opencubicchunks.cubicchunks.core.CubicChunks;
+import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.NoTranslationFont;
@@ -47,6 +47,7 @@ import net.malisis.core.client.gui.component.interaction.UIButton;
 import net.malisis.core.client.gui.component.interaction.UITextField;
 import net.malisis.core.renderer.font.FontOptions;
 import net.minecraft.client.gui.GuiCreateWorld;
+import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -54,7 +55,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public class CustomCubicGui extends ExtraGui {
 
-    public static final GuiTexture CUSTOM_TEXTURE = new GuiTexture(CubicChunks.location("textures/gui/gui.png"));
+    public static final GuiTexture CUSTOM_TEXTURE = new GuiTexture(new ResourceLocation(CustomCubicMod.MODID_OLD, "textures/gui/gui.png"));
 
     public static final int WIDTH_1_COL = 6;
     public static final int WIDTH_2_COL = 3;

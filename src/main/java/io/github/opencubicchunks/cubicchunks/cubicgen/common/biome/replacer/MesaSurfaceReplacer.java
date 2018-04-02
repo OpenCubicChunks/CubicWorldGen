@@ -23,12 +23,12 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer;
 
+import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
+import io.github.opencubicchunks.cubicchunks.cubicgen.cache.HashCacheDoubles;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.IBiomeBlockReplacer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.IBiomeBlockReplacerProvider;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.SurfaceDefaultReplacer;
-import io.github.opencubicchunks.cubicchunks.core.CubicChunks;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
-import io.github.opencubicchunks.cubicchunks.core.util.cache.HashCacheDoubles;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.IBuilder;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.BlockColored;
@@ -51,9 +51,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public class MesaSurfaceReplacer implements IBiomeBlockReplacer {
 
-    private static final ResourceLocation HEIGHT_OFFSET = CubicChunks.location("height_offset");
-    private static final ResourceLocation HEIGHT_SCALE = CubicChunks.location("height_scale");
-    private static final ResourceLocation OCEAN_LEVEL = CubicChunks.location("water_level");
+    private static final ResourceLocation HEIGHT_OFFSET = CustomCubicMod.location("height_offset");
+    private static final ResourceLocation HEIGHT_SCALE = CustomCubicMod.location("height_scale");
+    private static final ResourceLocation OCEAN_LEVEL = CustomCubicMod.location("water_level");
 
     private final double heightOffset;
     private final double heightScale;

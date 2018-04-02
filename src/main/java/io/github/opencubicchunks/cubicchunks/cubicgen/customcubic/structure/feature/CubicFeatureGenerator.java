@@ -23,12 +23,12 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.feature;
 
-import static io.github.opencubicchunks.cubicchunks.core.util.Coords.cubeToCenterBlock;
+import static io.github.opencubicchunks.cubicchunks.api.util.Coords.cubeToCenterBlock;
 
-import io.github.opencubicchunks.cubicchunks.api.core.CubePrimer;
-import io.github.opencubicchunks.cubicchunks.core.util.CubePos;
-import io.github.opencubicchunks.cubicchunks.core.util.XYZMap;
-import io.github.opencubicchunks.cubicchunks.core.world.cube.Cube;
+import io.github.opencubicchunks.cubicchunks.api.CubePrimer;
+import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
+import io.github.opencubicchunks.cubicchunks.api.util.XYZMap;
+import io.github.opencubicchunks.cubicchunks.api.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.CubicStructureGenerator;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.crash.CrashReport;
@@ -113,9 +113,9 @@ public abstract class CubicFeatureGenerator extends CubicStructureGenerator {
             // TODO: cubic chunks version of isValidForPostProcess and notifyPostProcess (mixin)
             if (structStart.isSizeableStructure() && structStart.isValidForPostProcess(cubePos.chunkPos())
                     && structStart.getBoundingBox().intersectsWith(
-                    new StructureBoundingBox(centerX, centerY, centerZ, centerX + Cube.SIZE - 1, centerY + Cube.SIZE - 1, centerZ + Cube.SIZE - 1))) {
+                    new StructureBoundingBox(centerX, centerY, centerZ, centerX + ICube.SIZE - 1, centerY + ICube.SIZE - 1, centerZ + ICube.SIZE - 1))) {
                 structStart.generateStructure(world, rand,
-                        new StructureBoundingBox(centerX, centerY, centerZ, centerX + Cube.SIZE - 1, centerY + Cube.SIZE - 1, centerZ + Cube.SIZE - 1));
+                        new StructureBoundingBox(centerX, centerY, centerZ, centerX + ICube.SIZE - 1, centerY + ICube.SIZE - 1, centerZ + ICube.SIZE - 1));
                 structStart.notifyPostProcessAt(cubePos.chunkPos());
                 generated = true;
                 this.setStructureStart(structStart.getChunkPosX(), cubicStructureStart.getChunkPosY(), structStart.getChunkPosZ(), structStart);

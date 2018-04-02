@@ -23,9 +23,9 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder;
 
-import io.github.opencubicchunks.cubicchunks.core.util.MathUtil;
-import io.github.opencubicchunks.cubicchunks.core.util.cache.HashCacheDoubles;
+import io.github.opencubicchunks.cubicchunks.api.util.MathUtil;
 import gnu.trove.function.TDoubleFunction;
+import io.github.opencubicchunks.cubicchunks.cubicgen.cache.HashCacheDoubles;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3i;

@@ -3,7 +3,6 @@ package io.github.opencubicchunks.cubicchunks.cubicgen;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome.oceanWaterReplacer;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome.terrainShapeReplacer;
 
-import io.github.opencubicchunks.cubicchunks.core.CCFixType;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer.MesaSurfaceReplacer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer.MutatedSavannaSurfaceReplacer;
@@ -24,6 +23,7 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.Swam
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.TaigaDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.flat.FlatCubicWorldType;
 import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeBeach;
 import net.minecraft.world.biome.BiomeDesert;
@@ -50,6 +50,8 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Loggers;
 
 import java.util.function.Consumer;
 
@@ -62,15 +64,28 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class CustomCubicMod {
 
     public static final String MODID = "cubicgen";
+    @Deprecated // for compatibility where old one was used in config and for registering stuff
+    public static final String MODID_OLD = "cubicchunks";
+
+    public static final String MALISIS_VERSION = "@@MALISIS_VERSION@@";
 
     public static final int FIXER_VERSION = 1;
+    public static final boolean DEBUG_ENABLED = false;
+    public static Logger LOGGER = null;
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent e) {
+        LOGGER = e.getModLog();
         ConversionUtils.initFlowNoiseHack();
 
-        CCFixType.addFixableWorldType(FlatCubicWorldType.create());
-        CCFixType.addFixableWorldType(CustomCubicWorldType.create());
+        // TODO: redo DataFixers
+        //CCFixType.addFixableWorldType(FlatCubicWorldType.create());
+        //CCFixType.addFixableWorldType(CustomCubicWorldType.create());
+        //CCFixType.addFixableWorldType(DebugWorldType.create());
+        FlatCubicWorldType.create();
+        CustomCubicWorldType.create();
+        DebugWorldType.create();
+
 
         ModFixs fixes = FMLCommonHandler.instance().getDataFixer().init(MODID, FIXER_VERSION);
         CustomGeneratorSettings.registerDataFixers(fixes);
@@ -158,4 +173,7 @@ public class CustomCubicMod {
         });
     }
 
+    public static ResourceLocation location(String name) {
+        return new ResourceLocation(MODID, name);
+    }
 }

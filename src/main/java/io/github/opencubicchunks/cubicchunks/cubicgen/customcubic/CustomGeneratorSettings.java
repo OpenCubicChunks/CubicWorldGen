@@ -37,10 +37,9 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonReader;
-import io.github.opencubicchunks.cubicchunks.core.CCFixType;
-import io.github.opencubicchunks.cubicchunks.core.CubicChunks;
-import io.github.opencubicchunks.cubicchunks.core.world.cube.Cube;
+import io.github.opencubicchunks.cubicchunks.api.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
+import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.BiomeBlockReplacerConfig;
 import net.minecraft.block.BlockSilverfish;
 import net.minecraft.block.BlockStone;
@@ -114,7 +113,7 @@ public class CustomGeneratorSettings {
      * Page 2
      */
 
-    // probability: (vanillaChunkHeight/oreGenRangeSize) / amountOfCubesInVanillaChunk
+    // probability: (vanillaChunkHeight/oreGenRangeSize) / amountOfICube.InVanillaChunk
 
     public List<StandardOreConfig> standardOres = new ArrayList<>();
 
@@ -166,9 +165,9 @@ public class CustomGeneratorSettings {
     public BiomeBlockReplacerConfig createBiomeBlockReplacerConfig() {
         BiomeBlockReplacerConfig conf = new BiomeBlockReplacerConfig();
         conf.fillDefaults();
-        conf.set(CubicChunks.MODID, "water_level", (double) this.waterLevel);
-        conf.set(CubicChunks.MODID, "height_scale", (double) this.heightFactor);
-        conf.set(CubicChunks.MODID, "height_offset", (double) this.heightOffset);
+        conf.set(CustomCubicMod.MODID, "water_level", (double) this.waterLevel);
+        conf.set(CustomCubicMod.MODID, "height_scale", (double) this.heightFactor);
+        conf.set(CustomCubicMod.MODID, "height_offset", (double) this.heightOffset);
         return conf;
     }
 
@@ -191,60 +190,60 @@ public class CustomGeneratorSettings {
             settings.standardOres.addAll(Arrays.asList(
                     StandardOreConfig.builder()
                             .block(Blocks.DIRT.getDefaultState())
-                            .size(33).attempts(10).probability(1f / (256f / Cube.SIZE)).create(),
+                            .size(33).attempts(10).probability(1f / (256f / ICube.SIZE)).create(),
                     StandardOreConfig.builder()
                             .block(Blocks.GRAVEL.getDefaultState())
-                            .size(33).attempts(8).probability(1f / (256f / Cube.SIZE)).create(),
+                            .size(33).attempts(8).probability(1f / (256f / ICube.SIZE)).create(),
 
                     StandardOreConfig.builder()
                             .block(Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT, BlockStone.EnumType.GRANITE))
-                            .size(33).attempts(10).probability(256f / 80f / (256f / Cube.SIZE))
+                            .size(33).attempts(10).probability(256f / 80f / (256f / ICube.SIZE))
                             .maxHeight((80f - 64f) / 64f).create(),
                     StandardOreConfig.builder()
                             .block(Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT, BlockStone.EnumType.DIORITE))
-                            .size(33).attempts(10).probability(256f / 80f / (256f / Cube.SIZE))
+                            .size(33).attempts(10).probability(256f / 80f / (256f / ICube.SIZE))
                             .maxHeight((80f - 64f) / 64f).create(),
                     StandardOreConfig.builder()
                             .block(Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT, BlockStone.EnumType.ANDESITE))
-                            .size(33).attempts(10).probability(256f / 80f / (256f / Cube.SIZE))
+                            .size(33).attempts(10).probability(256f / 80f / (256f / ICube.SIZE))
                             .maxHeight((80f - 64f) / 64f).create(),
 
                     StandardOreConfig.builder()
                             .block(Blocks.COAL_ORE.getDefaultState())
-                            .size(17).attempts(20).probability(256f / 128f / (256f / Cube.SIZE))
+                            .size(17).attempts(20).probability(256f / 128f / (256f / ICube.SIZE))
                             .maxHeight(1).create(),
                     StandardOreConfig.builder()
                             .block(Blocks.IRON_ORE.getDefaultState())
-                            .size(33).attempts(10).probability(256f / 64f / (256f / Cube.SIZE))
+                            .size(33).attempts(10).probability(256f / 64f / (256f / ICube.SIZE))
                             .maxHeight(0).create(),
                     StandardOreConfig.builder()
                             .block(Blocks.GOLD_ORE.getDefaultState())
-                            .size(9).attempts(2).probability(256f / 32f / (256f / Cube.SIZE))
+                            .size(9).attempts(2).probability(256f / 32f / (256f / ICube.SIZE))
                             .maxHeight(-0.5f).create(),
                     StandardOreConfig.builder()
                             .block(Blocks.REDSTONE_ORE.getDefaultState())
-                            .size(8).attempts(8).probability(256f / 16f / (256f / Cube.SIZE))
+                            .size(8).attempts(8).probability(256f / 16f / (256f / ICube.SIZE))
                             .maxHeight(-0.75f).create(),
                     StandardOreConfig.builder()
                             .block(Blocks.DIAMOND_ORE.getDefaultState())
-                            .size(8).attempts(1).probability(256f / 16f / (256f / Cube.SIZE))
+                            .size(8).attempts(1).probability(256f / 16f / (256f / ICube.SIZE))
                             .maxHeight(-0.75f).create(),
 
                     StandardOreConfig.builder()
                             .block(Blocks.EMERALD_ORE.getDefaultState())
-                            .size(1).attempts(11).probability(0.5f * 256f / 28f / (256f / Cube.SIZE))
+                            .size(1).attempts(11).probability(0.5f * 256f / 28f / (256f / ICube.SIZE))
                             .maxHeight(0)
                             .biomes(Biomes.EXTREME_HILLS, Biomes.EXTREME_HILLS_EDGE, Biomes.EXTREME_HILLS_WITH_TREES, Biomes.MUTATED_EXTREME_HILLS,
                                     Biomes.MUTATED_EXTREME_HILLS_WITH_TREES).create(),
                     StandardOreConfig.builder()
                             .block(Blocks.MONSTER_EGG.getDefaultState().withProperty(BlockSilverfish.VARIANT, BlockSilverfish.EnumType.STONE))
-                            .size(7).attempts(7).probability(256f / 64f / (256f / Cube.SIZE))
+                            .size(7).attempts(7).probability(256f / 64f / (256f / ICube.SIZE))
                             .maxHeight(-0.5f)
                             .biomes(Biomes.EXTREME_HILLS, Biomes.EXTREME_HILLS_EDGE, Biomes.EXTREME_HILLS_WITH_TREES, Biomes.MUTATED_EXTREME_HILLS,
                                     Biomes.MUTATED_EXTREME_HILLS_WITH_TREES).create(),
                     StandardOreConfig.builder()
                             .block(Blocks.GOLD_ORE.getDefaultState())
-                            .size(20).attempts(2).probability(256f / 32f / (256f / Cube.SIZE))
+                            .size(20).attempts(2).probability(256f / 32f / (256f / ICube.SIZE))
                             .minHeight(-0.5f).maxHeight(0.25f)
                             .biomes(Biomes.MESA, Biomes.MESA_CLEAR_ROCK, Biomes.MESA_ROCK, Biomes.MUTATED_MESA, Biomes.MUTATED_MESA_CLEAR_ROCK,
                                     Biomes.MUTATED_MESA_ROCK).create()
@@ -311,6 +310,8 @@ public class CustomGeneratorSettings {
     }
 
     public static void registerDataFixers(ModFixs fixes) {
+        // TODO: redo data fixers
+        /*
         fixes.registerFix(CCFixType.forWorldType("CustomCubic"), new IFixableData() {
             @Override public int getFixVersion() {
                 return -1;
@@ -407,6 +408,7 @@ public class CustomGeneratorSettings {
                 return obj;
             }
         });
+        */
     }
 
     public static Gson gson() {

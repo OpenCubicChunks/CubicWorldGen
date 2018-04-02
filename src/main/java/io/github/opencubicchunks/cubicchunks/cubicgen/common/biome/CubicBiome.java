@@ -24,9 +24,9 @@
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.biome;
 
 import com.google.common.base.Preconditions;
-import io.github.opencubicchunks.cubicchunks.core.CubicChunks;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.CubicPopulatorList;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
+import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.AnimalsPopulator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.DefaultDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.PrePopulator;
@@ -74,7 +74,7 @@ public final class CubicBiome extends IForgeRegistryEntry.Impl<CubicBiome> {
         REGISTRY = new RegistryBuilder<CubicBiome>()
                 .setType(CubicBiome.class)
                 .setIDRange(0, 256)
-                .setName(new ResourceLocation(CubicChunks.MODID, "cubic_biome_registry"))
+                .setName(new ResourceLocation(CustomCubicMod.MODID_OLD, "cubic_biome_registry"))
                 .create();
     }
 
@@ -91,7 +91,7 @@ public final class CubicBiome extends IForgeRegistryEntry.Impl<CubicBiome> {
             biomeMapping.put(biome, cubicBiome);
             if (!ForgeRegistries.BIOMES.containsValue(biome)) {
                 anyUnregistered = true;
-                CubicChunks.LOGGER.error(
+                CustomCubicMod.LOGGER.error(
                         "Registered cubic chunks biome has unregistered biome {} (name={}, class={}) is not allowed",
                         biome.getRegistryName(), biome, biome.getBiomeName());
             }
@@ -102,14 +102,14 @@ public final class CubicBiome extends IForgeRegistryEntry.Impl<CubicBiome> {
 
         for (Biome biome : ForgeRegistries.BIOMES) {
             if (!biomeMapping.containsKey(biome)) {
-                CubicChunks.LOGGER
+                CustomCubicMod.LOGGER
                         .warn("Biome {} not registered as cubic chunks biome, will use default unregistered biome instead", biome.getRegistryName());
 
                 CubicBiome newBiome = CubicBiome
                         .createForBiome(biome)
                         .defaults()
                         .defaultDecorators()
-                        .setRegistryName(CubicChunks.location("unregistered_" + biome.getRegistryName().getResourcePath()))
+                        .setRegistryName(new ResourceLocation(CustomCubicMod.MODID_OLD, "unregistered_" + biome.getRegistryName().getResourcePath()))
                         .create();
                 biomeMapping.put(biome, newBiome);
             }

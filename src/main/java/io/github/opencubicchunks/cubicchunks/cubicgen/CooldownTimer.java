@@ -21,34 +21,29 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator;
+package io.github.opencubicchunks.cubicchunks.cubicgen;
 
-import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
-import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.block.BlockDoublePlant;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
+import java.util.concurrent.TimeUnit;
 
-import java.util.Random;
+public class CooldownTimer {
 
-import javax.annotation.ParametersAreNonnullByDefault;
+    private final long cooldownNanos;
+    private long lastDoneNanos;
 
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
-public class SavannaDecorator implements ICubicPopulator {
+    public CooldownTimer(long time, TimeUnit unit) {
+        this.cooldownNanos = unit.toNanos(time);
+        this.skipNextCooldown();
+    }
 
-    @Override public void generate(World world, Random random, CubePos pos, Biome biome) {
-        biome.DOUBLE_PLANT_GENERATOR.setPlantType(BlockDoublePlant.EnumPlantType.GRASS);
-
-        for (int i = 0; i < 7; ++i) {
-            // see flower generator in DefaultDecorator
-            if (random.nextInt(7) != 0) {
-                continue;
-            }
-            BlockPos blockPos = pos.randomPopulationPos(random);
-            biome.DOUBLE_PLANT_GENERATOR.generate((World) world, random, blockPos);
+    public void tryDo(Runnable r) {
+        long time = System.nanoTime();
+        if (time - lastDoneNanos > cooldownNanos) {
+            r.run();
+            lastDoneNanos = time;
         }
+    }
+
+    public void skipNextCooldown() {
+        lastDoneNanos = System.nanoTime() - (cooldownNanos + 1);
     }
 }
