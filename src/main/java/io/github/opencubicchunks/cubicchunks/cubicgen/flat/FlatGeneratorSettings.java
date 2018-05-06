@@ -1,5 +1,5 @@
 /*
- *  This file is part of Cubic Chunks Mod, licensed under the MIT License (MIT).
+ *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
  *  Copyright (c) 2015 contributors
  *

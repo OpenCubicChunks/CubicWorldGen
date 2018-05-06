@@ -1,0 +1,17 @@
+[
+    {
+        "modid": "cubicgen",
+        "name": "CubicGen",
+        "description": "Additional CubicChunks world generators",
+        "version": "${version}",
+        "mcversion": "${mcversion}",
+        "url": "",
+        "updateUrl": "",
+        "authorList": [
+            "Barteks2x"
+        ],
+        "logoFile": "/assets/cubicchunks/logo.png",
+        "screenshots": [],
+        "dependencies": []
+    }
+]

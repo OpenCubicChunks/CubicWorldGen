@@ -1,5 +1,5 @@
 /*
- *  This file is part of Cubic Chunks Mod, licensed under the MIT License (MIT).
+ *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
  *  Copyright (c) 2015 contributors
  *
@@ -24,7 +24,6 @@
 package io.github.opencubicchunks.cubicchunks.cubicgen;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -34,11 +33,11 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
 import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld;
 import io.github.opencubicchunks.cubicchunks.api.util.Coords;
+import io.github.opencubicchunks.cubicchunks.cubicgen.testutil.MinecraftEnvironment;
 import net.minecraft.world.World;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.github.opencubicchunks.cubicchunks.testutil.MinecraftEnvironment;
 import io.github.opencubicchunks.cubicchunks.cubicgen.flat.FlatGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.flat.FlatTerrainProcessor;
 import io.github.opencubicchunks.cubicchunks.cubicgen.flat.Layer;
@@ -54,7 +53,7 @@ public class TestFlatTerrainProcessor {
 
     static IBlockState nw;
     @Before
-    public void setUp() throws IOException {
+    public void setUp() {
         MinecraftEnvironment.init();
         nw = Blocks.NETHER_WART_BLOCK.getDefaultState();
     }

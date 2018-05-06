@@ -21,26 +21,57 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package io.github.opencubicchunks.cubicchunks.cubicgen.common.biome;
+package io.github.opencubicchunks.cubicchunks.cubicgen.asm;
 
 import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
+import net.minecraftforge.common.ForgeVersion;
+import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
+import org.spongepowered.asm.launch.MixinBootstrap;
+import org.spongepowered.asm.mixin.Mixins;
 
+import java.util.Map;
+
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-@ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class TerrainShapeReplacer implements IBiomeBlockReplacer {
+@ParametersAreNonnullByDefault
+// the mcVersion value is inlined at compile time, so this MC version check may still fail
+@IFMLLoadingPlugin.MCVersion(value = ForgeVersion.mcVersion)
+@IFMLLoadingPlugin.SortingIndex(value = 5000)
+@IFMLLoadingPlugin.TransformerExclusions(value = "io.github.opencubicchunks.cubicchunks.cubicgen.asm.")
+public class CubicGenCoreMod implements IFMLLoadingPlugin {
 
-    /**
-     * Replaces any block with greater than 0 density with stone
-     */
+    public CubicGenCoreMod() {
+        initMixin();
+    }
+
     @Override
-    public IBlockState getReplacedBlock(IBlockState previousBlock, int x, int y, int z, double dx, double dy, double dz, double density) {
-        if (density > 0) {
-            return Blocks.STONE.getDefaultState();
-        }
-        return previousBlock;
+    public String[] getASMTransformerClass() {
+        return new String[]{};
+    }
+
+    @Nullable @Override
+    public String getModContainerClass() {
+        return null;
+    }
+
+    @Nullable @Override
+    public String getSetupClass() {
+        return null;
+    }
+
+    @Override
+    public void injectData(Map<String, Object> data) {
+    }
+
+    @Nullable @Override
+    public String getAccessTransformerClass() {
+        return null;
+    }
+
+    public static void initMixin() {
+        MixinBootstrap.init();
+        Mixins.addConfiguration("cubicgen.mixins.json");
     }
 }

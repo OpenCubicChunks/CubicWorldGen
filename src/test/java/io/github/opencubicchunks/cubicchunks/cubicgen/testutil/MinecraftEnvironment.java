@@ -21,18 +21,21 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
+package io.github.opencubicchunks.cubicchunks.cubicgen.testutil;
 
-import net.malisis.core.renderer.font.FontOptions;
-import net.malisis.core.renderer.font.MalisisFont;
-import net.malisis.core.renderer.font.MinecraftFont;
+import net.minecraft.init.Bootstrap;
 
-public class NoTranslationFont extends MinecraftFont {
+public class MinecraftEnvironment {
+    private static boolean isInit = false;
 
-    public static MalisisFont DEFAULT = new NoTranslationFont();
-
-    @Override
-    public String processString(String str, FontOptions options) {
-        return str; // disable any string processing
+    /**
+     * Does whatever is needed to initialize minecraft and mod environment
+     */
+    public static void init() {
+        if (isInit) {
+            return;
+        }
+        isInit = true;
+        Bootstrap.register();
     }
 }

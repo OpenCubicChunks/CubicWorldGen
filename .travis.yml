@@ -1,0 +1,34 @@
+sudo: required
+dist: trusty
+
+language: java
+cache:
+  directories:
+  - $HOME/.gradle
+jdk:
+  - openjdk8
+  - oraclejdk8
+
+env: GRADLE_OPTS="-Xmx2500M"
+before_install:
+  # workaround to get "git describe" working
+  - git fetch --tags # separate in case the one below fails
+  - git fetch --unshallow | true # may fail if there are less than 50 commits
+  - git describe
+  - ./gradlew setupCiWorkspace
+#setupCIWorkspace is needed because of https://github.com/MinecraftForge/ForgeGradle/issues/410
+# clean because of https://github.com/SpongePowered/MixinGradle/issues/4
+script: ./gradlew clean build
+deploy:
+  # if only travis supported multiple branches as conditions... or regex
+  - provider: script
+    script: "./gradlew uploadArchives"
+    skip_cleanup: true
+    on:
+      repo: OpenCubicChunks/CubicChunks-API
+      condition: $TRAVIS_BRANCH =~ ^(master|MC_([0-9]+\.)+[0-9]+)$
+      all_branches: true
+
+notifications:
+  email: false
+ 
