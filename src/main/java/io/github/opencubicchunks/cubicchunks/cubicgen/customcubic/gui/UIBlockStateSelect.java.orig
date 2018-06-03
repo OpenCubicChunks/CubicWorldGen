@@ -23,7 +23,6 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui;
 
-import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.DummyWorld;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBlockStateButton;
@@ -66,24 +65,14 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
         List<IBlockState> states = new ArrayList<>();
         for (Block block : ForgeRegistries.BLOCKS) {
             for (IBlockState state : block.getBlockState().getValidStates()) {
-                try {
-                    if (state != block.getStateFromMeta(block.getMetaFromState(state))) {
-                        continue;
-                    }
-                    if (state.getBlock().hasTileEntity(state)
-                            && TileEntityRendererDispatcher.instance.getRenderer(state.getBlock().createTileEntity(null, state)) != null) {
-                        continue; // Don't allow TESR
-                    }
-                    states.add(state);
-                } catch (Throwable t) {
-                    // those are important so rethrow
-                    if (t instanceof VirtualMachineError) {
-                        throw (VirtualMachineError) t;
-                    }
-                    // everything else - -assume mods are stupid and just log it
-                    // this is awful but some mods just need their exceptions to be caught here
-                    CustomCubicMod.LOGGER.catching(t);
+                if (state != block.getStateFromMeta(block.getMetaFromState(state))) {
+                    continue;
                 }
+                if (state.getBlock().hasTileEntity(state)
+                        && TileEntityRendererDispatcher.instance.getRenderer(state.getBlock().createTileEntity(null, state)) != null) {
+                    continue; // Don't allow TESR
+                }
+                states.add(state);
             }
         }
 

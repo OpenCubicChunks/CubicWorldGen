@@ -28,7 +28,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
@@ -57,10 +56,8 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -154,20 +151,19 @@ public class CustomGeneratorSettings {
     public float highNoiseFrequencyZ = ConversionUtils.VANILLA_LOWHIGH_NOISE_FREQUENCY_XZ;
     public int highNoiseOctaves = 16;
 
-    // note: the AABB uses cube coords to simplify the generator
-    public Map<IntAABB, CustomGeneratorSettings> cubeAreas = new HashMap<>();
-    public BiomeBlockReplacerConfig replacerConfig = BiomeBlockReplacerConfig.defaults();
-
     // TODO: public boolean negativeHeightVariationInvertsTerrain = true;
 
     public CustomGeneratorSettings() {
+
     }
 
     public BiomeBlockReplacerConfig createBiomeBlockReplacerConfig() {
-        replacerConfig.setDefault(CustomCubicMod.MODID, "water_level", (double) this.waterLevel);
-        replacerConfig.setDefault(CustomCubicMod.MODID, "height_scale", (double) this.heightFactor);
-        replacerConfig.setDefault(CustomCubicMod.MODID, "height_offset", (double) this.heightOffset);
-        return replacerConfig;
+        BiomeBlockReplacerConfig conf = new BiomeBlockReplacerConfig();
+        conf.fillDefaults();
+        conf.set(CustomCubicMod.MODID, "water_level", (double) this.waterLevel);
+        conf.set(CustomCubicMod.MODID, "height_scale", (double) this.heightFactor);
+        conf.set(CustomCubicMod.MODID, "height_offset", (double) this.heightOffset);
+        return conf;
     }
 
     public String toJson() {
@@ -213,7 +209,7 @@ public class CustomGeneratorSettings {
                             .maxHeight(1).create(),
                     StandardOreConfig.builder()
                             .block(Blocks.IRON_ORE.getDefaultState())
-                            .size(9).attempts(20).probability(256f / 64f / (256f / ICube.SIZE))
+                            .size(33).attempts(10).probability(256f / 64f / (256f / ICube.SIZE))
                             .maxHeight(0).create(),
                     StandardOreConfig.builder()
                             .block(Blocks.GOLD_ORE.getDefaultState())
@@ -412,10 +408,8 @@ public class CustomGeneratorSettings {
 
     public static Gson gson() {
         return new GsonBuilder().serializeSpecialFloatingPointValues()
-                .enableComplexMapKeySerialization()
-                .registerTypeHierarchyAdapter(IBlockState.class, BlockStateSerializer.INSTANCE)
+                .registerTypeHierarchyAdapter(IBlockState.class, new BlockStateSerializer())
                 .registerTypeHierarchyAdapter(Biome.class, new BiomeSerializer())
-                .registerTypeAdapter(BiomeBlockReplacerConfig.class, BiomeBlockReplacerConfigSerializer.INSTANCE)
                 .create();
     }
 
@@ -424,18 +418,16 @@ public class CustomGeneratorSettings {
         public IBlockState blockstate;
         // null == no biome restrictions
         public Set<Biome> biomes;
-        public Set<IBlockState> genInBlockstates;
         public int spawnSize;
         public int spawnTries;
         public float spawnProbability = 1.0f;
         public float minHeight = Float.NEGATIVE_INFINITY;
         public float maxHeight = Float.POSITIVE_INFINITY;
 
-        private StandardOreConfig(IBlockState state, Set<Biome> biomes, Set<IBlockState> genInBlockstates, int spawnSize, int spawnTries,
-                float spawnProbability, float minHeight, float maxHeight) {
+        private StandardOreConfig(IBlockState state, Set<Biome> biomes, int spawnSize, int spawnTries, float spawnProbability, float minHeight,
+                float maxHeight) {
             this.blockstate = state;
             this.biomes = biomes;
-            this.genInBlockstates = genInBlockstates;
             this.spawnSize = spawnSize;
             this.spawnTries = spawnTries;
             this.spawnProbability = spawnProbability;
@@ -451,13 +443,11 @@ public class CustomGeneratorSettings {
 
             private IBlockState blockstate;
             private Set<Biome> biomes = null;
-            private Set<IBlockState> genInBlockstates;
             private int spawnSize;
             private int spawnTries;
             private float spawnProbability;
             private float minHeight = Float.NEGATIVE_INFINITY;
             private float maxHeight = Float.POSITIVE_INFINITY;
-            private Set<IBlockState> blockstates = new HashSet<>();
 
             public Builder block(IBlockState blockstate) {
                 this.blockstate = blockstate;
@@ -504,19 +494,6 @@ public class CustomGeneratorSettings {
                 return this;
             }
 
-            public Builder genInBlockstates(IBlockState... states) {
-                if (states == null) {
-                    this.genInBlockstates = null;
-                    return this;
-                }
-                if (this.genInBlockstates == null) {
-                    this.genInBlockstates = new HashSet<>();
-                }
-                this.genInBlockstates.addAll(Arrays.asList(states));
-                return this;
-            }
-
-
             public Builder fromPeriodic(PeriodicGaussianOreConfig config) {
                 return minHeight(config.minHeight)
                         .maxHeight(config.maxHeight)
@@ -524,11 +501,10 @@ public class CustomGeneratorSettings {
                         .size(config.spawnSize)
                         .attempts(config.spawnTries)
                         .block(config.blockstate)
-                        .biomes(config.biomes == null ? null : config.biomes.toArray(new Biome[0]))
-                        .genInBlockstates(config.genInBlockstates == null ? null : config.genInBlockstates.toArray(new IBlockState[0]));
+                        .biomes(config.biomes == null ? null : config.biomes.toArray(new Biome[0]));
             }
             public StandardOreConfig create() {
-                return new StandardOreConfig(blockstate, biomes, genInBlockstates, spawnSize, spawnTries, spawnProbability, minHeight, maxHeight);
+                return new StandardOreConfig(blockstate, biomes, spawnSize, spawnTries, spawnProbability, minHeight, maxHeight);
             }
         }
     }
@@ -537,7 +513,6 @@ public class CustomGeneratorSettings {
 
         public IBlockState blockstate;
         public Set<Biome> biomes = null;
-        public Set<IBlockState> genInBlockstates; // unspecified = vanilla defaults
         public int spawnSize;
         public int spawnTries;
         public float spawnProbability;
@@ -547,11 +522,10 @@ public class CustomGeneratorSettings {
         public float minHeight;
         public float maxHeight;
 
-        private PeriodicGaussianOreConfig(IBlockState blockstate, Set<Biome> biomes, Set<IBlockState> genInBlockstates, int spawnSize, int spawnTries,
-                float spawnProbability, float heightMean, float heightStdDeviation, float heightSpacing, float minHeight, float maxHeight) {
+        private PeriodicGaussianOreConfig(IBlockState blockstate, Set<Biome> biomes, int spawnSize, int spawnTries, float spawnProbability,
+                float heightMean, float heightStdDeviation, float heightSpacing, float minHeight, float maxHeight) {
             this.blockstate = blockstate;
             this.biomes = biomes;
-            this.genInBlockstates = genInBlockstates;
             this.spawnSize = spawnSize;
             this.spawnTries = spawnTries;
             this.spawnProbability = spawnProbability;
@@ -570,7 +544,6 @@ public class CustomGeneratorSettings {
 
             private IBlockState blockstate;
             private Set<Biome> biomes = null;
-            private Set<IBlockState> genInBlockstates = null;
             private int spawnSize;
             private int spawnTries;
             private float spawnProbability;
@@ -637,18 +610,6 @@ public class CustomGeneratorSettings {
                 return this;
             }
 
-            public Builder genInBlockstates(IBlockState... states) {
-                if (states == null) {
-                    this.genInBlockstates = null;
-                    return this;
-                }
-                if (this.genInBlockstates == null) {
-                    this.genInBlockstates = new HashSet<>();
-                }
-                this.genInBlockstates.addAll(Arrays.asList(states));
-                return this;
-            }
-
             public Builder fromStandard(StandardOreConfig config) {
                 return minHeight(config.minHeight)
                         .maxHeight(config.maxHeight)
@@ -657,15 +618,14 @@ public class CustomGeneratorSettings {
                         .attempts(config.spawnTries)
                         .block(config.blockstate)
                         .biomes(config.biomes == null ? null : config.biomes.toArray(new Biome[0]))
-                        .genInBlockstates(config.genInBlockstates == null ? null : config.genInBlockstates.toArray(new IBlockState[0]))
                         .heightMean(0)
                         .heightStdDeviation(1)
                         .heightSpacing(2);
             }
 
             public PeriodicGaussianOreConfig create() {
-                return new PeriodicGaussianOreConfig(blockstate, biomes, genInBlockstates, spawnSize, spawnTries, spawnProbability, heightMean,
-                        heightStdDeviation, heightSpacing, minHeight, maxHeight);
+                return new PeriodicGaussianOreConfig(blockstate, biomes, spawnSize, spawnTries, spawnProbability, heightMean, heightStdDeviation,
+                        heightSpacing, minHeight, maxHeight);
             }
 
         }
@@ -694,75 +654,6 @@ public class CustomGeneratorSettings {
         }
     }
 
-    private static class BiomeBlockReplacerConfigSerializer
-            implements JsonDeserializer<BiomeBlockReplacerConfig>, JsonSerializer<BiomeBlockReplacerConfig> {
-
-        public static final BiomeBlockReplacerConfigSerializer INSTANCE = new BiomeBlockReplacerConfigSerializer();
-
-        @Override public BiomeBlockReplacerConfig deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-                throws JsonParseException {
-
-            JsonObject defaults = json.getAsJsonObject().get("defaults").getAsJsonObject();
-            JsonObject overrides = json.getAsJsonObject().get("overrides").getAsJsonObject();
-
-            BiomeBlockReplacerConfig conf = new BiomeBlockReplacerConfig();
-            for (Map.Entry<String, JsonElement> e : defaults.entrySet()) {
-                ResourceLocation key = new ResourceLocation(e.getKey());
-                Object value = getObject(context, e);
-                conf.setDefault(key, value);
-            }
-            for (Map.Entry<String, JsonElement> e : overrides.entrySet()) {
-                ResourceLocation key = new ResourceLocation(e.getKey());
-                Object value = getObject(context, e);
-                conf.set(key, value);
-            }
-            return conf;
-        }
-
-        private Object getObject(JsonDeserializationContext context, Map.Entry<String, JsonElement> e) {
-            Object value;
-            if (e.getValue().isJsonPrimitive()) {
-                value = e.getValue().getAsJsonPrimitive().getAsDouble();
-            } else {
-                // currently the only object suppoorted is blockstate
-                value = BlockStateSerializer.INSTANCE.deserialize(e.getValue(), IBlockState.class, context);
-            }
-            return value;
-        }
-
-        @Override public JsonElement serialize(BiomeBlockReplacerConfig src, Type typeOfSrc, JsonSerializationContext context) {
-            JsonObject root = new JsonObject();
-
-            JsonObject defaults = new JsonObject();
-            JsonObject overrides = new JsonObject();
-
-            for (Map.Entry<ResourceLocation, Object> e : src.getDefaults().entrySet()) {
-                defaults.add(e.getKey().toString(), getJsonElement(context, e));
-            }
-            for (Map.Entry<ResourceLocation, Object> e : src.getOverrides().entrySet()) {
-                overrides.add(e.getKey().toString(), getJsonElement(context, e));
-            }
-            root.add("defaults", defaults);
-            root.add("overrides", overrides);
-            return root;
-        }
-
-        private JsonElement getJsonElement(JsonSerializationContext context, Map.Entry<ResourceLocation, Object> e) {
-            JsonElement v;
-            if (e.getValue() == null) {
-                throw new NullPointerException("Null config entries cannot be serialized");
-            }
-            if (e.getValue() instanceof Number) {
-                v = new JsonPrimitive((Number) e.getValue());
-            } else if (e.getValue() instanceof IBlockState) {
-                v = BlockStateSerializer.INSTANCE.serialize((IBlockState) e.getValue(), IBlockState.class, context);
-            } else {
-                throw new UnsupportedOperationException(e.getValue() + " of type " + e.getValue().getClass() + " is not supported");
-            }
-            return v;
-        }
-    }
-
     private static class BiomeSerializer implements JsonDeserializer<Biome>, JsonSerializer<Biome> {
 
         @Override public Biome deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
@@ -771,82 +662,6 @@ public class CustomGeneratorSettings {
 
         @Override public JsonElement serialize(Biome src, Type typeOfSrc, JsonSerializationContext context) {
             return new JsonPrimitive(src.getRegistryName().toString());
-        }
-    }
-
-    // we can't use vanilla StructureBoundingBox because gson serialization relies on field names to not change
-    // and for vanilla classes they do change because of obfuscation
-    public static class IntAABB {
-
-        /** The first x coordinate of a bounding box. */
-        public int minX;
-        /** The first y coordinate of a bounding box. */
-        public int minY;
-        /** The first z coordinate of a bounding box. */
-        public int minZ;
-        /** The second x coordinate of a bounding box. */
-        public int maxX;
-        /** The second y coordinate of a bounding box. */
-        public int maxY;
-        /** The second z coordinate of a bounding box. */
-        public int maxZ;
-
-        public IntAABB() {
-        }
-
-        public IntAABB(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
-            this.minX = minX;
-            this.minY = minY;
-            this.minZ = minZ;
-            this.maxX = maxX;
-            this.maxY = maxY;
-            this.maxZ = maxZ;
-        }
-
-        @Override public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-
-            IntAABB intAABB = (IntAABB) o;
-
-            if (minX != intAABB.minX) {
-                return false;
-            }
-            if (minY != intAABB.minY) {
-                return false;
-            }
-            if (minZ != intAABB.minZ) {
-                return false;
-            }
-            if (maxX != intAABB.maxX) {
-                return false;
-            }
-            if (maxY != intAABB.maxY) {
-                return false;
-            }
-            if (maxZ != intAABB.maxZ) {
-                return false;
-            }
-
-            return true;
-        }
-
-        @Override public int hashCode() {
-            int result = minX;
-            result = 31 * result + minY;
-            result = 31 * result + minZ;
-            result = 31 * result + maxX;
-            result = 31 * result + maxY;
-            result = 31 * result + maxZ;
-            return result;
-        }
-
-        public boolean contains(int x, int y, int z) {
-            return x >= minX && x <= maxX && z >= minZ && z <= maxZ && y >= minY && y <= maxY;
         }
     }
 }

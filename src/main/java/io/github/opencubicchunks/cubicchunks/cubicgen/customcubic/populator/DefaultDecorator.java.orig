@@ -23,9 +23,6 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator;
 
-import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.PopulatorUtils.genOreBellCurve;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.PopulatorUtils.genOreUniform;
-
 import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
@@ -34,7 +31,6 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGenerato
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.BlockFlower;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -48,8 +44,6 @@ import net.minecraft.world.gen.feature.WorldGenPumpkin;
 import net.minecraft.world.gen.feature.WorldGenerator;
 
 import java.util.Random;
-import java.util.Set;
-import java.util.function.Predicate;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -67,19 +61,12 @@ public final class DefaultDecorator implements ICubicPopulator {
         private void generateOres(World world, CustomGeneratorSettings cfg, Random random, CubePos pos) {
             // TODO: allow interleaved order
             for (CustomGeneratorSettings.StandardOreConfig c : cfg.standardOres) {
-                Set<IBlockState> states = c.genInBlockstates;
-                WorldGenMinable gen = states == null ?
-                        new WorldGenMinable(c.blockstate, c.spawnSize) :
-                        new WorldGenMinable(c.blockstate, c.spawnSize, states::contains);
-                genOreUniform(world, cfg, random, pos, c.spawnTries, c.spawnProbability, gen, c.minHeight, c.maxHeight);
+                PopulatorUtils.genOreUniform(world, cfg, random, pos, c.spawnTries, c.spawnProbability, new WorldGenMinable(c.blockstate, c.spawnSize),
+                        c.minHeight, c.maxHeight);
             }
             for (CustomGeneratorSettings.PeriodicGaussianOreConfig c : cfg.periodicGaussianOres) {
-                Set<IBlockState> states = c.genInBlockstates;
-                WorldGenMinable gen = states == null ?
-                        new WorldGenMinable(c.blockstate, c.spawnSize) :
-                        new WorldGenMinable(c.blockstate, c.spawnSize, states::contains);
-                genOreBellCurve(world, cfg, random, pos, c.spawnTries, c.spawnProbability, gen, c.heightMean, c.heightStdDeviation, c.heightSpacing,
-                        c.minHeight, c.maxHeight);
+                PopulatorUtils.genOreBellCurve(world, cfg, random, pos, c.spawnTries, c.spawnProbability, new WorldGenMinable(c.blockstate, c.spawnSize),
+                        c.heightMean, c.heightStdDeviation, c.heightSpacing, c.minHeight, c.maxHeight);
             }
         }
     }

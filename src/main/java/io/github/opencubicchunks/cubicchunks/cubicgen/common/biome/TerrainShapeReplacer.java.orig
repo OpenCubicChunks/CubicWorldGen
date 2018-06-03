@@ -23,59 +23,24 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.biome;
 
-import com.google.common.collect.Sets;
-import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
-
-import java.util.Set;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class OceanWaterReplacer implements IBiomeBlockReplacer {
-
-    private final IBlockState oceanBlock;
-    private final int oceanLevel;
-
-    public OceanWaterReplacer(IBlockState oceanBlock, int oceanLevel) {
-        this.oceanBlock = oceanBlock;
-        this.oceanLevel = oceanLevel;
-    }
+public class TerrainShapeReplacer implements IBiomeBlockReplacer {
 
     /**
-     * Replaces air blocks below configurable sea level with configurable block (usually water)
+     * Replaces any block with greater than 0 density with stone
      */
     @Override
     public IBlockState getReplacedBlock(IBlockState previousBlock, int x, int y, int z, double dx, double dy, double dz, double density) {
-        if (previousBlock.getBlock() == Blocks.AIR && y < oceanLevel) {
-            return oceanBlock;
+        if (density > 0) {
+            return Blocks.STONE.getDefaultState();
         }
         return previousBlock;
-    }
-
-    public static IBiomeBlockReplacerProvider provider() {
-        return new IBiomeBlockReplacerProvider() {
-            private final ResourceLocation OCEAN_BLOCK = CustomCubicMod.location("ocean_block");
-            private final ResourceLocation OCEAN_LEVEL = CustomCubicMod.location("water_level");
-
-            @Override public IBiomeBlockReplacer create(World world, CubicBiome biome, BiomeBlockReplacerConfig conf) {
-                IBlockState oceanBlock = conf.getBlockstate(OCEAN_BLOCK);
-                int oceanHeight = (int) Math.round(conf.getDouble(OCEAN_LEVEL));
-                return new OceanWaterReplacer(oceanBlock, oceanHeight);
-            }
-
-            @Override public Set<ConfigOptionInfo> getPossibleConfigOptions() {
-                return Sets.newHashSet(
-                        new ConfigOptionInfo(OCEAN_BLOCK, Blocks.WATER.getDefaultState()),
-                        new ConfigOptionInfo(OCEAN_LEVEL, 63.0)
-                );
-            }
-        };
     }
 }

@@ -62,10 +62,6 @@ public class FlatCubicWorldType extends WorldType implements ICubicWorldType {
         return new IntRange(0, 256); // TODO: Flat generation height range
     }
 
-    @Override public boolean hasCubicGeneratorForWorld(World w) {
-        return w.provider.getDimension() == 0;
-    }
-
     public boolean isCustomizable() {
         return true;
     }

@@ -49,18 +49,17 @@ public class SurfaceDefaultReplacer implements IBiomeBlockReplacer {
     protected static final IBlockState RED_SANDSTONE = Blocks.RED_SANDSTONE.getDefaultState();
     protected static final IBlockState SANDSTONE = Blocks.SANDSTONE.getDefaultState();
 
-    private final IBuilder depthNoise;
+    private final IBuilder depthNoise = makeDepthNoise();
     private final int maxPossibleDepth;
     private IBlockState topBlock;
     private IBlockState fillerBlock;
     private final double horizontalGradientDepthDecreaseWeight;
     private final double oceanHeight;
 
-    public SurfaceDefaultReplacer(IBlockState topBlock, IBlockState fillerBlock, IBuilder depthNoise,
+    public SurfaceDefaultReplacer(IBlockState topBlock, IBlockState fillerBlock,
             double horizontalGradientDepthDecreaseWeight, double oceanHeight) {
         this.topBlock = topBlock;
         this.fillerBlock = fillerBlock;
-        this.depthNoise = depthNoise;
         this.horizontalGradientDepthDecreaseWeight = horizontalGradientDepthDecreaseWeight;
         this.oceanHeight = oceanHeight;
         this.maxPossibleDepth = 9;
@@ -126,39 +125,18 @@ public class SurfaceDefaultReplacer implements IBiomeBlockReplacer {
         return new IBiomeBlockReplacerProvider() {
             private final ResourceLocation HORIZONTAL_GRADIENT_DEC = CustomCubicMod.location("horizontal_gradient_depth_decrease_weight");
             private final ResourceLocation OCEAN_LEVEL = CustomCubicMod.location("water_level");
-            private final ResourceLocation DEPTH_NOISE_FACTOR = CustomCubicMod.location("biome_fill_depth_factor");
-            private final ResourceLocation DEPTH_NOISE_OFFSET = CustomCubicMod.location("biome_fill_depth_offset");
-            private final ResourceLocation DEPTH_NOISE_FREQUENCY = CustomCubicMod.location("biome_fill_noise_freq");
-            private final ResourceLocation DEPTH_NOISE_OCTAVES = CustomCubicMod.location("biome_fill_noise_octaves");
 
             @Override
             public IBiomeBlockReplacer create(World world, CubicBiome cubicBiome, BiomeBlockReplacerConfig conf) {
                 double gradientDec = conf.getDouble(HORIZONTAL_GRADIENT_DEC);
                 double oceanY = conf.getDouble(OCEAN_LEVEL);
-
-                double factor = conf.getDouble(DEPTH_NOISE_FACTOR);
-                double offset = conf.getDouble(DEPTH_NOISE_OFFSET);
-                double freq = conf.getDouble(DEPTH_NOISE_FREQUENCY);
-                int octaves = (int) conf.getDouble(DEPTH_NOISE_OCTAVES);
                 Biome biome = cubicBiome.getBiome();
-
-                IBuilder builder = NoiseSource.perlin()
-                        .frequency(freq).octaves(octaves).create()
-                        .mul(factor).add(offset)
-                        .cached2d(256, v -> v.getX() + v.getZ() * 16);
-                return new SurfaceDefaultReplacer(biome.topBlock, biome.fillerBlock, builder, gradientDec, oceanY);
+                return new SurfaceDefaultReplacer(biome.topBlock, biome.fillerBlock, gradientDec, oceanY);
             }
 
             @Override public Set<ConfigOptionInfo> getPossibleConfigOptions() {
                 return Sets.newHashSet(
-                        new ConfigOptionInfo(HORIZONTAL_GRADIENT_DEC, 1.0),
-                        new ConfigOptionInfo(OCEAN_LEVEL, 63.0),
-                        // TODO: do it properly, currently this value is just temporary until I figure out the right one
-                        // TODO: figure out what the above comment actually means
-                        new ConfigOptionInfo(DEPTH_NOISE_FACTOR, ((1 << 3) - 1) / 3.0),
-                        new ConfigOptionInfo(DEPTH_NOISE_OFFSET, 3.0),
-                        new ConfigOptionInfo(DEPTH_NOISE_FREQUENCY, ConversionUtils.frequencyFromVanilla(0.0625f, 4)),
-                        new ConfigOptionInfo(DEPTH_NOISE_OCTAVES, 4.0)
+                        new ConfigOptionInfo(HORIZONTAL_GRADIENT_DEC, 1.0)
                 );
             }
         };
