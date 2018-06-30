@@ -26,6 +26,7 @@ package io.github.opencubicchunks.cubicchunks.cubicgen;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome.oceanWaterReplacer;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome.terrainShapeReplacer;
 
+import io.github.opencubicchunks.cubicchunks.api.util.GeneratorSettingsFix;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer.MesaSurfaceReplacer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer.MutatedSavannaSurfaceReplacer;
@@ -92,7 +93,7 @@ public class CustomCubicMod {
 
     public static final String MALISIS_VERSION = "@@MALISIS_VERSION@@";
 
-    public static final int FIXER_VERSION = 1;
+    public static final int FIXER_VERSION = 2;
     public static final boolean DEBUG_ENABLED = false;
     public static Logger LOGGER = null;
 
@@ -102,9 +103,9 @@ public class CustomCubicMod {
         ConversionUtils.initFlowNoiseHack();
 
         // TODO: redo DataFixers
-        //CCFixType.addFixableWorldType(FlatCubicWorldType.create());
-        //CCFixType.addFixableWorldType(CustomCubicWorldType.create());
-        //CCFixType.addFixableWorldType(DebugWorldType.create());
+        GeneratorSettingsFix.addFixableWorldType(FlatCubicWorldType.create());
+        GeneratorSettingsFix.addFixableWorldType(CustomCubicWorldType.create());
+        GeneratorSettingsFix.addFixableWorldType(DebugWorldType.create());
         FlatCubicWorldType.create();
         CustomCubicWorldType.create();
         DebugWorldType.create();
@@ -145,13 +146,13 @@ public class CustomCubicMod {
                 .decorator(new ForestDecorator()).defaultDecorators());
         autoRegister(event, BiomeHills.class, b -> b
                 .addDefaultBlockReplacers()
-                .defaultDecorators().decorator(new HillsDecorator()));
+                .defaultDecorators());
         autoRegister(event, BiomeJungle.class, b -> b
                 .addDefaultBlockReplacers()
                 .defaultDecorators().decorator(new JungleDecorator()));
         autoRegister(event, BiomeMesa.class, b -> b
                 .addBlockReplacer(terrainShapeReplacer()).addBlockReplacer(MesaSurfaceReplacer.provider()).addBlockReplacer(oceanWaterReplacer())
-                .decorator(new DefaultDecorator.Ores()).decorator(new MesaDecorator()).decorator(new DefaultDecorator()));
+                .decoratorProvider(DefaultDecorator.Ores::new).decoratorProvider(DefaultDecorator::new));
         autoRegister(event, BiomeMushroomIsland.class, b -> b
                 .addDefaultBlockReplacers()
                 .defaultDecorators());

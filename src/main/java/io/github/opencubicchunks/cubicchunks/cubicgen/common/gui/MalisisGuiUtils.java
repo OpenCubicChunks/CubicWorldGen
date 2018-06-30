@@ -29,8 +29,10 @@ import com.google.common.base.Converter;
 import com.google.common.eventbus.Subscribe;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.BiomeOption;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UICheckboxNoAutoSize;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIRangeSlider;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISliderImproved;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.converter.Converters;
 import net.malisis.core.client.gui.Anchor;
 import net.malisis.core.client.gui.MalisisGui;
@@ -40,6 +42,7 @@ import net.malisis.core.client.gui.component.decoration.UILabel;
 import net.malisis.core.client.gui.component.interaction.UICheckBox;
 import net.malisis.core.client.gui.component.interaction.UISelect;
 import net.malisis.core.client.gui.component.interaction.UISlider;
+import net.malisis.core.client.gui.component.interaction.UITextField;
 import net.malisis.core.client.gui.event.component.SpaceChangeEvent;
 import net.malisis.core.renderer.font.FontOptions;
 import net.minecraft.client.resources.I18n;
@@ -180,7 +183,7 @@ public class MalisisGuiUtils {
     }
 
     public static UICheckBox makeCheckbox(MalisisGui gui, String name, boolean defaultValue) {
-        UICheckBox cb = new UICheckBox(gui, name)
+        UICheckBox cb = new UICheckboxNoAutoSize(gui, name)
                 .setChecked(defaultValue)
                 .setFontOptions(FontOptions.builder().color(0xFFFFFF).shadow().build());
         return cb;
@@ -233,8 +236,35 @@ public class MalisisGuiUtils {
         ).setSize(0, 15);
     }
 
+    // textInput as argument so that it's easy to access it later
+    // otherwise, to access the value of the text field, it would be necessary to get it out of implementation-specific contaier
+    public static UIComponent<?> floatInput(ExtraGui gui, String text, UITextField textField, float defaultValue) {
+        textField.setValidator(str -> {
+            try {
+                Float.parseFloat(str);
+                return true;
+            } catch (NumberFormatException e2) {
+                return false;
+            }
+        });
+        textField.setEditable(true);
+        textField.setText(String.format("%.1f", defaultValue));
+        textField.setFontOptions(FontOptions.builder().color(0xFFFFFF).build());
+        UIComponent<?> label = wrappedMiddle(gui, new UILabel(gui, text).setFontOptions(FontOptions.builder().color(0xFFFFFF).build()));
+        UISplitLayout<?> split = new UISplitLayout<>(gui, UISplitLayout.Type.SIDE_BY_SIDE, label, textField);
+        split.setSizeOf(UISplitLayout.Pos.SECOND, 40);
+        split.autoFitToContent(true);
+        return split;
+    }
     public static UIContainer<?> wrappedCentered(MalisisGui gui, UIComponent<?> comp) {
         comp.setAnchor(Anchor.MIDDLE | Anchor.CENTER);
+        UIContainer<?> cont = new UIContainer<>(gui);
+        cont.add(comp);
+        return cont;
+    }
+
+    public static UIContainer<?> wrappedMiddle(MalisisGui gui, UIComponent<?> comp) {
+        comp.setAnchor(Anchor.MIDDLE);
         UIContainer<?> cont = new UIContainer<>(gui);
         cont.add(comp);
         return cont;

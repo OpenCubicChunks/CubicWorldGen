@@ -127,7 +127,7 @@ dependencies {
     }
 
     shade("com.flowpowered:flow-noise:1.0.1-SNAPSHOT")
-    deobfCompile("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0.10.0-SNAPSHOT")
+    deobfCompile("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0.15.0-SNAPSHOT")
     // provided by cubicchunks implementation
     compileOnly("org.spongepowered:mixin:0.7.5-SNAPSHOT") {
         isTransitive = false

@@ -114,7 +114,7 @@ public abstract class MixinStructureStart implements ICubicStructureStart {
             }
             return;
         }
-        int maxY = conf.getAverageHeight() - minDepth;
+        int maxY = Math.round(conf.expectedBaseHeight - minDepth);
         int originalY = this.boundingBox.minY;
         int newY = localToBlock(getChunkPosY(), rand == null ? this.randY : rand.nextInt(ICube.SIZE));
 

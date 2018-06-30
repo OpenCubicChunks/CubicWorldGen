@@ -35,6 +35,7 @@ import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisG
 
 import com.google.common.eventbus.Subscribe;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UICheckboxNoAutoSize;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings.PeriodicGaussianOreConfig;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBlockStateButton;
@@ -221,10 +222,10 @@ class OreSettingsTab {
             });
             this.type.select(OreGenType.UNIFORM);
 
+            setupThis(gui, deleteTypeArea, mainArea, biomesArea);
             setupMainArea(mainArea);
             allowSelectBiomes(biomesArea, this.selectBiomes.isChecked());
             setupBiomeArea(config, biomesArea);
-            setupThis(gui, deleteTypeArea, mainArea, biomesArea);
         }
 
         private CustomGeneratorSettings.StandardOreConfig toConfig() {
@@ -286,7 +287,7 @@ class OreSettingsTab {
         }
 
         private UICheckBox makeBiomeCheckbox(Biome biome) {
-            return new UICheckBox(getGui(), String.format("%s (%s)", biome.getBiomeName(), biome.getRegistryName()));
+            return new UICheckboxNoAutoSize(getGui(), String.format("%s (%s)", biome.getBiomeName(), biome.getRegistryName()));
         }
 
         private UIContainer<?> makeLabel(ExtraGui gui, CustomGeneratorSettings.StandardOreConfig config) {
@@ -505,7 +506,7 @@ class OreSettingsTab {
         }
 
         private UICheckBox makeBiomeCheckbox(Biome biome) {
-            return new UICheckBox(getGui(), String.format("%s (%s)", biome.getBiomeName(), biome.getRegistryName()));
+            return new UICheckboxNoAutoSize(getGui(), String.format("%s (%s)", biome.getBiomeName(), biome.getRegistryName()));
         }
 
         private UIContainer<?> makeLabel(ExtraGui gui, CustomGeneratorSettings.PeriodicGaussianOreConfig config) {
