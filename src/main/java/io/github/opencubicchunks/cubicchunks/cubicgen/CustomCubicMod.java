@@ -37,9 +37,7 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGenerato
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.DefaultDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.DesertDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.ForestDecorator;
-import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.HillsDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.JungleDecorator;
-import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.MesaDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.PlainsDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.SavannaDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.SnowBiomeDecorator;
