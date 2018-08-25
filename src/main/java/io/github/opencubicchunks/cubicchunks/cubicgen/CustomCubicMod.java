@@ -26,14 +26,12 @@ package io.github.opencubicchunks.cubicchunks.cubicgen;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome.oceanWaterReplacer;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome.terrainShapeReplacer;
 
-import io.github.opencubicchunks.cubicchunks.api.util.GeneratorSettingsFix;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer.MesaSurfaceReplacer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer.MutatedSavannaSurfaceReplacer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer.SwampWaterWithLilypadReplacer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer.TaigaSurfaceReplacer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomCubicWorldType;
-import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.DefaultDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.DesertDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.ForestDecorator;
@@ -101,16 +99,9 @@ public class CustomCubicMod {
         ConversionUtils.initFlowNoiseHack();
 
         // TODO: redo DataFixers
-        GeneratorSettingsFix.addFixableWorldType(FlatCubicWorldType.create());
-        GeneratorSettingsFix.addFixableWorldType(CustomCubicWorldType.create());
-        GeneratorSettingsFix.addFixableWorldType(DebugWorldType.create());
         FlatCubicWorldType.create();
         CustomCubicWorldType.create();
         DebugWorldType.create();
-
-
-        ModFixs fixes = FMLCommonHandler.instance().getDataFixer().init(MODID, FIXER_VERSION);
-        CustomGeneratorSettings.registerDataFixers(fixes);
     }
 
     @Mod.EventHandler

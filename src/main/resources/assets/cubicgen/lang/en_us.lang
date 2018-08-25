@@ -1,0 +1,149 @@
+cubicchunks.gui.cubicgen.expected_heights_group=Expected heights
+cubicchunks.gui.cubicgen.lock_expected_heights=Lock expected heights
+cubicchunks.gui.cubicgen.actual_height=Actual Height
+cubicchunks.gui.cubicgen.expected_base_height=Expected base height
+cubicchunks.gui.cubicgen.expected_height_variation=Expected height variation
+
+generator.VanillaCubic=Vanilla Cubic
+generator.FlatCubic=Flat Cubic
+generator.CustomCubic=Custom Cubic
+
+itemGroup.cubic_chunks_debug_tab=Cubic Chunks debug items
+
+#################################
+###        general gui        ###
+#################################
+
+cubicchunks.gui.worldmenu.cc_enable=CubicChunks: Yes
+cubicchunks.gui.worldmenu.cc_disable=CubicChunks: No
+
+cubicchunks.gui.cubicgen.previous_page=Previous
+cubicchunks.gui.cubicgen.next_page=Next
+cubicchunks.gui.cubicgen.done=Done
+cubicchunks.gui.cubicgen.presets=Presets
+
+cubicchunks.gui.cubicgen.basic_tab_title=Customize World Settings%nPage 1 of 3%nBasic Settings
+cubicchunks.gui.cubicgen.ores_tab_title=Customize World Settings%nPage 2 of 3%nOre Settings
+cubicchunks.gui.cubicgen.advanced_tab_title=Customize World Settings%nPage 3 of 3%nAdvanced Settings
+
+cubicchunks.gui.cubicgen.layers_title=Customize World Settings%nPage 1 of 1%nLayers
+
+#################################
+###          presets          ###
+#################################
+
+cubicchunks.gui.cubicgen.presets.done=Done
+cubicchunks.gui.cubicgen.presets.cancel=Cancel
+
+#################################
+###          options          ###
+#################################
+
+cubicchunks.gui.vertical_cube_load_distance=Vertical Distance: %d cubes
+
+#################################
+###   flat terrain layers     ###
+#################################
+
+cubicchunks.gui.cubicgen.select_block=Select block
+cubicchunks.gui.cubicgen.add_layer=Add layer ^
+cubicchunks.gui.cubicgen.remove_layer=Remove layer
+cubicchunks.gui.cubicgen.to_exclusively=To (exclusively):
+cubicchunks.gui.cubicgen.from=From:
+
+#################################
+###   basic terrain settings  ###
+#################################
+
+cubicchunks.gui.cubicgen.water_level=Water Level
+cubicchunks.gui.cubicgen.caves=Caves
+cubicchunks.gui.cubicgen.strongholds=Strongholds
+cubicchunks.gui.cubicgen.villages=Villages
+cubicchunks.gui.cubicgen.mineshafts=Mineshafts
+cubicchunks.gui.cubicgen.temples=Temples
+cubicchunks.gui.cubicgen.oceanMonuments=Ocean Monuments
+cubicchunks.gui.cubicgen.woodlandMansions=Woodland Mansions
+cubicchunks.gui.cubicgen.ravines=Ravines
+cubicchunks.gui.cubicgen.dungeons=Dungeons
+cubicchunks.gui.cubicgen.dungeonCount=Dungeon Count
+cubicchunks.gui.cubicgen.waterLakes=Water Lakes
+cubicchunks.gui.cubicgen.waterLakeRarity=Water Lake Rarity
+cubicchunks.gui.cubicgen.lavaLakes=Lava Lakes
+cubicchunks.gui.cubicgen.lavaLakeRarity=Lava Lake Rarity
+cubicchunks.gui.cubicgen.lavaOceans=Lava Oceans
+cubicchunks.gui.cubicgen.biome=Biome
+cubicchunks.gui.cubicgen.biomeSize=Biome Size
+cubicchunks.gui.cubicgen.riverSize=River Size
+
+#################################
+###  ore generation settings  ###
+#################################
+
+cubicchunks.gui.cubicgen.add_ore=Add ore
+cubicchunks.gui.cubicgen.delete=Delete
+
+cubicchunks.gui.cubicgen.spawn_size=Spawn Size:
+cubicchunks.gui.cubicgen.spawn_tries=Spawn Tries:
+cubicchunks.gui.cubicgen.spawn_probability=Probability:
+cubicchunks.gui.cubicgen.spawn_maxprobability=Max. Probability:
+cubicchunks.gui.cubicgen.spawn_range=Height %.2f%%%% to %.2f%%%%
+
+cubicchunks.gui.cubicgen.mean_height=Center of first Belt:
+cubicchunks.gui.cubicgen.height_std_dev=Height Std. Dev. Factor:
+cubicchunks.gui.cubicgen.spacing_height=Height Spacing:
+#################################
+### advanced terrain settings ###
+#################################
+
+cubicchunks.gui.cubicgen.expected_heights_group=Expected heights
+cubicchunks.gui.cubicgen.lock_expected_heights=Lock expected heights
+cubicchunks.gui.cubicgen.actual_height=Actual Height
+cubicchunks.gui.cubicgen.expected_base_height=Expected base height
+cubicchunks.gui.cubicgen.expected_height_variation=Expected height variation
+cubicchunks.gui.cubicgen.keep_preview_visible=Keep preview visible
+cubicchunks.gui.cubicgen.biome_scale=Preview biome size
+cubicchunks.gui.cubicgen.biome_offset=Preview biome offset
+cubicchunks.gui.cubicgen.lock_xz_together=Set period Z=X
+cubicchunks.gui.cubicgen.preview_horizontal_axis=Show horizontal axis
+cubicchunks.gui.cubicgen.preview_disabled=(preview disabled)
+cubicchunks.gui.cubicgen.show_preview=Show preview
+
+cubicchunks.gui.cubicgen.height_variation_group=Height variation:
+cubicchunks.gui.cubicgen.height_variation_factor_slider=Factor
+cubicchunks.gui.cubicgen.height_variation_offset_slider=Offset
+cubicchunks.gui.cubicgen.height_variation_special_factor_slider=Special
+
+cubicchunks.gui.cubicgen.height_group=Height:
+cubicchunks.gui.cubicgen.height_factor=Factor
+cubicchunks.gui.cubicgen.height_offset=Offset
+
+cubicchunks.gui.cubicgen.depth_noise_group=Depth noise:
+cubicchunks.gui.cubicgen.depth_noise_factor=Factor
+cubicchunks.gui.cubicgen.depth_noise_offset=Offset
+cubicchunks.gui.cubicgen.depth_noise_period_x=Period X:
+cubicchunks.gui.cubicgen.depth_noise_period_z=Period Z:
+cubicchunks.gui.cubicgen.depth_noise_octaves=Octaves
+
+cubicchunks.gui.cubicgen.selector_noise_group=Selector noise:
+cubicchunks.gui.cubicgen.selector_noise_factor=Factor
+cubicchunks.gui.cubicgen.selector_noise_offset=Offset
+cubicchunks.gui.cubicgen.selector_noise_period_x=Period X:
+cubicchunks.gui.cubicgen.selector_noise_period_y=Period Y:
+cubicchunks.gui.cubicgen.selector_noise_period_z=Period Z:
+cubicchunks.gui.cubicgen.selector_noise_octaves=Octaves
+
+cubicchunks.gui.cubicgen.low_noise_group=Low noise:
+cubicchunks.gui.cubicgen.low_noise_factor=Factor
+cubicchunks.gui.cubicgen.low_noise_offset=Offset
+cubicchunks.gui.cubicgen.low_noise_period_x=Period X:
+cubicchunks.gui.cubicgen.low_noise_period_y=Period Y:
+cubicchunks.gui.cubicgen.low_noise_period_z=Period Z:
+cubicchunks.gui.cubicgen.low_noise_octaves=Octaves
+
+cubicchunks.gui.cubicgen.high_noise_group=High noise:
+cubicchunks.gui.cubicgen.high_noise_factor=Factor
+cubicchunks.gui.cubicgen.high_noise_offset=Offset
+cubicchunks.gui.cubicgen.high_noise_period_x=Period X:
+cubicchunks.gui.cubicgen.high_noise_period_y=Period Y:
+cubicchunks.gui.cubicgen.high_noise_period_z=Period Z:
+cubicchunks.gui.cubicgen.high_noise_octaves=Octaves

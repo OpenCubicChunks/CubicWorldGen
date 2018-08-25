@@ -102,6 +102,11 @@ public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
                             .MALISIS_VERSION + " to use world customization"));
         }
     }
+    
+	@Override
+	public double getHorizon(World world) {
+		return world.getSeaLevel();
+	}
 
     private static class GenLayerDebug extends GenLayer {
 
