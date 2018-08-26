@@ -501,6 +501,24 @@ public class CustomGeneratorSettings {
                 return compound;
             }
         });
+
+
+        fixes.registerFix(FixTypes.LEVEL, new IFixableData() {
+            @Override public int getFixVersion() {
+                return 2;
+            }
+
+            @Override public NBTTagCompound fixTagCompound(NBTTagCompound compound) {
+                if (!compound.getString("generatorName").equals("CustomCubic")) {
+                    return compound;
+                }
+                String generatorOptions = compound.getString("generatorOptions");
+                // this is far simpler that walking through the json and figurring out all the places where it occurs
+                // instead, just do string search and replace. The string shouldn't occur in any other context
+                compound.setString("generatorOptions", generatorOptions.replaceAll("cubicchunks:", CustomCubicMod.MODID + ":"));
+                return compound;
+            }
+        });
     }
 
     public static Gson gson() {

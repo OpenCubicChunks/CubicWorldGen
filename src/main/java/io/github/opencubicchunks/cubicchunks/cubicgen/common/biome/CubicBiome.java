@@ -76,7 +76,7 @@ public final class CubicBiome extends IForgeRegistryEntry.Impl<CubicBiome> {
         REGISTRY = new RegistryBuilder<CubicBiome>()
                 .setType(CubicBiome.class)
                 .setIDRange(0, 256)
-                .setName(new ResourceLocation(CustomCubicMod.MODID_OLD, "cubic_biome_registry"))
+                .setName(new ResourceLocation(CustomCubicMod.MODID, "cubic_biome_registry"))
                 .create();
     }
 
@@ -111,7 +111,7 @@ public final class CubicBiome extends IForgeRegistryEntry.Impl<CubicBiome> {
                         .createForBiome(biome)
                         .defaults()
                         .defaultDecorators()
-                        .setRegistryName(new ResourceLocation(CustomCubicMod.MODID_OLD, "unregistered_" + biome.getRegistryName().getResourcePath()))
+                        .setRegistryName(new ResourceLocation(CustomCubicMod.MODID, "unregistered_" + biome.getRegistryName().getResourcePath()))
                         .create();
                 biomeMapping.put(biome, newBiome);
             }

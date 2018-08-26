@@ -25,13 +25,9 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 
 import com.google.common.base.Preconditions;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.SelectBlockGui;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIFlatTerrainLayer;
 
 import java.util.Collection;
 
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBlockStateButton;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIItemGrid;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.minecraft.block.state.IBlockState;

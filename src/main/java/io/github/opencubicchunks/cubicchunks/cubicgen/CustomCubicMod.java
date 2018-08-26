@@ -26,7 +26,6 @@ package io.github.opencubicchunks.cubicchunks.cubicgen;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome.oceanWaterReplacer;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome.terrainShapeReplacer;
 
-import io.github.opencubicchunks.cubicchunks.api.util.GeneratorSettingsFix;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer.MesaSurfaceReplacer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer.MutatedSavannaSurfaceReplacer;
@@ -37,9 +36,7 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGenerato
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.DefaultDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.DesertDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.ForestDecorator;
-import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.HillsDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.JungleDecorator;
-import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.MesaDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.PlainsDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.SavannaDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.SnowBiomeDecorator;
@@ -88,8 +85,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class CustomCubicMod {
 
     public static final String MODID = "cubicgen";
-    @Deprecated // for compatibility where old one was used in config and for registering stuff
-    public static final String MODID_OLD = "cubicchunks";
 
     public static final String MALISIS_VERSION = "@@MALISIS_VERSION@@";
 
@@ -102,10 +97,6 @@ public class CustomCubicMod {
         LOGGER = e.getModLog();
         ConversionUtils.initFlowNoiseHack();
 
-        // TODO: redo DataFixers
-        GeneratorSettingsFix.addFixableWorldType(FlatCubicWorldType.create());
-        GeneratorSettingsFix.addFixableWorldType(CustomCubicWorldType.create());
-        GeneratorSettingsFix.addFixableWorldType(DebugWorldType.create());
         FlatCubicWorldType.create();
         CustomCubicWorldType.create();
         DebugWorldType.create();

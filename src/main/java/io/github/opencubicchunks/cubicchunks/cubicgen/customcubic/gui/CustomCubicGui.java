@@ -58,8 +58,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public class CustomCubicGui extends ExtraGui {
 
-    public static final GuiTexture CUSTOM_TEXTURE = new GuiTexture(new ResourceLocation(CustomCubicMod.MODID_OLD, "textures/gui/gui.png"));
-
     public static final int WIDTH_1_COL = 6;
     public static final int WIDTH_2_COL = 3;
     public static final int WIDTH_3_COL = 2;

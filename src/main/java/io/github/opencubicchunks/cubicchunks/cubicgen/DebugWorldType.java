@@ -70,6 +70,10 @@ public class DebugWorldType extends WorldType implements ICubicWorldType {
         return new IntRange(0, 256);
     }
 
+    @Override public boolean hasCubicGeneratorForWorld(World world) {
+        return true;
+    }
+
     @Override public ICubeGenerator createCubeGenerator(World world) {
         return new MultiGridGenerator(world)
                 .gridSize(blockToCube(2048))

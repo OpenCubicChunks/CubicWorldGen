@@ -40,13 +40,11 @@ plugins {
     base
     java
     maven
-}
-
-apply {
-    plugin<ForgePlugin>()
-    plugin<MixinGradlePlugin>()
-    plugin<LicensePlugin>()
-    plugin<ShadowPlugin>()
+    id("net.minecraftforge.gradle.forge").version("2.3-SNAPSHOT")
+    id("org.spongepowered.mixin").version("0.5-SNAPSHOT")
+    id("com.github.johnrengelman.shadow").version("2.0.4")
+    id("com.github.hierynomus.license").version("0.14.0")
+    id("org.ajoberstar.grgit").version("3.0.0-beta.1")
 }
 
 // TODO: Reduce duplication of buildscript code between CC projects?
@@ -68,18 +66,18 @@ val mainSourceSet = sourceSets["main"]
 
 val minecraft = the<ForgeExtension>()
 
-configure<JavaPluginConvention> {
+java {
     sourceCompatibility = JavaVersion.VERSION_1_8
 }
 
-configure<ForgeExtension> {
+minecraft {
     version = theForgeVersion
     runDir = "run"
     mappings = theMappingsVersion
     isUseDepAts = true
 }
 
-configure<LicenseExtension> {
+license {
     val ext = (this as HasConvention).convention.extraProperties
     ext["project"] = projectName
     ext["year"] = licenseYear
@@ -94,7 +92,7 @@ configure<LicenseExtension> {
     mapping(mapOf("java" to "SLASHSTAR_STYLE"))
 }
 
-configure<MixinExtension> {
+mixin {
     add(sourceSets["main"], "cubicgen.refmap.json")
 }
 
@@ -127,7 +125,8 @@ dependencies {
     }
 
     shade("com.flowpowered:flow-noise:1.0.1-SNAPSHOT")
-    deobfCompile("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0.15.0-SNAPSHOT")
+    deobfCompile("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0-SNAPSHOT")
+    runtime("io.github.opencubicchunks:cubicchunks:1.12.2-0.0-SNAPSHOT")
     // provided by cubicchunks implementation
     compileOnly("org.spongepowered:mixin:0.7.5-SNAPSHOT") {
         isTransitive = false
