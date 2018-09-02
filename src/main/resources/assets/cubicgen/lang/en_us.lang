@@ -1,0 +1,133 @@
+generator.VanillaCubic=Vanilla Cubic
+generator.FlatCubic=Flat Cubic
+generator.CustomCubic=Custom Cubic
+
+#################################
+###        general gui        ###
+#################################
+
+cubicgen.gui.cubicgen.previous_page=Previous
+cubicgen.gui.cubicgen.next_page=Next
+cubicgen.gui.cubicgen.done=Done
+cubicgen.gui.cubicgen.presets=Presets
+
+cubicgen.gui.cubicgen.basic_tab_title=Customize World Settings%nPage 1 of 3%nBasic Settings
+cubicgen.gui.cubicgen.ores_tab_title=Customize World Settings%nPage 2 of 3%nOre Settings
+cubicgen.gui.cubicgen.advanced_tab_title=Customize World Settings%nPage 3 of 3%nAdvanced Settings
+
+cubicgen.gui.cubicgen.layers_title=Customize World Settings%nPage 1 of 1%nLayers
+
+#################################
+###          presets          ###
+#################################
+
+cubicgen.gui.cubicgen.presets.done=Done
+cubicgen.gui.cubicgen.presets.cancel=Cancel
+
+#################################
+###   flat terrain layers     ###
+#################################
+
+cubicgen.gui.cubicgen.select_block=Select block
+cubicgen.gui.cubicgen.add_layer=Add layer ^
+cubicgen.gui.cubicgen.remove_layer=Remove layer
+cubicgen.gui.cubicgen.to_exclusively=To (exclusively):
+cubicgen.gui.cubicgen.from=From:
+
+#################################
+###   basic terrain settings  ###
+#################################
+
+cubicgen.gui.cubicgen.water_level=Water Level
+cubicgen.gui.cubicgen.caves=Caves
+cubicgen.gui.cubicgen.strongholds=Strongholds
+cubicgen.gui.cubicgen.villages=Villages
+cubicgen.gui.cubicgen.mineshafts=Mineshafts
+cubicgen.gui.cubicgen.temples=Temples
+cubicgen.gui.cubicgen.oceanMonuments=Ocean Monuments
+cubicgen.gui.cubicgen.woodlandMansions=Woodland Mansions
+cubicgen.gui.cubicgen.ravines=Ravines
+cubicgen.gui.cubicgen.dungeons=Dungeons
+cubicgen.gui.cubicgen.dungeonCount=Dungeon Count
+cubicgen.gui.cubicgen.waterLakes=Water Lakes
+cubicgen.gui.cubicgen.waterLakeRarity=Water Lake Rarity
+cubicgen.gui.cubicgen.lavaLakes=Lava Lakes
+cubicgen.gui.cubicgen.lavaLakeRarity=Lava Lake Rarity
+cubicgen.gui.cubicgen.lavaOceans=Lava Oceans
+cubicgen.gui.cubicgen.biome=Biome
+cubicgen.gui.cubicgen.biomeSize=Biome Size
+cubicgen.gui.cubicgen.riverSize=River Size
+
+#################################
+###  ore generation settings  ###
+#################################
+
+cubicgen.gui.cubicgen.add_ore=Add ore
+cubicgen.gui.cubicgen.delete=Delete
+
+cubicgen.gui.cubicgen.spawn_size=Spawn Size:
+cubicgen.gui.cubicgen.spawn_tries=Spawn Tries:
+cubicgen.gui.cubicgen.spawn_probability=Probability:
+cubicgen.gui.cubicgen.spawn_maxprobability=Max. Probability:
+cubicgen.gui.cubicgen.spawn_range=Height %.2f%%%% to %.2f%%%%
+
+cubicgen.gui.cubicgen.mean_height=Center of first Belt:
+cubicgen.gui.cubicgen.height_std_dev=Height Std. Dev. Factor:
+cubicgen.gui.cubicgen.spacing_height=Height Spacing:
+#################################
+### advanced terrain settings ###
+#################################
+
+cubicgen.gui.cubicgen.expected_heights_group=Expected heights
+cubicgen.gui.cubicgen.lock_expected_heights=Lock expected heights
+cubicgen.gui.cubicgen.actual_height=Actual Height
+cubicgen.gui.cubicgen.expected_base_height=Expected base height
+cubicgen.gui.cubicgen.expected_height_variation=Expected height variation
+
+cubicgen.gui.cubicgen.keep_preview_visible=Keep preview visible
+cubicgen.gui.cubicgen.biome_scale=Preview biome size
+cubicgen.gui.cubicgen.biome_offset=Preview biome offset
+cubicgen.gui.cubicgen.lock_xz_together=Set period Z=X
+cubicgen.gui.cubicgen.preview_horizontal_axis=Show horizontal axis
+cubicgen.gui.cubicgen.preview_disabled=(preview disabled)
+cubicgen.gui.cubicgen.show_preview=Show preview
+
+cubicgen.gui.cubicgen.height_variation_group=Height variation:
+cubicgen.gui.cubicgen.height_variation_factor_slider=Factor
+cubicgen.gui.cubicgen.height_variation_offset_slider=Offset
+cubicgen.gui.cubicgen.height_variation_special_factor_slider=Special
+
+cubicgen.gui.cubicgen.height_group=Height:
+cubicgen.gui.cubicgen.height_factor=Factor
+cubicgen.gui.cubicgen.height_offset=Offset
+
+cubicgen.gui.cubicgen.depth_noise_group=Depth noise:
+cubicgen.gui.cubicgen.depth_noise_factor=Factor
+cubicgen.gui.cubicgen.depth_noise_offset=Offset
+cubicgen.gui.cubicgen.depth_noise_period_x=Period X:
+cubicgen.gui.cubicgen.depth_noise_period_z=Period Z:
+cubicgen.gui.cubicgen.depth_noise_octaves=Octaves
+
+cubicgen.gui.cubicgen.selector_noise_group=Selector noise:
+cubicgen.gui.cubicgen.selector_noise_factor=Factor
+cubicgen.gui.cubicgen.selector_noise_offset=Offset
+cubicgen.gui.cubicgen.selector_noise_period_x=Period X:
+cubicgen.gui.cubicgen.selector_noise_period_y=Period Y:
+cubicgen.gui.cubicgen.selector_noise_period_z=Period Z:
+cubicgen.gui.cubicgen.selector_noise_octaves=Octaves
+
+cubicgen.gui.cubicgen.low_noise_group=Low noise:
+cubicgen.gui.cubicgen.low_noise_factor=Factor
+cubicgen.gui.cubicgen.low_noise_offset=Offset
+cubicgen.gui.cubicgen.low_noise_period_x=Period X:
+cubicgen.gui.cubicgen.low_noise_period_y=Period Y:
+cubicgen.gui.cubicgen.low_noise_period_z=Period Z:
+cubicgen.gui.cubicgen.low_noise_octaves=Octaves
+
+cubicgen.gui.cubicgen.high_noise_group=High noise:
+cubicgen.gui.cubicgen.high_noise_factor=Factor
+cubicgen.gui.cubicgen.high_noise_offset=Offset
+cubicgen.gui.cubicgen.high_noise_period_x=Period X:
+cubicgen.gui.cubicgen.high_noise_period_y=Period Y:
+cubicgen.gui.cubicgen.high_noise_period_z=Period Z:
+cubicgen.gui.cubicgen.high_noise_octaves=Octaves

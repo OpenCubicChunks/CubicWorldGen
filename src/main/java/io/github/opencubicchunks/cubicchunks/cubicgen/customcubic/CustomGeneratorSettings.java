@@ -23,6 +23,8 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic;
 
+import static io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod.MODID;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -175,9 +177,9 @@ public class CustomGeneratorSettings {
     }
 
     public BiomeBlockReplacerConfig createBiomeBlockReplacerConfig() {
-        replacerConfig.setDefault(CustomCubicMod.MODID, "water_level", (double) this.waterLevel);
-        replacerConfig.setDefault(CustomCubicMod.MODID, "height_scale", (double) this.expectedHeightVariation);
-        replacerConfig.setDefault(CustomCubicMod.MODID, "height_offset", (double) this.expectedBaseHeight);
+        replacerConfig.setDefault(MODID, "water_level", (double) this.waterLevel);
+        replacerConfig.setDefault(MODID, "height_scale", (double) this.expectedHeightVariation);
+        replacerConfig.setDefault(MODID, "height_offset", (double) this.expectedBaseHeight);
         return replacerConfig;
     }
 
@@ -466,8 +468,8 @@ public class CustomGeneratorSettings {
                     {
                         JsonObject defaults = new JsonObject();
                         {
-                            defaults.add("cubicchunks:horizontal_gradient_depth_decrease_weight", new JsonPrimitive(1.0f));
-                            defaults.add("cubicchunks:height_offset", new JsonPrimitive(offset));
+                            defaults.add(MODID + ":horizontal_gradient_depth_decrease_weight", new JsonPrimitive(1.0f));
+                            defaults.add(MODID + ":height_offset", new JsonPrimitive(offset));
                             JsonObject terrainfill = new JsonObject();
                             {
                                 JsonObject properties = new JsonObject();
@@ -483,13 +485,13 @@ public class CustomGeneratorSettings {
                                 oceanblock.add("Properties", properties);
                                 oceanblock.add("Name", new JsonPrimitive("minecraft:water"));
                             }
-                            defaults.add("cubicchunks:biome_fill_depth_offset", new JsonPrimitive(3.0f));
-                            defaults.add("cubicchunks:biome_fill_noise_octaves", new JsonPrimitive(4.0f));
-                            defaults.add("cubicchunks:height_scale", new JsonPrimitive(factor));
-                            defaults.add("cubicchunks:biome_fill_depth_factor", new JsonPrimitive(2.3333333333333335f));
-                            defaults.add("cubicchunks:mesa_depth", new JsonPrimitive(16.0f));
-                            defaults.add("cubicchunks:water_level", root.get("waterLevel"));
-                            defaults.add("cubicchunks:biome_fill_noise_freq", new JsonPrimitive(0.0078125f));
+                            defaults.add(MODID + ":biome_fill_depth_offset", new JsonPrimitive(3.0f));
+                            defaults.add(MODID + ":biome_fill_noise_octaves", new JsonPrimitive(4.0f));
+                            defaults.add(MODID + ":height_scale", new JsonPrimitive(factor));
+                            defaults.add(MODID + ":biome_fill_depth_factor", new JsonPrimitive(2.3333333333333335f));
+                            defaults.add(MODID + ":mesa_depth", new JsonPrimitive(16.0f));
+                            defaults.add(MODID + ":water_level", root.get("waterLevel"));
+                            defaults.add(MODID + ":biome_fill_noise_freq", new JsonPrimitive(0.0078125f));
                         }
                         replacerConf.add("defaults", defaults);
                         replacerConf.add("overrides", new JsonObject());
@@ -515,7 +517,7 @@ public class CustomGeneratorSettings {
                 String generatorOptions = compound.getString("generatorOptions");
                 // this is far simpler that walking through the json and figurring out all the places where it occurs
                 // instead, just do string search and replace. The string shouldn't occur in any other context
-                compound.setString("generatorOptions", generatorOptions.replaceAll("cubicchunks:", CustomCubicMod.MODID + ":"));
+                compound.setString("generatorOptions", generatorOptions.replaceAll(MODID + ":", MODID + ":"));
                 return compound;
             }
         });

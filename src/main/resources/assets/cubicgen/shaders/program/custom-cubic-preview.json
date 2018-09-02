@@ -4,8 +4,8 @@
         "srcrgb": "one",
         "dstrgb": "zero"
     },
-    "vertex": "cubicchunks:custom-cubic-preview",
-    "fragment": "cubicchunks:custom-cubic-preview",
+    "vertex": "cubicgen:custom-cubic-preview",
+    "fragment": "cubicgen:custom-cubic-preview",
     "attributes": [ ],
     "samplers": [
         { "name": "perlin" },

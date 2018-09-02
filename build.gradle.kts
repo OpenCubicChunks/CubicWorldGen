@@ -11,6 +11,7 @@ import org.ajoberstar.grgit.Grgit
 import org.gradle.api.internal.HasConvention
 import org.spongepowered.asm.gradle.plugins.MixinExtension
 import org.spongepowered.asm.gradle.plugins.MixinGradlePlugin
+import java.util.regex.Pattern
 
 // Gradle repositories and dependencies
 buildscript {
@@ -26,13 +27,6 @@ buildscript {
         maven {
             setUrl("https://plugins.gradle.org/m2/")
         }
-    }
-    dependencies {
-        classpath("org.spongepowered:mixingradle:0.6-SNAPSHOT")
-        classpath("org.ajoberstar:grgit:2.0.0-milestone.1")
-        classpath("gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.13.1")
-        classpath("net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT")
-        classpath("com.github.jengelman.gradle.plugins:shadow:2.0.3")
     }
 }
 
@@ -117,8 +111,6 @@ compile.extendsFrom(shade)
 testCompile.extendsFrom(forgeGradleGradleStart)
 testCompile.extendsFrom(forgeGradleMcDeps)
 
-configurations.all { resolutionStrategy { force("com.google.guava:guava:21.0") } }
-
 dependencies {
     deobfCompile("net.malisis:malisiscore:$malisisCoreVersion") {
         isTransitive = false
@@ -126,7 +118,8 @@ dependencies {
 
     shade("com.flowpowered:flow-noise:1.0.1-SNAPSHOT")
     deobfCompile("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0-SNAPSHOT")
-    runtime("io.github.opencubicchunks:cubicchunks:1.12.2-0.0-SNAPSHOT")
+
+    deobfCompile("io.github.opencubicchunks:cubicchunks:1.12.2-0.0-SNAPSHOT")
     // provided by cubicchunks implementation
     compileOnly("org.spongepowered:mixin:0.7.5-SNAPSHOT") {
         isTransitive = false

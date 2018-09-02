@@ -27,6 +27,7 @@ import static java.lang.Math.round;
 
 import com.google.common.base.Converter;
 import com.google.common.eventbus.Subscribe;
+import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.BiomeOption;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UICheckboxNoAutoSize;
@@ -271,17 +272,17 @@ public class MalisisGuiUtils {
     }
 
     public static String vanillaText(String name) {
-        String unloc = "cubicchunks.gui.cubicgen." + name;
+        String unloc = CustomCubicMod.MODID + ".gui.cubicgen." + name;
         return unloc;
     }
 
     public static String malisisText(String name) {
-        String unloc = "{cubicchunks.gui.cubicgen." + name + "}";
+        String unloc = "{" + CustomCubicMod.MODID + ".gui.cubicgen." + name + "}";
         return unloc;
     }
 
     public static String malisisText(String name, String fmt) {
-        String unloc = "{cubicchunks.gui.cubicgen." + name + "}" + fmt;
+        String unloc = "{" + CustomCubicMod.MODID + ".gui.cubicgen." + name + "}" + fmt;
         return unloc;
     }
 }
