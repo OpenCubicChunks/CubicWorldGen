@@ -466,24 +466,24 @@ class AdvancedTerrainShapeTab {
 		 * - If they happen, turn the Cursor to red, as soon as a value is valid, turn back to default grey.
 		 * - If the customization is left (by pressing Done) when such an error exists, the value resets to default.
 		 */
-		try{
+		try {
 			conf.expectedBaseHeight = Float.parseFloat(this.expectedBaseHeight.getText());
 			this.expectedBaseHeight.setCursorColor(0xD0D0D0);
-		}catch(NumberFormatException e){
+		} catch (NumberFormatException e) {
 			this.expectedBaseHeight.setCursorColor(0xD00000);
 		}
 		
-		try{
+		try {
 			conf.expectedHeightVariation = Float.parseFloat(this.expectedHeightVariation.getText());
 			this.expectedHeightVariation.setCursorColor(0xD0D0D0);
-		}catch(NumberFormatException e){
+		} catch (NumberFormatException e) {
 			this.expectedHeightVariation.setCursorColor(0xD00000);
 		}
 		
-		try{
+		try {
 			conf.actualHeight = Float.parseFloat(this.actualHeight.getText());
 			this.actualHeight.setCursorColor(0xD0D0D0);
-		}catch(NumberFormatException e){
+		} catch (NumberFormatException e) {
 			this.actualHeight.setCursorColor(0xD00000);
 		}
 
