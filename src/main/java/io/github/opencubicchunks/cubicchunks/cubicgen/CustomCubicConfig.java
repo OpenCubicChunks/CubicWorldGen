@@ -21,31 +21,32 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator;
 
-import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
-import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
-import io.github.opencubicchunks.cubicchunks.api.world.ICube;
-import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.WorldGenEntitySpawner;
-import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicConfig;
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
-import net.minecraft.world.biome.Biome;
-
-import java.util.Random;
+package io.github.opencubicchunks.cubicchunks.cubicgen;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import mcp.MethodsReturnNonnullByDefault;
+import net.minecraftforge.common.config.Config;
+import net.minecraftforge.common.config.ConfigManager;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class AnimalsPopulator implements ICubicPopulator {
+@Mod.EventBusSubscriber(modid = CustomCubicMod.MODID)
+@Config(modid = CustomCubicMod.MODID, category = "general")
+public class CustomCubicConfig {
+    @Config.LangKey("cubicgen.config.worldgen_spawn")
+    @Config.Comment("Disabling this will disable spawn of a entities on a cube generation stage. "
+            + "Any mobs and animals will be spawned according regular respawn rules.")
+    public static boolean worldgenMobSpawn = true;
 
-    @Override public void generate(World world, Random random, CubePos pos, Biome biome) {
-    	if(!CustomCubicConfig.worldgenMobSpawn)
-    		return;
-    	WorldGenEntitySpawner.initialWorldGenSpawn((WorldServer) world, biome,
-                pos.getXCenter(), pos.getYCenter(), pos.getZCenter(),
-                ICube.SIZE, ICube.SIZE, ICube.SIZE, random);
+    @SubscribeEvent
+    public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
+        if (event.getModID().equals(CustomCubicMod.MODID)) {
+            ConfigManager.sync(CustomCubicMod.MODID, Config.Type.INSTANCE);
+        }
     }
 }
