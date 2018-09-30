@@ -136,6 +136,7 @@ dependencies {
 fun Jar.setupManifest() {
     manifest {
         attributes["FMLAT"] = "cubicchunks_cubicgen_at.cfg"
+        attributes["FMLCorePluginContainsFMLMod"] = "true"
         attributes["FMLCorePlugin"] = "io.github.opencubicchunks.cubicchunks.cubicgen.asm.CubicGenCoreMod"
         attributes["TweakClass"] = "org.spongepowered.asm.launch.MixinTweaker"
         attributes["TweakOrder"] = "0"
