@@ -80,7 +80,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-@Mod(modid = CustomCubicMod.MODID)
+@Mod(modid = CustomCubicMod.MODID, dependencies = "required:cubicchunks[0.0.853.0,);required:forge@[14.23.3.2658,)")
 @Mod.EventBusSubscriber
 public class CustomCubicMod {
 
