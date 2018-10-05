@@ -41,11 +41,11 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonReader;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
-import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.BiomeBlockReplacerConfig;
 import net.minecraft.block.BlockSilverfish;
 import net.minecraft.block.BlockStone;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.init.Biomes;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.JsonToNBT;
@@ -53,12 +53,14 @@ import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.datafix.DataFixer;
 import net.minecraft.util.datafix.FixTypes;
 import net.minecraft.util.datafix.IFixableData;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.ChunkProviderSettings;
-import net.minecraftforge.common.util.ModFixs;
+import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.fml.server.FMLServerHandler;
 
 import java.io.StringReader;
 import java.lang.reflect.Type;
@@ -69,10 +71,24 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
 public class CustomGeneratorSettings {
+
+    @SidedProxy public static Supplier<DataFixer> fixerSupplierProxy;
+    public static class ClientProxy implements Supplier<DataFixer> {
+        @Override public DataFixer get() {
+            return Minecraft.getMinecraft().getDataFixer();
+        }
+    }
+    public static class ServerProxy implements Supplier<DataFixer> {
+        @Override public DataFixer get() {
+            return FMLServerHandler.instance().getServer().getDataFixer();
+        }
+    }
+
     /**
      * Note: many of these values are unused yet
      */
@@ -300,10 +316,10 @@ public class CustomGeneratorSettings {
         return obj;
     }
 
-    public static void registerDataFixers(ModFixs fixes) {
+    public static void registerDataFixers() {
         // TODO: redo data fixers
 
-        fixes.registerFix(FixTypes.LEVEL, new IFixableData() {
+        fixerSupplierProxy.get().registerFix(FixTypes.LEVEL, new IFixableData() {
             @Override public int getFixVersion() {
                 return 0;
             }
@@ -430,7 +446,7 @@ public class CustomGeneratorSettings {
             }
         });
 
-        fixes.registerFix(FixTypes.LEVEL, new IFixableData() {
+        fixerSupplierProxy.get().registerFix(FixTypes.LEVEL, new IFixableData() {
             @Override public int getFixVersion() {
                 return 1;
             }
@@ -505,7 +521,7 @@ public class CustomGeneratorSettings {
         });
 
 
-        fixes.registerFix(FixTypes.LEVEL, new IFixableData() {
+        fixerSupplierProxy.get().registerFix(FixTypes.LEVEL, new IFixableData() {
             @Override public int getFixVersion() {
                 return 2;
             }

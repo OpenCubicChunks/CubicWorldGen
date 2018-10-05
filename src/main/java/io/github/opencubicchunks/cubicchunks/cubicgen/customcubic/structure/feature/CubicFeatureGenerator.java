@@ -94,9 +94,9 @@ public abstract class CubicFeatureGenerator extends CubicStructureGenerator {
             } catch (Throwable throwable) {
                 CrashReport report = CrashReport.makeCrashReport(throwable, "Exception preparing structure feature");
                 CrashReportCategory category = report.makeCategory("Feature being prepared");
-                category.addDetail("Is feature chunk", () -> this.canSpawnStructureAtCoords(structureX, structureY, structureZ) ? "True" : "False");
+                category.setDetail("Is feature chunk", () -> this.canSpawnStructureAtCoords(structureX, structureY, structureZ) ? "True" : "False");
                 category.addCrashSection("Chunk location", String.format("%d,%d,%d", structureX, structureY, structureZ));
-                category.addDetail("Structure type", () -> this.getClass().getCanonicalName());
+                category.setDetail("Structure type", () -> this.getClass().getCanonicalName());
                 throw new ReportedException(report);
             }
         }

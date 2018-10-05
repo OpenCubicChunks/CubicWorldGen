@@ -35,8 +35,8 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-@Mod.EventBusSubscriber(modid = CustomCubicMod.MODID)
-@Config(modid = CustomCubicMod.MODID, category = "general")
+@Mod.EventBusSubscriber()
+@Config(modid = CustomCubicMod.MODID)
 public class CustomCubicConfig {
     @Config.LangKey("cubicgen.config.worldgen_spawn")
     @Config.Comment("Disabling this will disable spawn of a entities on a cube generation stage. "
@@ -46,7 +46,7 @@ public class CustomCubicConfig {
     @SubscribeEvent
     public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
         if (event.getModID().equals(CustomCubicMod.MODID)) {
-            ConfigManager.sync(CustomCubicMod.MODID, Config.Type.INSTANCE);
+            ConfigManager.load(CustomCubicMod.MODID, Config.Type.INSTANCE);
         }
     }
 }

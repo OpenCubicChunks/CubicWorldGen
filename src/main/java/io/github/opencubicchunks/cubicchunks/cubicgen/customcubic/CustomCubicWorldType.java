@@ -23,15 +23,10 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic;
 
-import io.github.opencubicchunks.cubicchunks.api.worldgen.ICubeGenerator;
-import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorldType;
 import io.github.opencubicchunks.cubicchunks.api.util.IntRange;
-import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
-import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui;
+import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorldType;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.ICubeGenerator;
 import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiCreateWorld;
-import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.init.Biomes;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -40,9 +35,6 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeProvider;
 import net.minecraft.world.gen.layer.GenLayer;
 import net.minecraft.world.gen.layer.IntCache;
-import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -86,21 +78,6 @@ public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
     @Override
     public ICubeGenerator createCubeGenerator(World world) {
         return new CustomTerrainGenerator(world, world.getSeed());
-    }
-
-    public boolean isCustomizable() {
-        return true;
-    }
-
-    @SideOnly(Side.CLIENT)
-    public void onCustomizeButton(Minecraft mc, GuiCreateWorld guiCreateWorld) {
-        if (Loader.isModLoaded("malisiscore")) {
-            new CustomCubicGui(guiCreateWorld).display();
-        } else {
-            mc.displayGuiScreen(new GuiErrorScreen("MalisisCore not found!",
-                    "You need to install MalisisCore version at least " + CustomCubicMod
-                            .MALISIS_VERSION + " to use world customization"));
-        }
     }
 
     private static class GenLayerDebug extends GenLayer {

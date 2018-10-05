@@ -60,8 +60,8 @@ public abstract class BasicCubeGenerator implements ICubeGenerator {
     public void generateColumn(Chunk column) {
         this.columnBiomes = this.world.getBiomeProvider()
                 .getBiomes(this.columnBiomes,
-                        Coords.cubeToMinBlock(column.x),
-                        Coords.cubeToMinBlock(column.z),
+                        Coords.cubeToMinBlock(column.xPosition),
+                        Coords.cubeToMinBlock(column.zPosition),
                         ICube.SIZE, ICube.SIZE);
 
         // Copy ids to column internal biome array

@@ -113,14 +113,10 @@ testCompile.extendsFrom(forgeGradleGradleStart)
 testCompile.extendsFrom(forgeGradleMcDeps)
 
 dependencies {
-    deobfCompile("net.malisis:malisiscore:$malisisCoreVersion") {
-        isTransitive = false
-    }
-
     shade("com.flowpowered:flow-noise:1.0.1-SNAPSHOT")
-    deobfCompile("io.github.opencubicchunks:cubicchunks-api:1.11.2-0.0-SNAPSHOT")
+    deobfCompile("io.github.opencubicchunks:cubicchunks-api:1.10.2-0.0-SNAPSHOT")
 
-    deobfCompile("io.github.opencubicchunks:cubicchunks:1.11.2-0.0-SNAPSHOT")
+    deobfCompile("io.github.opencubicchunks:cubicchunks:1.10.2-0.0-SNAPSHOT")
     // provided by cubicchunks implementation
     shade("org.spongepowered:mixin:0.7.5-SNAPSHOT") {
         isTransitive = false

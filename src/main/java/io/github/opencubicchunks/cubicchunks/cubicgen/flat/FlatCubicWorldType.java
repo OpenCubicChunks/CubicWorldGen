@@ -23,21 +23,13 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.flat;
 
-import io.github.opencubicchunks.cubicchunks.api.worldgen.ICubeGenerator;
-import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorldType;
 import io.github.opencubicchunks.cubicchunks.api.util.IntRange;
-import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.FlatCubicGui;
+import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorldType;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.ICubeGenerator;
 import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiCreateWorld;
-import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldType;
-import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -64,20 +56,5 @@ public class FlatCubicWorldType extends WorldType implements ICubicWorldType {
 
     @Override public boolean hasCubicGeneratorForWorld(World w) {
         return w.provider.getDimension() == 0;
-    }
-
-    public boolean isCustomizable() {
-        return true;
-    }
-
-    @SideOnly(Side.CLIENT)
-    public void onCustomizeButton(Minecraft mc, GuiCreateWorld guiCreateWorld) {
-        if (Loader.isModLoaded("malisiscore")) {
-            new FlatCubicGui(guiCreateWorld).display();
-        } else {
-            mc.displayGuiScreen(new GuiErrorScreen("MalisisCore not found!",
-                    "You need to install MalisisCore version at least " + CustomCubicMod
-                            .MALISIS_VERSION + " to use world customization"));
-        }
     }
 }

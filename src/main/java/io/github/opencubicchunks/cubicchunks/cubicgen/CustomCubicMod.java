@@ -63,7 +63,6 @@ import net.minecraft.world.biome.BiomeSnow;
 import net.minecraft.world.biome.BiomeStoneBeach;
 import net.minecraft.world.biome.BiomeSwamp;
 import net.minecraft.world.biome.BiomeTaiga;
-import net.minecraftforge.common.util.ModFixs;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
@@ -79,7 +78,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-@Mod(modid = CustomCubicMod.MODID, dependencies = "required-after:cubicchunks@[0.0.857.0,);required-after:forge@[13.20.1.2454,)")
+@Mod(modid = CustomCubicMod.MODID, dependencies = "required-after:cubicchunks@[0.0.872.0,);required-after:Forge@[12.18.3.2316,)")
 @Mod.EventBusSubscriber
 public class CustomCubicMod {
 
@@ -100,9 +99,7 @@ public class CustomCubicMod {
         CustomCubicWorldType.create();
         DebugWorldType.create();
 
-
-        ModFixs fixes = FMLCommonHandler.instance().getDataFixer().init(MODID, FIXER_VERSION);
-        CustomGeneratorSettings.registerDataFixers(fixes);
+        CustomGeneratorSettings.registerDataFixers();
     }
 
     @Mod.EventHandler
