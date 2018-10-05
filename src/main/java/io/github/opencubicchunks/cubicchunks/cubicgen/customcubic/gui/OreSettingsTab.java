@@ -95,7 +95,7 @@ class OreSettingsTab {
         for (CustomGeneratorSettings.PeriodicGaussianOreConfig conf : settings.periodicGaussianOres) {
             layout.add(new UIPeriodicGaussianOreOptions(gui, conf));
         }
-        layout.setRightPadding(HORIZONTAL_PADDING + 6);
+        layout.setPadding(HORIZONTAL_PADDING + 6, layout.getVerticalPadding());
         this.container = layout;
     }
 
@@ -261,7 +261,7 @@ class OreSettingsTab {
         }
 
         private void setupBiomeArea(CustomGeneratorSettings.StandardOreConfig config, UIList<Biome, UICheckBox> biomesArea) {
-            biomesArea.setRightPadding(6);
+            biomesArea.setPadding(6, biomesArea.getVerticalPadding());
 
             if (config.biomes != null) {
                 config.biomes.forEach(b -> {
@@ -480,7 +480,7 @@ class OreSettingsTab {
         }
 
         private void setupBiomeArea(PeriodicGaussianOreConfig config, UIList<Biome, UICheckBox> biomesArea) {
-            biomesArea.setRightPadding(6);
+            biomesArea.setPadding(6, biomesArea.getVerticalPadding());
 
             if (config.biomes != null) {
                 config.biomes.forEach(b -> {

@@ -36,10 +36,10 @@ import net.malisis.core.client.gui.component.decoration.UITooltip;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.texture.ITextureObject;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
@@ -71,7 +71,7 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
                         continue;
                     }
                     if (state.getBlock().hasTileEntity(state)
-                            && TileEntityRendererDispatcher.instance.getRenderer(state.getBlock().createTileEntity(null, state)) != null) {
+                            && TileEntityRendererDispatcher.instance.getSpecialRenderer(state.getBlock().createTileEntity(null, state)) != null) {
                         continue; // Don't allow TESR
                     }
                     states.add(state);
@@ -102,7 +102,7 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
     }
 
     @Override public ClipArea getClipArea() {
-        return new ClipArea(this, getLeftPadding(), getTopPadding(), getWidth() - getRightPadding(), getHeight() - getBottomPadding(), false);
+        return new ClipArea(this, getHorizontalPadding(), getVerticalPadding(), getWidth() - getHorizontalPadding(), getHeight() - getVerticalPadding(), false);
     }
 
     @Override public boolean onMouseMove(int lastX, int lastY, int x, int y) {
@@ -154,7 +154,7 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
 
         shape.resetState();
         shape.setSize((int) getAvailableWidth(), (int) getAvailableHeight());
-        shape.setPosition(getLeftPadding(), getTopPadding());
+        shape.setPosition(getHorizontalPadding(), getVerticalPadding());
         renderer.drawShape(shape, rp);
 
         renderer.next();
@@ -184,8 +184,8 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
 
             shape.resetState();
             shape.setSize(UIBlockStateButton.SIZE, UIBlockStateButton.SIZE);
-            shape.setPosition(num * UIBlockStateButton.SIZE + getLeftPadding() + addPadding, (int) (line * UIBlockStateButton.SIZE - pixelsOffset +
-                    getTopPadding()));
+            shape.setPosition(num * UIBlockStateButton.SIZE + getHorizontalPadding() + addPadding, (int) (line * UIBlockStateButton.SIZE - pixelsOffset +
+                    getVerticalPadding()));
             rp.setAlpha(200);
             rp.setColor(0);
             renderer.drawShape(shape, rp);
@@ -228,7 +228,7 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
         GlStateManager.rotate(210.0F, 1.0F, 0.0F, 0.0F);
         GlStateManager.rotate(45.0F, 0.0F, 1.0F, 0.0F);
 
-        BufferBuilder buf = Tessellator.getInstance().getBuffer();
+        VertexBuffer buf = Tessellator.getInstance().getBuffer();
 
         buf.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
 
@@ -255,8 +255,8 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
         int addPadding =
                 (int) Math.round((getAvailableWidth() - getLineStates() * UIBlockStateButton.SIZE) * 0.5);
 
-        mouseX -= getLeftPadding() + addPadding;
-        mouseY -= getTopPadding();
+        mouseX -= getHorizontalPadding() + addPadding;
+        mouseY -= getVerticalPadding();
 
         if (mouseX < 0 || mouseX >= getLineStates() * UIBlockStateButton.SIZE) {
             return -1;

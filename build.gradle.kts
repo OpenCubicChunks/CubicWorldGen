@@ -34,7 +34,7 @@ plugins {
     base
     java
     maven
-    id("net.minecraftforge.gradle.forge").version("2.3-SNAPSHOT")
+    id("net.minecraftforge.gradle.forge").version("2.2-SNAPSHOT")
     id("org.spongepowered.mixin").version("0.5-SNAPSHOT")
     id("com.github.johnrengelman.shadow").version("2.0.4")
     id("com.github.hierynomus.license").version("0.14.0")
@@ -62,6 +62,7 @@ val minecraft = the<ForgeExtension>()
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 minecraft {
@@ -117,9 +118,9 @@ dependencies {
     }
 
     shade("com.flowpowered:flow-noise:1.0.1-SNAPSHOT")
-    deobfCompile("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0-SNAPSHOT")
+    deobfCompile("io.github.opencubicchunks:cubicchunks-api:1.11.2-0.0-SNAPSHOT")
 
-    deobfCompile("io.github.opencubicchunks:cubicchunks:1.12.2-0.0-SNAPSHOT")
+    deobfCompile("io.github.opencubicchunks:cubicchunks:1.11.2-0.0-SNAPSHOT")
     // provided by cubicchunks implementation
     shade("org.spongepowered:mixin:0.7.5-SNAPSHOT") {
         isTransitive = false

@@ -23,21 +23,15 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import io.github.opencubicchunks.cubicchunks.api.util.MathUtil;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
-import net.malisis.core.client.gui.Anchor;
 import net.malisis.core.client.gui.ClipArea;
 import net.malisis.core.client.gui.GuiRenderer;
-import net.malisis.core.client.gui.component.IClipable;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
 import net.malisis.core.client.gui.component.control.UIScrollBar;
 
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.function.IntSupplier;
 
 import javax.annotation.Nullable;
@@ -57,10 +51,6 @@ public abstract class UILayout<T extends UILayout<T>> extends UIContainer<T> {
         this.scrollbar = new UIOptionScrollbar((ExtraGui) getGui(), (T) this, UIScrollBar.Type.VERTICAL);
         this.scrollbar.setVisible(true);
         this.scrollbar.setPosition(6, 0);
-    }
-
-    @Override public T setRightPadding(int padding) {
-        return super.setRightPadding(padding); // scrollbar
     }
 
     /**
@@ -110,14 +100,14 @@ public abstract class UILayout<T extends UILayout<T>> extends UIContainer<T> {
         int w = parent.getWidth() + getRawWidth();
         if (parent instanceof UIContainer) {
             final UIContainer<?> parentContainer = (UIContainer<?>) parent;
-            w -= parentContainer.getLeftPadding() + parentContainer.getRightPadding();
+            w -= parentContainer.getHorizontalPadding() * 2;
         }
 
         return w;
     }
 
     public int getAvailableWidth() {
-        return getWidth() - getLeftPadding() - getRightPadding();
+        return getWidth() - getHorizontalPadding() * 2;
     }
 
     @Override public int getRawHeight() {
@@ -144,7 +134,7 @@ public abstract class UILayout<T extends UILayout<T>> extends UIContainer<T> {
         int h = parent.getHeight() + getRawHeight();
         if (parent instanceof UIContainer) {
             final UIContainer<?> parentContainer = (UIContainer<?>) parent;
-            h -= parentContainer.getTopPadding() + parentContainer.getBottomPadding();
+            h -= parentContainer.getVerticalPadding() * 2;
         }
 
         return h;

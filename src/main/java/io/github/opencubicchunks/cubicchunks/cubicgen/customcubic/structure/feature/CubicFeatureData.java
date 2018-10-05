@@ -24,7 +24,7 @@
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.feature;
 
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.storage.WorldSavedData;
+import net.minecraft.world.WorldSavedData;
 
 import javax.annotation.Nonnull;
 

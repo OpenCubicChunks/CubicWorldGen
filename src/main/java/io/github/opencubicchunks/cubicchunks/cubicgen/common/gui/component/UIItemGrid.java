@@ -48,7 +48,7 @@ public class UIItemGrid extends UIStandardLayout<UIItemGrid, Integer> {
         int lastElementPosX = 0;
         int lastElementPosY = 0;
         for (UIComponent<?> component : components) {
-            if (lastElementPosX + component.getWidth() > this.getWidth() - this.getLeftPadding() - this.getRightPadding()) {
+            if (lastElementPosX + component.getWidth() > this.getWidth() - getHorizontalPadding() * 2) {
                 lastElementPosX = 0;
                 lastElementPosY += component.getHeight();
             }

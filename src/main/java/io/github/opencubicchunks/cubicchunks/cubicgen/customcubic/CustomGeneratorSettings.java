@@ -56,7 +56,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.datafix.FixTypes;
 import net.minecraft.util.datafix.IFixableData;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.gen.ChunkGeneratorSettings;
+import net.minecraft.world.gen.ChunkProviderSettings;
 import net.minecraftforge.common.util.ModFixs;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
@@ -275,7 +275,7 @@ public class CustomGeneratorSettings {
         return settings;
     }
 
-    public static CustomGeneratorSettings fromVanilla(ChunkGeneratorSettings settings) {
+    public static CustomGeneratorSettings fromVanilla(ChunkProviderSettings settings) {
         CustomGeneratorSettings obj = defaults();
 
         obj.lowNoiseFactor = 512.0f / settings.lowerLimitScale;

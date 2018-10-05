@@ -138,7 +138,7 @@ public class UIVerticalTableLayout<T extends UIVerticalTableLayout<T>> extends U
             return;
         }
         updateNoInsetRowHeights();
-        int width = getWidth() - getLeftPadding() - getRightPadding();
+        int width = getWidth() - getHorizontalPadding() * 2;
 
         final double noInsetSizeX = width / (float) columns;
 

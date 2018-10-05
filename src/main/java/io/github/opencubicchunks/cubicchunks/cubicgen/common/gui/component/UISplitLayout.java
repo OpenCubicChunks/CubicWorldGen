@@ -360,11 +360,11 @@ public class UISplitLayout<T extends UISplitLayout<T>> extends UIStandardLayout<
             return;
         }
         if (splitType == Type.STACKED) {
-            component.setSize(getWidth() - getLeftPadding() - getRightPadding(), size);
+            component.setSize(getWidth() - getHorizontalPadding() * 2, size);
             component.setPosition(0, offset);
         } else {
             assert splitType == Type.SIDE_BY_SIDE;
-            component.setSize(size, getHeight() - getTopPadding() - getBottomPadding());
+            component.setSize(size, getHeight() - getVerticalPadding() * 2);
             component.setPosition(offset, 0);
         }
     }
@@ -399,11 +399,11 @@ public class UISplitLayout<T extends UISplitLayout<T>> extends UIStandardLayout<
     }
 
     private int getStartPadding() {
-        return splitType == Type.STACKED ? getTopPadding() : getLeftPadding();
+        return splitType == Type.STACKED ? getVerticalPadding() : getHorizontalPadding();
     }
 
     private int getEndPadding() {
-        return splitType == Type.STACKED ? getBottomPadding() : getRightPadding();
+        return splitType == Type.STACKED ? getVerticalPadding() : getHorizontalPadding();
     }
 
     private int getStartCoordWithPadding() {

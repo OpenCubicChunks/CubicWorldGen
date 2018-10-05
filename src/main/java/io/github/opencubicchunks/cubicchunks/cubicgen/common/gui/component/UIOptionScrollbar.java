@@ -76,8 +76,8 @@ public class UIOptionScrollbar extends UIScrollBar implements IDragTickable {
 
     @Override
     protected void setPosition() {
-        int vp = getScrollable().getRightPadding();
-        int hp = getScrollable().getBottomPadding();
+        int vp = getScrollable().getHorizontalPadding();
+        int hp = getScrollable().getVerticalPadding();
 
         if (type == UIScrollBar.Type.HORIZONTAL) {
             setPosition(-hp + offsetX, vp + offsetY, Anchor.BOTTOM);
@@ -107,7 +107,7 @@ public class UIOptionScrollbar extends UIScrollBar implements IDragTickable {
     public int getWidth() {
         int w = super.getWidth();
         if (type == Type.HORIZONTAL) {
-            w -= getScrollable().getLeftPadding() + getScrollable().getRightPadding();
+            w -= getScrollable().getHorizontalPadding() * 2;
         }
         return w;
     }
@@ -116,7 +116,7 @@ public class UIOptionScrollbar extends UIScrollBar implements IDragTickable {
     public int getHeight() {
         int h = super.getHeight();
         if (type == Type.VERTICAL) {
-            h -= getScrollable().getTopPadding() + getScrollable().getBottomPadding();
+            h -= getScrollable().getVerticalPadding() * 2;
         }
         return h;
 

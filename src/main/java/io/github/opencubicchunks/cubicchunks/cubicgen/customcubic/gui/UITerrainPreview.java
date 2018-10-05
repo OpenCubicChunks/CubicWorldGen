@@ -144,12 +144,12 @@ public class UITerrainPreview extends UIShaderComponent<UITerrainPreview> implem
         }
         DynamicZoomTransform transform;
         if (zoomAnim != null && !zoomAnim.isFinished()) {
-            transform = ((DynamicZoomTransform) zoomAnim.getTransformation());
-            getGui().stopAnimation(zoomAnim);
-        } else {
-            transform = new DynamicZoomTransform();
-            transform.setTarget(getZoom());
+            // can't stop animation in 1.11 and earlier so ignore
+            return true;
         }
+        transform = new DynamicZoomTransform();
+        transform.setTarget(getZoom());
+
         transform.setStart(getZoom());
         transform.scaleTarget(factor);
         transform.forTicks(5).delay(0).offset(x - screenX() - getWidth() / 2, y - screenY() - getHeight() / 2, 0);
@@ -217,7 +217,7 @@ public class UITerrainPreview extends UIShaderComponent<UITerrainPreview> implem
     }
 
     @Override protected void postShaderDraw(GuiRenderer guiRenderer, int mouseX, int mouseY, float partialTicks) {
-        if (!this.isEnabled()) {
+        if (this.isDisabled()) {
             FontOptions fo = FontOptions.builder().color(0xFFFFFF).shadow().build();
             String text = malisisText("preview_disabled");
             float textWidth = MalisisFont.minecraftFont.getStringWidth(text, fo);
@@ -229,7 +229,7 @@ public class UITerrainPreview extends UIShaderComponent<UITerrainPreview> implem
         drawXScale();
         drawYScale();
         drawBiomeNames();
-        renderer.next();// required to workaround
+        getRenderer().next();// required to workaround
     }
 
 
@@ -277,9 +277,9 @@ public class UITerrainPreview extends UIShaderComponent<UITerrainPreview> implem
                 }
                 biomeName += "...";
             }
-            renderer.drawText(MalisisFont.minecraftFont, biomeName, (int) displayX + 2, 0, 0, fo);
+            getRenderer().drawText(MalisisFont.minecraftFont, biomeName, (int) displayX + 2, 0, 0, fo);
         }
-        renderer.next();
+        getRenderer().next();
 
         GlStateManager.disableTexture2D();
         SimpleGuiShape shape = new SimpleGuiShape();
@@ -290,11 +290,11 @@ public class UITerrainPreview extends UIShaderComponent<UITerrainPreview> implem
             shape.setPosition(MathHelper.floor(x), 0);
             rp.setColor(0x77FF77);
             rp.alpha.set(0x80);
-            renderer.drawShape(shape, rp);
+            getRenderer().drawShape(shape, rp);
 
             shape.resetState();
         }
-        renderer.next();
+        getRenderer().next();
         GlStateManager.enableTexture2D();
     }
 
@@ -323,10 +323,10 @@ public class UITerrainPreview extends UIShaderComponent<UITerrainPreview> implem
             int strWidth = (int) (MalisisFont.minecraftFont.getStringWidth(String.valueOf(Math.abs(x)), fo) / 2 +
                     (x < 0 ? MalisisFont.minecraftFont.getStringWidth("-", fo) : 0));
             int strPos = pos - strWidth + 1;
-            renderer.drawText(MalisisFont.minecraftFont, String.valueOf(x), strPos, getHeight() - 10, 0, fo);
+            getRenderer().drawText(MalisisFont.minecraftFont, String.valueOf(x), strPos, getHeight() - 10, 0, fo);
         }
 
-        renderer.next();
+        getRenderer().next();
         GlStateManager.disableTexture2D();
         SimpleGuiShape shape = new SimpleGuiShape();
         shape.setSize(1, 2);
@@ -335,11 +335,11 @@ public class UITerrainPreview extends UIShaderComponent<UITerrainPreview> implem
             int strWidth = (int) (MalisisFont.minecraftFont.getStringWidth(String.valueOf(x), fo) / 2);
             shape.storeState();
             shape.setPosition(pos, getHeight() - 1);
-            renderer.drawShape(shape, rp);
+            getRenderer().drawShape(shape, rp);
 
             shape.resetState();
         }
-        renderer.next();
+        getRenderer().next();
         GlStateManager.enableTexture2D();
     }
 
@@ -361,7 +361,7 @@ public class UITerrainPreview extends UIShaderComponent<UITerrainPreview> implem
             }
             int strHeight = (int) (MalisisFont.minecraftFont.getStringHeight() / 2);
             // use the "-" character as graph mark
-            renderer.drawText(MalisisFont.minecraftFont, "- " + y, 0, pos - strHeight, 0, fo);
+            getRenderer().drawText(MalisisFont.minecraftFont, "- " + y, 0, pos - strHeight, 0, fo);
         }
 
     }
