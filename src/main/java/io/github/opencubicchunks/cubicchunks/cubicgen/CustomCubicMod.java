@@ -72,7 +72,6 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.Loggers;
 
 import java.util.function.Consumer;
 
@@ -80,7 +79,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-@Mod(modid = CustomCubicMod.MODID, dependencies = "required:cubicchunks[0.0.853.0,);required:forge@[14.23.3.2658,)")
+@Mod(modid = CustomCubicMod.MODID, dependencies = "required:cubicchunks@[0.0.853.0,);required:forge@[14.23.3.2658,)")
 @Mod.EventBusSubscriber
 public class CustomCubicMod {
 
