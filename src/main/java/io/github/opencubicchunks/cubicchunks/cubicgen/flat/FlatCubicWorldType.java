@@ -32,9 +32,12 @@ import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiCreateWorld;
 import net.minecraft.client.gui.GuiErrorScreen;
+import net.minecraft.init.Biomes;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldType;
+import net.minecraft.world.biome.BiomeProvider;
+import net.minecraft.world.biome.BiomeProviderSingle;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -56,6 +59,11 @@ public class FlatCubicWorldType extends WorldType implements ICubicWorldType {
     @Override
     public ICubeGenerator createCubeGenerator(World world) {
         return new FlatTerrainProcessor(world);
+    }
+
+    @Override
+    public BiomeProvider getBiomeProvider(World world) {
+        return new BiomeProviderSingle(Biomes.PLAINS);
     }
 
     @Override public IntRange calculateGenerationHeightRange(WorldServer world) {
