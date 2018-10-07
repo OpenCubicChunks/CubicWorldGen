@@ -43,8 +43,11 @@ import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.BiomeBlockReplacerConfig;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockSilverfish;
 import net.minecraft.block.BlockStone;
+import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Biomes;
 import net.minecraft.init.Blocks;
@@ -798,14 +801,37 @@ public class CustomGeneratorSettings {
         public static final BlockStateSerializer INSTANCE = new BlockStateSerializer();
 
         @Override public IBlockState deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            String jsonString = json.toString();
-            NBTTagCompound tag;
-            try {
-                tag = JsonToNBT.getTagFromJson(jsonString);
-            } catch (NBTException e) {
-                throw new JsonSyntaxException(e);
+            // NOTE: in 1.11.2 and earlier, redo it directly using json
+            // because converting json to NBT is broken for strings (it includes quotes)
+            JsonObject obj = json.getAsJsonObject();
+            if (!obj.has("Name")) {
+                return Blocks.AIR.getDefaultState();
+            } else {
+                Block block = (Block) Block.REGISTRY.getObject(new ResourceLocation(obj.get("Name").getAsString()));
+                IBlockState iblockstate = block.getDefaultState();
+
+                if (obj.has("Properties")) {
+                    JsonObject props = obj.get("Properties").getAsJsonObject();
+                    BlockStateContainer blockstatecontainer = block.getBlockState();
+
+                    for (Map.Entry<String, JsonElement> s : props.entrySet()) {
+                        IProperty<?> iproperty = blockstatecontainer.getProperty(s.getKey());
+
+                        if (iproperty != null) {
+                            iblockstate = withPropertyBecauseJavaGenerics(iblockstate, iproperty, s.getValue().getAsString());
+                        }
+                    }
+                }
+
+                return iblockstate;
             }
-            return NBTUtil.readBlockState(tag);
+        }
+
+        private static <T extends Comparable<T>> IBlockState withPropertyBecauseJavaGenerics(
+                IBlockState state, IProperty<T> property, String value) {
+            // this won't compile inline because the IProperty is IProperty<?>
+            // so property<?> and the result of parseValue are different <?>
+            return state.withProperty(property, property.parseValue(value).get());
         }
 
         @Override public JsonElement serialize(IBlockState src, Type typeOfSrc, JsonSerializationContext context) {
