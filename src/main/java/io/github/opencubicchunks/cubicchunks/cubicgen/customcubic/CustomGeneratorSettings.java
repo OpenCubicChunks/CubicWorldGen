@@ -329,6 +329,9 @@ public class CustomGeneratorSettings {
                     return compound;
                 }
                 String generatorOptions = compound.getString("generatorOptions");
+                if (generatorOptions.isEmpty()) {
+                    generatorOptions = new CustomGeneratorSettings().toJson();
+                }
                 Gson gson = gson();
 
                 JsonReader reader = new JsonReader(new StringReader(generatorOptions));
@@ -456,6 +459,9 @@ public class CustomGeneratorSettings {
                     return compound;
                 }
                 String generatorOptions = compound.getString("generatorOptions");
+                if (generatorOptions.isEmpty()) {
+                    generatorOptions = new CustomGeneratorSettings().toJson();
+                }
                 Gson gson = gson();
 
                 JsonReader reader = new JsonReader(new StringReader(generatorOptions));
@@ -531,6 +537,9 @@ public class CustomGeneratorSettings {
                     return compound;
                 }
                 String generatorOptions = compound.getString("generatorOptions");
+                if (generatorOptions.isEmpty()) {
+                    generatorOptions = new CustomGeneratorSettings().toJson();
+                }
                 // this is far simpler that walking through the json and figurring out all the places where it occurs
                 // instead, just do string search and replace. The string shouldn't occur in any other context
                 compound.setString("generatorOptions", generatorOptions.replaceAll(MODID + ":", MODID + ":"));

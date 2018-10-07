@@ -4,8 +4,10 @@
     "refmap": "cubicgen.refmap.json",
     "compatibilityLevel": "JAVA_8",
     "minVersion": "0.6.15-SNAPSHOT",
+    "plugin": "io.github.opencubicchunks.cubicchunks.cubicgen.asm.CubicGenMixinConfig",
     "mixins": [
-        "common.structuregen.MixinStructureStart"
+        "common.structuregen.MixinStructureStart",
+        "common.extras.FarLands"
     ],
     "client": [
     ],
