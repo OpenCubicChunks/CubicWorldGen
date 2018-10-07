@@ -64,7 +64,6 @@ import net.minecraft.world.biome.BiomeStoneBeach;
 import net.minecraft.world.biome.BiomeSwamp;
 import net.minecraft.world.biome.BiomeTaiga;
 import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -78,13 +77,14 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-@Mod(modid = CustomCubicMod.MODID, dependencies = "required-after:cubicchunks@[0.0.872.0,);required-after:Forge@[12.18.3.2316,)")
+@Mod(modid = CustomCubicMod.MODID,
+        dependencies = "required-after:cubicchunks@[0.0.872.0,);required-after:Forge@[12.18.3.2316,)",
+        acceptableRemoteVersions = "*"
+)
 @Mod.EventBusSubscriber
 public class CustomCubicMod {
 
     public static final String MODID = "cubicgen";
-
-    public static final String MALISIS_VERSION = "@@MALISIS_VERSION@@";
 
     public static final int FIXER_VERSION = 2;
     public static final boolean DEBUG_ENABLED = false;

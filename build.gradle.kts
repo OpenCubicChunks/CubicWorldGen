@@ -53,8 +53,6 @@ val theMappingsVersion: String by project
 val licenseYear: String by project
 val projectName: String by project
 
-val malisisCoreVersion: String by project
-
 val sourceSets = the<JavaPluginConvention>().sourceSets
 val mainSourceSet = sourceSets["main"]
 
