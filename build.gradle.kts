@@ -60,6 +60,10 @@ val mainSourceSet = sourceSets["main"]
 
 val minecraft = the<ForgeExtension>()
 
+base {
+    archivesBaseName = "CubicWorldGen"
+}
+
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
 }
