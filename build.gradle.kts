@@ -54,6 +54,7 @@ val licenseYear: String by project
 val projectName: String by project
 
 val malisisCoreVersion: String by project
+val malisisCoreMinVersion: String by project
 
 val sourceSets = the<JavaPluginConvention>().sourceSets
 val mainSourceSet = sourceSets["main"]
@@ -73,6 +74,9 @@ minecraft {
     runDir = "run"
     mappings = theMappingsVersion
     isUseDepAts = true
+
+    replace("@@MALISIS_VERSION@@", malisisCoreMinVersion)
+    replaceIn("io/github/opencubicchunks/cubicchunks/cubicgen/CustomCubicMod.java")
 }
 
 license {

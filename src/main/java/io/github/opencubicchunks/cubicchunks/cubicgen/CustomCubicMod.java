@@ -79,12 +79,15 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-@Mod(modid = CustomCubicMod.MODID, dependencies = "required:cubicchunks@[0.0.853.0,);required:forge@[14.23.3.2658,)")
+@Mod(modid = CustomCubicMod.MODID,
+        dependencies = "required:cubicchunks@[0.0.853.0,);required:forge@[14.23.3.2658,)",
+        acceptableRemoteVersions = "*"
+)
 @Mod.EventBusSubscriber
 public class CustomCubicMod {
 
     public static final String MODID = "cubicgen";
-
+    public static final String VERSION = "@@VERSION@@";
     public static final String MALISIS_VERSION = "@@MALISIS_VERSION@@";
 
     public static final int FIXER_VERSION = 2;
