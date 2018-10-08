@@ -43,13 +43,13 @@ import javax.annotation.Nonnull;
 public class CubicGenMixinConfig implements IMixinConfigPlugin {
 
     @Nonnull
-    public static Logger LOGGER = LogManager.getLogger("CubicChunksMixinConfig");
+    public static Logger LOGGER = LogManager.getLogger("CubicGenMixinConfig");
     private boolean aloowFarLands;
 
     @Override public void onLoad(String s) {
         File folder = new File(".", "config");
         folder.mkdirs();
-        File configFile = new File(folder, "cubicchunks_mixin_config.json");
+        File configFile = new File(folder, "cubicworldgen_mixin_config.json");
         LOGGER.info("Loading configuration file " + configFile.getAbsolutePath());
         try {
             if (!configFile.exists()) {
