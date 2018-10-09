@@ -41,15 +41,15 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public interface IBiomeBlockReplacerProvider {
 
-    IBiomeBlockReplacer create(World world, CubicBiome biome, BiomeBlockReplacerConfig conf);
+    IBiomeBlockReplacer create(World world, BiomeBlockReplacerConfig conf);
 
     Set<ConfigOptionInfo> getPossibleConfigOptions();
 
     static IBiomeBlockReplacerProvider of(SimpleReplacerProvider supplier) {
         return new IBiomeBlockReplacerProvider() {
             @Override
-            public IBiomeBlockReplacer create(World world, CubicBiome biome, BiomeBlockReplacerConfig conf) {
-                return supplier.create(world, biome, conf);
+            public IBiomeBlockReplacer create(World world, BiomeBlockReplacerConfig conf) {
+                return supplier.create(world, conf);
             }
 
             @Override public Set<ConfigOptionInfo> getPossibleConfigOptions() {
@@ -59,12 +59,12 @@ public interface IBiomeBlockReplacerProvider {
     }
 
     static IBiomeBlockReplacerProvider of(IBiomeBlockReplacer replacer) {
-        return IBiomeBlockReplacerProvider.of((world, biome, conf) -> replacer);
+        return IBiomeBlockReplacerProvider.of((world, conf) -> replacer);
     }
 
     @FunctionalInterface
     interface SimpleReplacerProvider {
 
-        IBiomeBlockReplacer create(World world, CubicBiome biome, BiomeBlockReplacerConfig conf);
+        IBiomeBlockReplacer create(World world, BiomeBlockReplacerConfig conf);
     }
 }

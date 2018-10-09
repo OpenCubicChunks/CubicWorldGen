@@ -50,76 +50,68 @@ public class SurfaceDefaultReplacer implements IBiomeBlockReplacer {
     protected static final IBlockState SANDSTONE = Blocks.SANDSTONE.getDefaultState();
 
     private final IBuilder depthNoise;
-    private final int maxPossibleDepth;
-    private IBlockState topBlock;
-    private IBlockState fillerBlock;
     private final double horizontalGradientDepthDecreaseWeight;
     private final double oceanHeight;
+    private final double maxDepth;
 
-    public SurfaceDefaultReplacer(IBlockState topBlock, IBlockState fillerBlock, IBuilder depthNoise,
-            double horizontalGradientDepthDecreaseWeight, double oceanHeight) {
-        this.topBlock = topBlock;
-        this.fillerBlock = fillerBlock;
+    public SurfaceDefaultReplacer(IBuilder depthNoise,
+            double horizontalGradientDepthDecreaseWeight, double oceanHeight, double maxDepth) {
         this.depthNoise = depthNoise;
         this.horizontalGradientDepthDecreaseWeight = horizontalGradientDepthDecreaseWeight;
         this.oceanHeight = oceanHeight;
-        this.maxPossibleDepth = 9;
+        this.maxDepth = maxDepth;
     }
 
     /**
      * Replaces a few top non-air blocks with biome surface and filler blocks
      */
     @Override
-    public IBlockState getReplacedBlock(IBlockState previousBlock, int x, int y, int z, double dx, double dy, double dz, double density) {
+    public IBlockState getReplacedBlock(Biome biome, IBlockState previousBlock,
+            int x, int y, int z, double dx, double dy, double dz, double density) {
         // skip everything below if there is no chance it will actually do something
-        if (density > maxPossibleDepth * abs(dy) || density < 0) {
+        if (density < 0 || density > maxDepth * abs(dy)) {
             return previousBlock;
         }
         if (previousBlock.getBlock() == Blocks.AIR) {
             return previousBlock;
         }
+
         double depth = depthNoise.get(x, 0, z);
-        double densityAdjusted = density / abs(dy);
+
         if (density + dy <= 0) { // if air above
+            double oceanHeight = this.oceanHeight;
             if (y < oceanHeight - 7 - depth) { // if we are deep into the ocean
                 return GRAVEL;
             }
             if (y < oceanHeight - 1) { // if just below the ocean level
-                return filler(previousBlock, depth);
+                return filler(biome, previousBlock, depth);
             }
-            return top(depth);
+            return top(biome, depth);
         } else {
-            double xzSize = Math.sqrt(dx * dx + dz * dz);
-            double dyAdjusted = dy;
-            if (dyAdjusted < 0 && densityAdjusted < depth + 1 - horizontalGradientDepthDecreaseWeight * xzSize / dy) {
-                return fillerBlock;
+            double dyInv = 1.0F / (float) dy;
+            double densityAdjusted = density * abs(dyInv);
+            double xzSize = dx * dx + dz * dz;
+            if (dy < 0 && densityAdjusted < depth + 1 - horizontalGradientDepthDecreaseWeight * xzSize * dyInv) {
+                return biome.fillerBlock;
             }
 
-            if (fillerBlock.getBlock() == Blocks.SAND && depth > 1 && y > oceanHeight - depth) {
-                return fillerBlock.getValue(BlockSand.VARIANT) == BlockSand.EnumType.RED_SAND ? RED_SANDSTONE : SANDSTONE;
+            if (depth > 1 && y > oceanHeight - depth && biome.fillerBlock.getBlock() == Blocks.SAND) {
+                return biome.fillerBlock.getValue(BlockSand.VARIANT) == BlockSand.EnumType.RED_SAND ? RED_SANDSTONE : SANDSTONE;
             }
         }
         return previousBlock;
-    }
-
-    public void setTopBlock(IBlockState topBlock) {
-        this.topBlock = topBlock;
-    }
-
-    public void setFillerBlock(IBlockState fillerBlock) {
-        this.fillerBlock = fillerBlock;
     }
 
     public IBuilder getDepthNoise() {
         return depthNoise;
     }
 
-    private IBlockState filler(IBlockState prev, double depth) {
-        return depth > 0 ? fillerBlock : prev;
+    private IBlockState filler(Biome biome, IBlockState prev, double depth) {
+        return depth > 0 ? biome.fillerBlock : prev;
     }
 
-    private IBlockState top(double depth) {
-        return depth > 0 ? topBlock : Blocks.AIR.getDefaultState();
+    private IBlockState top(Biome biome, double depth) {
+        return depth > 0 ? biome.topBlock : Blocks.AIR.getDefaultState();
     }
 
     public static IBiomeBlockReplacerProvider provider() {
@@ -130,9 +122,10 @@ public class SurfaceDefaultReplacer implements IBiomeBlockReplacer {
             private final ResourceLocation DEPTH_NOISE_OFFSET = CustomCubicMod.location("biome_fill_depth_offset");
             private final ResourceLocation DEPTH_NOISE_FREQUENCY = CustomCubicMod.location("biome_fill_noise_freq");
             private final ResourceLocation DEPTH_NOISE_OCTAVES = CustomCubicMod.location("biome_fill_noise_octaves");
+            private final ResourceLocation DEPTH_CUTOFF = CustomCubicMod.location("filler_depth_cutoff");
 
             @Override
-            public IBiomeBlockReplacer create(World world, CubicBiome cubicBiome, BiomeBlockReplacerConfig conf) {
+            public IBiomeBlockReplacer create(World world, BiomeBlockReplacerConfig conf) {
                 double gradientDec = conf.getDouble(HORIZONTAL_GRADIENT_DEC);
                 double oceanY = conf.getDouble(OCEAN_LEVEL);
 
@@ -140,13 +133,13 @@ public class SurfaceDefaultReplacer implements IBiomeBlockReplacer {
                 double offset = conf.getDouble(DEPTH_NOISE_OFFSET);
                 double freq = conf.getDouble(DEPTH_NOISE_FREQUENCY);
                 int octaves = (int) conf.getDouble(DEPTH_NOISE_OCTAVES);
-                Biome biome = cubicBiome.getBiome();
+                double cutoff = (int) conf.getDouble(DEPTH_CUTOFF);
 
                 IBuilder builder = NoiseSource.perlin()
                         .frequency(freq).octaves(octaves).create()
                         .mul(factor).add(offset)
                         .cached2d(256, v -> v.getX() + v.getZ() * 16);
-                return new SurfaceDefaultReplacer(biome.topBlock, biome.fillerBlock, builder, gradientDec, oceanY);
+                return new SurfaceDefaultReplacer(builder, gradientDec, oceanY, cutoff);
             }
 
             @Override public Set<ConfigOptionInfo> getPossibleConfigOptions() {
@@ -158,7 +151,8 @@ public class SurfaceDefaultReplacer implements IBiomeBlockReplacer {
                         new ConfigOptionInfo(DEPTH_NOISE_FACTOR, ((1 << 3) - 1) / 3.0),
                         new ConfigOptionInfo(DEPTH_NOISE_OFFSET, 3.0),
                         new ConfigOptionInfo(DEPTH_NOISE_FREQUENCY, ConversionUtils.frequencyFromVanilla(0.0625f, 4)),
-                        new ConfigOptionInfo(DEPTH_NOISE_OCTAVES, 4.0)
+                        new ConfigOptionInfo(DEPTH_NOISE_OCTAVES, 4.0),
+                        new ConfigOptionInfo(DEPTH_CUTOFF, 9.0)
                 );
             }
         };

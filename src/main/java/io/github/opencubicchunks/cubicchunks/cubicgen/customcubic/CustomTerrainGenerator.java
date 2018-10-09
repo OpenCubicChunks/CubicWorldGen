@@ -24,8 +24,9 @@
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic;
 
 import static io.github.opencubicchunks.cubicchunks.api.util.Coords.blockToLocal;
+import static io.github.opencubicchunks.cubicchunks.api.util.Coords.cubeToMinBlock;
 
-import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld;
+import com.flowpowered.noise.module.source.Perlin;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.CubeGeneratorsRegistry;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.BasicCubeGenerator;
@@ -37,8 +38,16 @@ import io.github.opencubicchunks.cubicchunks.api.util.Coords;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.IBiomeBlockReplacer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.OceanWaterReplacer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.SurfaceDefaultReplacer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.TerrainShapeReplacer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer.MesaSurfaceReplacer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer.MutatedSavannaSurfaceReplacer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer.SwampWaterWithLilypadReplacer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer.TaigaSurfaceReplacer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.BiomeSource;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.IBuilder;
+import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.NoiseConsumer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.NoiseSource;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.CubicCaveGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.CubicRavineGenerator;
@@ -49,6 +58,7 @@ import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -58,7 +68,6 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.lwjgl.input.Keyboard;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.ToIntFunction;
@@ -117,58 +126,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
     }
 
     private void initGenerator(long seed) {
-        Random rnd = new Random(seed);
-
-        IBuilder selector = NoiseSource.perlin()
-                .seed(rnd.nextLong())
-                .normalizeTo(-1, 1)
-                .frequency(conf.selectorNoiseFrequencyX, conf.selectorNoiseFrequencyY, conf.selectorNoiseFrequencyZ)
-                .octaves(conf.selectorNoiseOctaves)
-                .create()
-                .mul(conf.selectorNoiseFactor).add(conf.selectorNoiseOffset).clamp(0, 1);
-
-        IBuilder low = NoiseSource.perlin()
-                .seed(rnd.nextLong())
-                .normalizeTo(-1, 1)
-                .frequency(conf.lowNoiseFrequencyX, conf.lowNoiseFrequencyY, conf.lowNoiseFrequencyZ)
-                .octaves(conf.lowNoiseOctaves)
-                .create()
-                .mul(conf.lowNoiseFactor).add(conf.lowNoiseOffset);
-
-        IBuilder high = NoiseSource.perlin()
-                .seed(rnd.nextLong())
-                .normalizeTo(-1, 1)
-                .frequency(conf.highNoiseFrequencyX, conf.highNoiseFrequencyY, conf.highNoiseFrequencyZ)
-                .octaves(conf.highNoiseOctaves)
-                .create()
-                .mul(conf.highNoiseFactor).add(conf.highNoiseOffset);
-
-        IBuilder randomHeight2d = NoiseSource.perlin()
-                .seed(rnd.nextLong())
-                .normalizeTo(-1, 1)
-                .frequency(conf.depthNoiseFrequencyX, 0, conf.depthNoiseFrequencyZ)
-                .octaves(conf.depthNoiseOctaves)
-                .create()
-                .mul(conf.depthNoiseFactor).add(conf.depthNoiseOffset)
-                .mulIf(IBuilder.NEGATIVE, -0.3).mul(3).sub(2).clamp(-2, 1)
-                .divIf(IBuilder.NEGATIVE, 2 * 2 * 1.4).divIf(IBuilder.POSITIVE, 8)
-                .mul(0.2 * 17 / 64.0)
-                .cached2d(CACHE_SIZE_2D, HASH_2D);
-
-        IBuilder height = ((IBuilder) biomeSource::getHeight)
-                .mul(conf.heightFactor)
-                .add(conf.heightOffset);
-
-        double specialVariationFactor = conf.specialHeightVariationFactorBelowAverageY;
-        IBuilder volatility = ((IBuilder) biomeSource::getVolatility)
-                .mul((x, y, z) -> height.get(x, y, z) > y ? specialVariationFactor : 1)
-                .mul(conf.heightVariationFactor)
-                .add(conf.heightVariationOffset);
-
-        this.terrainBuilder = selector
-                .lerp(low, high).add(randomHeight2d).mul(volatility).add(height)
-                .sub(volatility.signum().mul((x, y, z) -> y))
-                .cached(CACHE_SIZE_3D, HASH_3D);
+        initNew(seed);
     }
 
     @Override public CubePrimer generateCube(int cubeX, int cubeY, int cubeZ) {
@@ -231,6 +189,67 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         return null;
     }
 
+    private IBuilder perlinLow, perlinHigh, perlinSel, perlinHeight;
+
+    private TerrainShapeReplacer terrainShape;
+    private SurfaceDefaultReplacer surface;
+    private MesaSurfaceReplacer mesaSurface;
+    private MutatedSavannaSurfaceReplacer mutatedSavanna;
+    private TaigaSurfaceReplacer taiga;
+    private OceanWaterReplacer ocean;
+    private SwampWaterWithLilypadReplacer swamp;
+
+    private void initNew(long seed) {
+        Random rnd = new Random(seed);
+
+        double selectorFreqX = conf.selectorNoiseFrequencyX;
+        double selectorFreqY = conf.selectorNoiseFrequencyY;
+        double selectorFreqZ = conf.selectorNoiseFrequencyZ;
+
+        Perlin perlinSel = new Perlin();
+        perlinSel.setOctaveCount((conf.selectorNoiseOctaves));
+        perlinSel.setSeed(rnd.nextInt());
+        this.perlinSel = (x2, y2, z2) -> perlinSel.getValue(x2 * selectorFreqX, y2 * selectorFreqY, z2 * selectorFreqZ);
+        this.perlinSel = this.perlinSel.cached(CACHE_SIZE_3D, HASH_3D);
+
+        double lowFreqX = conf.lowNoiseFrequencyX;
+        double lowFreqY = conf.lowNoiseFrequencyY;
+        double lowFreqZ = conf.lowNoiseFrequencyZ;
+        Perlin perlinLow = new Perlin();
+        perlinLow.setOctaveCount(conf.lowNoiseOctaves);
+        perlinLow.setSeed(rnd.nextInt());
+        this.perlinLow = (x1, y1, z1) -> perlinSel.getValue(x1 * lowFreqX, y1 * lowFreqY, z1 * lowFreqZ);
+        this.perlinLow = this.perlinLow.cached(CACHE_SIZE_3D, HASH_3D);
+
+        double highFreqX = conf.highNoiseFrequencyX;
+        double highFreqY = conf.highNoiseFrequencyY;
+        double highFreqZ = conf.highNoiseFrequencyZ;
+        Perlin perlinHigh = new Perlin();
+        perlinHigh.setOctaveCount(conf.highNoiseOctaves);
+        perlinHigh.setSeed(rnd.nextInt());
+        this.perlinHigh = (x1, y1, z1) -> perlinSel.getValue(x1 * highFreqX, y1 * highFreqY, z1 * highFreqZ);
+        this.perlinHigh = this.perlinHigh.cached(CACHE_SIZE_3D, HASH_3D);
+
+        double depthFreqX = conf.depthNoiseFrequencyX;
+        double depthFreqZ = conf.depthNoiseFrequencyZ;
+        Perlin perlinHeight = new Perlin();
+        perlinHeight.setOctaveCount(conf.depthNoiseOctaves);
+        perlinHeight.setSeed(rnd.nextInt());
+        this.perlinHeight = (x, y, z) -> perlinSel.getValue(x * depthFreqX, 0, z * depthFreqZ);
+        this.perlinHeight = this.perlinHeight.cached2d(CACHE_SIZE_2D, HASH_2D);
+
+        this.terrainShape = (TerrainShapeReplacer) TerrainShapeReplacer.provider().create(world, conf.replacerConfig);
+        this.surface = (SurfaceDefaultReplacer) SurfaceDefaultReplacer.provider().create(world, conf.replacerConfig);
+        this.mesaSurface = (MesaSurfaceReplacer) MesaSurfaceReplacer.provider().create(world, conf.replacerConfig);
+        this.mutatedSavanna = (MutatedSavannaSurfaceReplacer) MutatedSavannaSurfaceReplacer.provider().create(world, conf.replacerConfig);
+        this.taiga = (TaigaSurfaceReplacer) TaigaSurfaceReplacer.provider().create(world, conf.replacerConfig);
+        this.ocean = (OceanWaterReplacer) OceanWaterReplacer.provider().create(world, conf.replacerConfig);
+        this.swamp = (SwampWaterWithLilypadReplacer) SwampWaterWithLilypadReplacer.provider().create(world, conf.replacerConfig);
+    }
+
+    private final double[] densities = new double[5 * 5 * 3];
+    private final double[] values = new double[16 * 16 * 16 * 4];
+
     /**
      * Generate the cube as the specified location
      *
@@ -247,15 +266,257 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
             initGenerator(42);
         }
 
-        BlockPos start = new BlockPos(cubeX * 4, cubeY * 2, cubeZ * 4);
-        BlockPos end = start.add(4, 2, 4);
-        terrainBuilder.forEachScaled(start, end, new Vec3i(4, 8, 4),
-                (x, y, z, dx, dy, dz, v) ->
-                        cubePrimer.setBlockState(
-                                blockToLocal(x), blockToLocal(y), blockToLocal(z),
-                                getBlock(x, y, z, dx, dy, dz, v))
-        );
+        biomeSource.initCube(cubeX, cubeY, cubeZ);
+        initDensity(cubeX, cubeY, cubeZ);
+        fillValues();
+        acceptValues(cubePrimer, cubeX, cubeY, cubeZ);
+    }
 
+    private void acceptValues(CubePrimer cubePrimer, int cubeX, int cubeY, int cubeZ) {
+
+        int cubeMinX = cubeToMinBlock(cubeX);
+        int cubeMinY = cubeToMinBlock(cubeY);
+        int cubeMinZ = cubeToMinBlock(cubeZ);
+
+        double[] data = this.values;
+        for (int localX = 0; localX < 16; localX++) {
+            int blockX = cubeMinX | localX;
+            for (int localZ = 0; localZ < 16; localZ++) {
+                int blockZ = cubeMinZ | localZ;
+                for (int localY = 0; localY < 16; localY++) {
+                    int blockY = cubeMinY | localY;
+                    int idx = (localX << 8 | localZ << 4 | localY) << 2;
+
+                    double dx = data[idx];
+                    double dy = data[idx | 1];
+                    double dz = data[idx | 2];
+                    double v = data[idx | 3];
+
+                    IBlockState state = getBlock(blockX, blockY, blockZ, dx, dy, dz, v);
+                    cubePrimer.setBlockState(localX, localY, localZ, state);
+                }
+            }
+        }
+    }
+
+    private void fillValues() {
+        int xScale = 4;
+        int yScale = 8;
+        int zScale = 4;
+
+        double stepX = 1.0 / xScale;
+        double stepY = 1.0 / yScale;
+        double stepZ = 1.0 / zScale;
+
+        double[] densities = this.densities;
+        double[] values = this.values;
+
+        for (int sectionX = 0; sectionX < 4; ++sectionX) {
+            int x0Idx = sectionX * 5 * 3;
+            int x1Idx = (sectionX + 1) * 5 * 3;
+            int x = sectionX * 4;
+            for (int sectionZ = 0; sectionZ < 4; ++sectionZ) {
+                int z0Idx = sectionZ * 3;
+                int z1Idx = (sectionZ + 1) * 3;
+                int z = sectionZ * 4;
+                for (int sectionY = 0; sectionY < 2; ++sectionY) {
+                    int y0Idx = sectionY;
+                    int y1Idx = sectionY + 1;
+                    int y = sectionY * 8;
+
+                    final double v000 = densities[x0Idx + y0Idx + z0Idx];
+                    final double v001 = densities[x0Idx + y0Idx + z1Idx];
+                    final double v010 = densities[x0Idx + y1Idx + z0Idx];
+                    final double v011 = densities[x0Idx + y1Idx + z1Idx];
+                    final double v100 = densities[x1Idx + y0Idx + z0Idx];
+                    final double v101 = densities[x1Idx + y0Idx + z1Idx];
+                    final double v110 = densities[x1Idx + y1Idx + z0Idx];
+                    final double v111 = densities[x1Idx + y1Idx + z1Idx];
+
+                    double v0y0 = v000;
+                    double v0y1 = v001;
+                    double v1y0 = v100;
+                    double v1y1 = v101;
+                    final double d_dy__0y0 = (v010 - v000) * stepY;
+                    final double d_dy__0y1 = (v011 - v001) * stepY;
+                    final double d_dy__1y0 = (v110 - v100) * stepY;
+                    final double d_dy__1y1 = (v111 - v101) * stepY;
+
+                    for (int yRel = 0; yRel < yScale; ++yRel) {
+                        // int idx = (localx << 8 | localz << 4 | localy) << 2;
+                        int noiseIdxY = (y | yRel) << 2;
+                        double vxy0 = v0y0;
+                        double vxy1 = v0y1;
+                        final double d_dx__xy0 = (v1y0 - v0y0) * stepX;
+                        final double d_dx__xy1 = (v1y1 - v0y1) * stepX;
+
+                        // gradients start
+                        double v0yz = v0y0;
+                        double v1yz = v1y0;
+
+                        final double d_dz__0yz = (v0y1 - v0y0) * stepX;
+                        final double d_dz__1yz = (v1y1 - v1y0) * stepX;
+                        // gradients end
+
+                        for (int xRel = 0; xRel < xScale; ++xRel) {
+                            int noiseIdxX = (x | xRel) << 10;
+                            final double d_dz__xyz = (vxy1 - vxy0) * stepZ;
+                            double vxyz = vxy0;
+
+                            // gradients start
+                            final double d_dx__xyz = (v1yz - v0yz) * stepZ;
+                            // gradients end
+                            for (int zRel = 0; zRel < zScale; ++zRel) {
+                                int noiseIdxZ = (z | zRel) << 6;
+
+                                int idx = noiseIdxX | noiseIdxY | noiseIdxZ;
+                                values[idx] = d_dx__xyz;
+                                values[idx | 2] = d_dz__xyz;
+                                values[idx | 3] = vxyz;
+
+                                vxyz += d_dz__xyz;
+                            }
+
+                            vxy0 += d_dx__xy0;
+                            vxy1 += d_dx__xy1;
+                            // gradients start
+                            v0yz += d_dz__0yz;
+                            v1yz += d_dz__1yz;
+                            // gradients end
+                        }
+
+                        v0y0 += d_dy__0y0;
+                        v0y1 += d_dy__0y1;
+                        v1y0 += d_dy__1y0;
+                        v1y1 += d_dy__1y1;
+
+                    }
+                    // gradients start
+                    double v00z = v000;
+                    double v01z = v010;
+                    double v10z = v100;
+                    double v11z = v110;
+
+                    final double d_dz__00z = (v001 - v000) * stepZ;
+                    final double d_dz__01z = (v011 - v010) * stepZ;
+                    final double d_dz__10z = (v101 - v100) * stepZ;
+                    final double d_dz__11z = (v111 - v110) * stepZ;
+
+                    for (int zRel = 0; zRel < zScale; ++zRel) {
+                        int noiseIdxZ = (z | zRel) << 6;
+
+                        double vx0z = v00z;
+                        double vx1z = v01z;
+
+                        final double d_dx__x0z = (v10z - v00z) * stepX;
+                        final double d_dx__x1z = (v11z - v01z) * stepX;
+
+                        for (int xRel = 0; xRel < xScale; ++xRel) {
+                            int noiseIdxX = (x | xRel) << 10;
+
+                            double d_dy__xyz = (vx1z - vx0z) * stepY;
+
+                            for (int yRel = 0; yRel < yScale; ++yRel) {
+                                int noiseIdxY = (y | yRel) << 2;
+                                int idx = noiseIdxX | noiseIdxY | noiseIdxZ;
+                                values[idx | 1] = d_dy__xyz;
+                            }
+
+                            vx0z += d_dx__x0z;
+                            vx1z += d_dx__x1z;
+                        }
+                        v00z += d_dz__00z;
+                        v01z += d_dz__01z;
+                        v10z += d_dz__10z;
+                        v11z += d_dz__11z;
+                    }
+                    // gradients end
+                }
+            }
+        }
+    }
+
+    private void initDensity(int cubeX, int cubeY, int cubeZ) {
+        double depthOffset = conf.depthNoiseOffset;
+        double depthFactor = conf.depthNoiseFactor;
+
+        double lowOffset = conf.lowNoiseOffset;
+        double lowFactor = conf.lowNoiseFactor;
+
+        double highOffset = conf.highNoiseOffset;
+        double highFactor = conf.highNoiseFactor;
+
+        double selectorOffset = conf.selectorNoiseOffset;
+        double selectorFactor = conf.selectorNoiseFactor;
+
+        double heightFactor = conf.heightFactor;
+        double heightVarFactor = conf.heightVariationFactor;
+
+        double heightOffset = conf.heightOffset;
+        double heightVarOffset = conf.heightVariationOffset;
+
+        double specialVariationFactor = conf.specialHeightVariationFactorBelowAverageY;
+
+        double[] densities = this.densities;
+
+        int minBlockX = cubeX * 16;
+        int minBlockY = cubeY * 16;
+        int minBlockZ = cubeZ * 16;
+
+        for (int xSection = 0; xSection < 5; xSection++) {
+            int xIdx = xSection * 5 * 3;
+            int blockX = (xSection << 2) + minBlockX;
+            for (int zSection = 0; zSection < 5; zSection++) {
+                int xzIdx = zSection * 3 + xIdx;
+                int blockZ = (zSection << 2) + minBlockZ;
+                double depthNoise = perlinHeight.get(blockX, 0, blockZ) * 2 - 1;
+                depthNoise *= depthFactor;
+                depthNoise += depthOffset;
+                if (depthNoise < 0) {
+                    depthNoise *= -0.3;
+                }
+                depthNoise = MathHelper.clamp(depthNoise * 3 - 2, -2, 1);
+                if (depthNoise < 0) {
+                    depthNoise *= 1.0 / (2 * 2 * 1.4);
+                } else {
+                    depthNoise *= 1.0 / 8.0;
+                }
+                depthNoise *= 0.2 * 17 / 64.0;
+
+                double biomeHeight = biomeSource.getHeight(blockX, 0, blockZ) * heightFactor + heightOffset;
+                double biomeVolRaw = biomeSource.getVolatility(blockX, 0, blockZ);
+
+                for (int ySection = 0; ySection < 3; ySection++) {
+                    int xyzIdx = ySection + xzIdx;
+                    int blockY = (ySection << 3) + minBlockY;
+
+                    double biomeVol = biomeVolRaw;
+                    if (blockY < biomeHeight) {
+                        biomeVol *= specialVariationFactor;
+                    }
+                    biomeVol = biomeVol * heightVarFactor + heightVarOffset;
+
+                    double lowNoise = perlinLow.get(blockX, blockY, blockZ) * 2 - 1;
+                    lowNoise = lowNoise * lowFactor + lowOffset;
+
+                    double highNoise = perlinHigh.get(blockX, blockY, blockZ) * 2 - 1;
+                    highNoise = highNoise * highFactor + highOffset;
+
+                    double selectorNoise = perlinSel.get(blockX, blockY, blockZ) * 2 - 1;
+                    selectorNoise = MathHelper.clamp(selectorNoise * selectorFactor + selectorOffset, 0, 1);
+
+                    double density = (highNoise - lowNoise) * selectorNoise + lowNoise + depthNoise;
+                    density = density * biomeVol + biomeHeight;
+
+                    if (biomeVol > 0) {
+                        density -= blockY;
+                    } else {
+                        density += blockY;
+                    }
+                    densities[xyzIdx] = density;
+                }
+            }
+        }
     }
 
     /**
@@ -264,11 +525,39 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
      * @return The block state
      */
     private IBlockState getBlock(int x, int y, int z, double dx, double dy, double dz, double density) {
-        List<IBiomeBlockReplacer> replacers = biomeSource.getReplacers(x, y, z);
+        int replacers = biomeSource.getReplacers(x, y, z);
+        Biome biome = biomeSource.getBiome(x, z);
         IBlockState block = Blocks.AIR.getDefaultState();
-        int size = replacers.size();
-        for (int i = 0; i < size; i++) {
-            block = replacers.get(i).getReplacedBlock(block, x, y, z, dx, dy, dz, density);
+
+        /*
+        SHAPE,
+        SURFACE,
+        MESA_SURFACE,
+        MUTATED_SAVANNA,
+        TAIGA,
+        OCEAN,
+        SWAMP
+        */
+        if ((replacers & 1) != 0) {
+            block = terrainShape.getReplacedBlock(biome, block, x, y, z, dx, dy, dz, density);
+        }
+        if ((replacers & 2) != 0) {
+            block = surface.getReplacedBlock(biome, block, x, y, z, dx, dy, dz, density);
+        }
+        if ((replacers & 4) != 0) {
+            block = mesaSurface.getReplacedBlock(biome, block, x, y, z, dx, dy, dz, density);
+        }
+        if ((replacers & 8) != 0) {
+            block = mutatedSavanna.getReplacedBlock(biome, block, x, y, z, dx, dy, dz, density);
+        }
+        if ((replacers & 16) != 0) {
+            block = taiga.getReplacedBlock(biome, block, x, y, z, dx, dy, dz, density);
+        }
+        if ((replacers & 32) != 0) {
+            block = ocean.getReplacedBlock(biome, block, x, y, z, dx, dy, dz, density);
+        }
+        if ((replacers & 64) != 0) {
+            block = swamp.getReplacedBlock(biome, block, x, y, z, dx, dy, dz, density);
         }
         return block;
     }

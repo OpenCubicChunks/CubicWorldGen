@@ -31,6 +31,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 
 import java.util.Set;
 
@@ -52,8 +53,9 @@ public class OceanWaterReplacer implements IBiomeBlockReplacer {
      * Replaces air blocks below configurable sea level with configurable block (usually water)
      */
     @Override
-    public IBlockState getReplacedBlock(IBlockState previousBlock, int x, int y, int z, double dx, double dy, double dz, double density) {
-        if (previousBlock.getBlock() == Blocks.AIR && y < oceanLevel) {
+    public IBlockState getReplacedBlock(Biome biome, IBlockState previousBlock,
+            int x, int y, int z, double dx, double dy, double dz, double density) {
+        if (y < oceanLevel && previousBlock.getBlock() == Blocks.AIR) {
             return oceanBlock;
         }
         return previousBlock;
@@ -64,7 +66,7 @@ public class OceanWaterReplacer implements IBiomeBlockReplacer {
             private final ResourceLocation OCEAN_BLOCK = CustomCubicMod.location("ocean_block");
             private final ResourceLocation OCEAN_LEVEL = CustomCubicMod.location("water_level");
 
-            @Override public IBiomeBlockReplacer create(World world, CubicBiome biome, BiomeBlockReplacerConfig conf) {
+            @Override public IBiomeBlockReplacer create(World world, BiomeBlockReplacerConfig conf) {
                 IBlockState oceanBlock = conf.getBlockstate(OCEAN_BLOCK);
                 int oceanHeight = (int) Math.round(conf.getDouble(OCEAN_LEVEL));
                 return new OceanWaterReplacer(oceanBlock, oceanHeight);

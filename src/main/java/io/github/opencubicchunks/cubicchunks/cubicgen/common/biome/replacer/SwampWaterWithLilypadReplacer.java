@@ -50,7 +50,8 @@ public class SwampWaterWithLilypadReplacer implements IBiomeBlockReplacer {
         this.seaLevel = seaLevel;
     }
 
-    @Override public IBlockState getReplacedBlock(IBlockState previousBlock, int x, int y, int z, double dx, double dy, double dz, double density) {
+    @Override public IBlockState getReplacedBlock(Biome biome, IBlockState previousBlock,
+            int x, int y, int z, double dx, double dy, double dz, double density) {
         if (y == seaLevel - 1 && previousBlock.getBlock() != Blocks.AIR && density + dy < 0) {
             double noise = noiseGen.getValue(x * 0.25D, z * 0.25D);
             if (noise > 0) { // if noise < 0 && isSurface
@@ -67,7 +68,7 @@ public class SwampWaterWithLilypadReplacer implements IBiomeBlockReplacer {
     }
 
     public static IBiomeBlockReplacerProvider provider() {
-        return IBiomeBlockReplacerProvider.of((world, biome, conf) ->
+        return IBiomeBlockReplacerProvider.of((world, conf) ->
                 new SwampWaterWithLilypadReplacer(Biome.GRASS_COLOR_NOISE, MathHelper.floor(conf.getDouble(OCEAN_LEVEL)))
         );
     }

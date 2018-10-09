@@ -202,6 +202,8 @@ public interface IBuilder {
         final double[][]/*[]*/ gradZ = new double[scale.getX()][scale.getY()]/*[scale.getZ()]*/;
         final double[][][] vals = new double[scale.getX()][scale.getY()][scale.getZ()];
 
+        final double[] data = new double[16*16*16*4];
+
         int xScale = scale.getX();
         int yScale = scale.getY();
         int zScale = scale.getZ();
@@ -216,6 +218,11 @@ public interface IBuilder {
         int maxX = endUnscaled.getX();
         int maxY = endUnscaled.getY();
         int maxZ = endUnscaled.getZ();
+
+        int minBlockX = minX * xScale;
+        int minBlockY = minY * yScale;
+        int minBlockZ = minZ * zScale;
+
         for (int sectionX = minX; sectionX < maxX; ++sectionX) {
             int x = sectionX * xScale;
             for (int sectionZ = minZ; sectionZ < maxZ; ++sectionZ) {
@@ -325,11 +332,34 @@ public interface IBuilder {
                                 double d_dx__xyz = gradX[yRel][zRel];
                                 double d_dy__xyz = gradY[xRel][zRel];
                                 double d_dz__xyz = gradZ[xRel][yRel];
-                                consumer.accept(x + xRel, y + yRel, z + zRel, d_dx__xyz, d_dy__xyz, d_dz__xyz, vxyz);
+
+                                int localx = (x + xRel) & 0xf;
+                                int localy = (y + yRel) & 0xf;
+                                int localz = (z + zRel) & 0xf;
+
+                                int idx = (localx << 8 | localz << 4 | localy) << 2;
+                                data[idx] = d_dx__xyz;
+                                data[idx|1] = d_dy__xyz;
+                                data[idx|2] = d_dz__xyz;
+                                data[idx|3] = vxyz;
                             }
                         }
                     }
                     // gradients end
+                }
+            }
+        }
+        acceptData(consumer, data, minBlockX, minBlockY, minBlockZ);
+    }
+
+    static void acceptData(NoiseConsumer consumer, double[] data, int minBlockX, int minBlockY, int minBlockZ) {
+        for (int localX = 0; localX < 16; localX++) {
+            for (int localZ = 0; localZ < 16; localZ++) {
+                for (int localY = 0; localY < 16; localY++) {
+                    int idx = (localX << 8 | localZ << 4 | localY) << 2;
+                    consumer.accept(minBlockX + localX, minBlockY + localY, minBlockZ + localZ,
+                            data[idx], data[idx|1], data[idx|2], data[idx|3]);
+
                 }
             }
         }

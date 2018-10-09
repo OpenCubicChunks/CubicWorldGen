@@ -34,6 +34,7 @@ import net.minecraft.block.BlockDirt;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 
 import java.util.Set;
 
@@ -50,28 +51,29 @@ public class MutatedSavannaSurfaceReplacer implements IBiomeBlockReplacer {
         this.defaultReplacer = defaultReplacer;
     }
 
-    @Override public IBlockState getReplacedBlock(IBlockState previousBlock, int x, int y, int z, double dx, double dy, double dz, double density) {
-        defaultReplacer.setTopBlock(Blocks.GRASS.getDefaultState());
-        defaultReplacer.setFillerBlock(Blocks.DIRT.getDefaultState());
+    @Override public IBlockState getReplacedBlock(Biome biome, IBlockState previousBlock, int x, int y, int z, double dx, double dy, double dz,
+            double density) {
+        biome.topBlock = Blocks.GRASS.getDefaultState();
+        biome.fillerBlock = Blocks.DIRT.getDefaultState();
 
         double depth = (defaultReplacer.getDepthNoise().get(x, 0, z) - 3) * 3;
 
         if (depth > 1.75D) {
-            defaultReplacer.setTopBlock(Blocks.STONE.getDefaultState());
-            defaultReplacer.setFillerBlock(Blocks.STONE.getDefaultState());
+            biome.topBlock = Blocks.STONE.getDefaultState();
+            biome.fillerBlock = Blocks.STONE.getDefaultState();
         } else if (depth > -0.5D) {
-            defaultReplacer.setTopBlock(COARSE_DIRT);
+            biome.topBlock = COARSE_DIRT;
         }
 
-        return defaultReplacer.getReplacedBlock(previousBlock, x, y, z, dx, dy, dz, density);
+        return defaultReplacer.getReplacedBlock(biome, previousBlock, x, y, z, dx, dy, dz, density);
     }
 
     public static IBiomeBlockReplacerProvider provider() {
         return new IBiomeBlockReplacerProvider() {
             private final IBiomeBlockReplacerProvider parent = SurfaceDefaultReplacer.provider();
 
-            @Override public IBiomeBlockReplacer create(World world, CubicBiome biome, BiomeBlockReplacerConfig conf) {
-                return new MutatedSavannaSurfaceReplacer((SurfaceDefaultReplacer) parent.create(world, biome, conf));
+            @Override public IBiomeBlockReplacer create(World world, BiomeBlockReplacerConfig conf) {
+                return new MutatedSavannaSurfaceReplacer((SurfaceDefaultReplacer) parent.create(world, conf));
             }
 
             @Override public Set<ConfigOptionInfo> getPossibleConfigOptions() {

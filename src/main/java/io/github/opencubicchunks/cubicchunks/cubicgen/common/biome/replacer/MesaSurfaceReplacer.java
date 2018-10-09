@@ -45,8 +45,10 @@ import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeMesa;
 import net.minecraft.world.gen.NoiseGeneratorPerlin;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -65,38 +67,34 @@ public class MesaSurfaceReplacer implements IBiomeBlockReplacer {
 
     private final IBuilder depthNoise;
 
-    private final BiomeMesa biomeMesa;
-
-    private final IBlockState[] clayBands;
-    private final HashCacheDoubles<BlockPos> clayBandsOffsetNoise;
     private final HashCacheDoubles<BlockPos> pillarNoise;
     private final HashCacheDoubles<BlockPos> pillarRoofNoise;
 
-    protected static final IBlockState STAINED_HARDENED_CLAY = Blocks.STAINED_HARDENED_CLAY.getDefaultState();
-    protected static final IBlockState AIR = Blocks.AIR.getDefaultState();
-    protected static final IBlockState STONE = Blocks.STONE.getDefaultState();
-    protected static final IBlockState COARSE_DIRT = Blocks.DIRT.getDefaultState().withProperty(BlockDirt.VARIANT, BlockDirt.DirtType.COARSE_DIRT);
-    protected static final IBlockState GRASS = Blocks.GRASS.getDefaultState();
-    protected static final IBlockState HARDENED_CLAY = Blocks.HARDENED_CLAY.getDefaultState();
-    protected static final IBlockState ORANGE_STAINED_HARDENED_CLAY = STAINED_HARDENED_CLAY.withProperty(BlockColored.COLOR, EnumDyeColor.ORANGE);
+    private static final IBlockState STAINED_HARDENED_CLAY = Blocks.STAINED_HARDENED_CLAY.getDefaultState();
+    private static final IBlockState AIR = Blocks.AIR.getDefaultState();
+    private static final IBlockState STONE = Blocks.STONE.getDefaultState();
+    private static final IBlockState COARSE_DIRT = Blocks.DIRT.getDefaultState().withProperty(BlockDirt.VARIANT, BlockDirt.DirtType.COARSE_DIRT);
+    private static final IBlockState GRASS = Blocks.GRASS.getDefaultState();
+    private static final IBlockState HARDENED_CLAY = Blocks.HARDENED_CLAY.getDefaultState();
+    private static final IBlockState ORANGE_STAINED_HARDENED_CLAY = STAINED_HARDENED_CLAY.withProperty(BlockColored.COLOR, EnumDyeColor.ORANGE);
 
 
-    public MesaSurfaceReplacer(World world, CubicBiome biome, IBuilder builder, double depth, double heightOffset, double heightScale, double waterHeight) {
-        this.biomeMesa = (BiomeMesa) biome.getBiome();
+    private MesaSurfaceReplacer(World world, IBuilder builder, double depth, double heightOffset, double heightScale, double waterHeight) {
         this.mesaDepth = depth;
         this.heightOffset = heightOffset;
         this.heightScale = heightScale;
         this.waterHeight = waterHeight;
 
-        if (biomeMesa.clayBands == null || biomeMesa.worldSeed != world.getSeed()) {
-            biomeMesa.generateBands(world.getSeed());
-        }
-        // so that we don't cause issues when we replace clayBands and scrollOffset noise
-        biomeMesa.worldSeed = world.getSeed();
-        this.clayBands = Arrays.copyOf(biomeMesa.clayBands, biomeMesa.clayBands.length);
-        this.clayBandsOffsetNoise = HashCacheDoubles.create(
-                256, p -> p.getX() * 16 + p.getZ(), p -> biomeMesa.clayBandsOffsetNoise.getValue(p.getX() / 512.0, p.getZ() / 512.0)
-        );
+        ForgeRegistries.BIOMES.getValuesCollection().stream()
+                .filter(x -> x instanceof BiomeMesa)
+                .map(x -> (BiomeMesa) x)
+                .forEach(biomeMesa -> {
+                    if (biomeMesa.clayBands == null || biomeMesa.worldSeed != world.getSeed()) {
+                        biomeMesa.generateBands(world.getSeed());
+                    }
+                    // so that we don't cause issues when we replace clayBands and scrollOffset noise
+                    biomeMesa.worldSeed = world.getSeed();
+                });
 
         Random random = new Random(world.getSeed());
         NoiseGeneratorPerlin pillasPerlin = new NoiseGeneratorPerlin(random, 4);
@@ -110,13 +108,14 @@ public class MesaSurfaceReplacer implements IBiomeBlockReplacer {
         this.depthNoise = builder;
     }
 
-    @Override public IBlockState getReplacedBlock(IBlockState previousBlock, int x, int y, int z, double dx, double dy, double dz, double density) {
+    @Override public IBlockState getReplacedBlock(Biome biome, IBlockState previousBlock,
+            int x, int y, int z, double dx, double dy, double dz, double density) {
         if (density < 0) {
             return previousBlock;
         }
         double depth = depthNoise.get(x, 0, z);
         double origDepthNoise = depth - 3;
-        double pillarHeight = getPillarHeightVanilla(x, z, origDepthNoise);
+        double pillarHeight = getPillarHeightVanilla((BiomeMesa) biome, x, z, origDepthNoise);
         pillarHeight = convertYFromVanilla(pillarHeight);
         if (y < pillarHeight) {
             // simulate pillar density ORed with te terrain
@@ -126,7 +125,7 @@ public class MesaSurfaceReplacer implements IBiomeBlockReplacer {
         boolean coarse = Math.cos(origDepthNoise * Math.PI) > 0.0D;
 
         IBlockState top = STAINED_HARDENED_CLAY;
-        IBlockState filler = biomeMesa.fillerBlock;
+        IBlockState filler = biome.fillerBlock;
 
         if (depth < 0) {
             top = AIR;
@@ -134,11 +133,11 @@ public class MesaSurfaceReplacer implements IBiomeBlockReplacer {
         }
 
         if (y >= waterHeight - 1) {
-            if (biomeMesa.hasForest && y >= convertYFromVanilla(86) + depth * 2) {
+            if (((BiomeMesa) biome).hasForest && y >= convertYFromVanilla(86) + depth * 2) {
                 top = coarse ? COARSE_DIRT : GRASS;
-                filler = getBand(x, y, z);
+                filler = getBand(((BiomeMesa) biome), x, y, z);
             } else if (y > waterHeight + 3 + depth) {
-                filler = getBand(x, y, z);
+                filler = getBand(((BiomeMesa) biome), x, y, z);
                 top = coarse ? HARDENED_CLAY : filler;
             } else {
                 top = filler = ORANGE_STAINED_HARDENED_CLAY;
@@ -162,9 +161,9 @@ public class MesaSurfaceReplacer implements IBiomeBlockReplacer {
         return y;
     }
 
-    private double getPillarHeightVanilla(int x, int z, double depth) {
+    private double getPillarHeightVanilla(BiomeMesa biome, int x, int z, double depth) {
         double pillarHeight = 0.0;
-        if (biomeMesa.brycePillars) {
+        if (biome.brycePillars) {
             double pillarScale = Math.min(abs(depth),
                     this.pillarNoise.get(new BlockPos(x * 0.25D, 0, z * 0.25D)));
 
@@ -184,9 +183,9 @@ public class MesaSurfaceReplacer implements IBiomeBlockReplacer {
         return pillarHeight;
     }
 
-    private IBlockState getBand(int blockX, int blockY, int blockZ) {
-        int offset = (int) Math.round(this.clayBandsOffsetNoise.get(new BlockPos(blockX, 0, blockX)) * 2.0D);
-        return clayBands[(blockY + offset + 64) & 63];
+    private IBlockState getBand(BiomeMesa biome, int blockX, int blockY, int blockZ) {
+        int offset = (int) Math.round(biome.clayBandsOffsetNoise.getValue(blockX*(1/512.0), blockZ*(1/512.0)) * 2.0D);
+        return biome.clayBands[(blockY + offset + 64) & 63];
     }
 
 
@@ -204,7 +203,7 @@ public class MesaSurfaceReplacer implements IBiomeBlockReplacer {
             private final ResourceLocation HEIGHT_SCALE = CustomCubicMod.location("height_scale");
 
             @Override
-            public IBiomeBlockReplacer create(World world, CubicBiome cubicBiome, BiomeBlockReplacerConfig conf) {
+            public IBiomeBlockReplacer create(World world, BiomeBlockReplacerConfig conf) {
                 double oceanY = conf.getDouble(OCEAN_LEVEL);
 
                 double factor = conf.getDouble(DEPTH_NOISE_FACTOR);
@@ -219,7 +218,7 @@ public class MesaSurfaceReplacer implements IBiomeBlockReplacer {
                         .frequency(freq).octaves(octaves).create()
                         .mul(factor).add(offset)
                         .cached2d(256, v -> v.getX() + v.getZ() * 16);
-                return new MesaSurfaceReplacer(world, cubicBiome, builder, depth, heightOffset, heightScale, oceanY);
+                return new MesaSurfaceReplacer(world, builder, depth, heightOffset, heightScale, oceanY);
             }
 
             @Override public Set<ConfigOptionInfo> getPossibleConfigOptions() {

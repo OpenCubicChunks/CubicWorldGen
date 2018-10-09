@@ -25,16 +25,13 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.common.biome;
 
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.world.biome.Biome;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public interface IBiomeBlockReplacer {
-
-    default void onBlockColumnStart() {
-        // method needed by mesa because of a nasty hack in vanilla
-    }
     /**
      * Replaces the given block with another block based on given location, density gradient and density value. Biome
      * block replacers can be chained (output if one replacer used as input to another replacer)
@@ -44,6 +41,7 @@ public interface IBiomeBlockReplacer {
      * <p>
      * Gradient values approximate how the value will change after going 1 block in x/y/z direction.
      *
+     * @param biome biome to replace blocks in
      * @param previousBlock the block that was there before using this replacer
      * @param x the block X coordinate
      * @param y the block Y coordinate
@@ -53,5 +51,15 @@ public interface IBiomeBlockReplacer {
      * @param dz the Z component of density gradient
      * @param density the density value
      */
-    IBlockState getReplacedBlock(IBlockState previousBlock, int x, int y, int z, double dx, double dy, double dz, double density);
+    IBlockState getReplacedBlock(Biome biome, IBlockState previousBlock, int x, int y, int z, double dx, double dy, double dz, double density);
+
+    enum Type {
+        SHAPE,
+        SURFACE,
+        MESA_SURFACE,
+        MUTATED_SAVANNA,
+        TAIGA,
+        OCEAN,
+        SWAMP
+    }
 }

@@ -30,6 +30,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 
 import java.util.Set;
 
@@ -49,7 +50,8 @@ public class TerrainShapeReplacer implements IBiomeBlockReplacer {
      * Replaces any block with greater than 0 density with stone
      */
     @Override
-    public IBlockState getReplacedBlock(IBlockState previousBlock, int x, int y, int z, double dx, double dy, double dz, double density) {
+    public IBlockState getReplacedBlock(Biome biome, IBlockState previousBlock,
+            int x, int y, int z, double dx, double dy, double dz, double density) {
         if (density > 0) {
             return terrainFill;
         }
@@ -61,7 +63,7 @@ public class TerrainShapeReplacer implements IBiomeBlockReplacer {
             private final ResourceLocation TERRAIN_FILL_BLOCK = CustomCubicMod.location("terrain_fill_block");
 
             @Override
-            public IBiomeBlockReplacer create(World world, CubicBiome cubicBiome, BiomeBlockReplacerConfig conf) {
+            public IBiomeBlockReplacer create(World world, BiomeBlockReplacerConfig conf) {
                 IBlockState terrainFill = conf.getBlockstate(TERRAIN_FILL_BLOCK);
                 return new TerrainShapeReplacer(terrainFill);
             }
