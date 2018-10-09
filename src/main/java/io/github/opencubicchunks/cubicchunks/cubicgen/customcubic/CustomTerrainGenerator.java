@@ -31,6 +31,8 @@ import io.github.opencubicchunks.cubicchunks.api.worldgen.CubeGeneratorsRegistry
 import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.BasicCubeGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
+import io.github.opencubicchunks.cubicchunks.cubicgen.cache.HashCacheDensityProvider;
+import io.github.opencubicchunks.cubicchunks.cubicgen.cache.HashCacheDoubles;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.CubePopulatorEvent;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
@@ -189,7 +191,9 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         return null;
     }
 
-    private IBuilder perlinLow, perlinHigh, perlinSel, perlinHeight;
+
+    private HashCacheDensityProvider densityBiuilder;
+    private IBuilder perlinHeight;
 
     private TerrainShapeReplacer terrainShape;
     private SurfaceDefaultReplacer surface;
@@ -201,6 +205,19 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
 
     private void initNew(long seed) {
         Random rnd = new Random(seed);
+        double lowOffset = conf.lowNoiseOffset;
+        double lowFactor = conf.lowNoiseFactor;
+
+        double highOffset = conf.highNoiseOffset;
+        double highFactor = conf.highNoiseFactor;
+
+        double selectorOffset = conf.selectorNoiseOffset;
+        double selectorFactor = conf.selectorNoiseFactor;
+
+        double heightVarFactor = conf.heightVariationFactor;
+        double heightVarOffset = conf.heightVariationOffset;
+
+        double specialVariationFactor = conf.specialHeightVariationFactorBelowAverageY;
 
         double selectorFreqX = conf.selectorNoiseFrequencyX;
         double selectorFreqY = conf.selectorNoiseFrequencyY;
@@ -209,8 +226,6 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         Perlin perlinSel = new Perlin();
         perlinSel.setOctaveCount((conf.selectorNoiseOctaves));
         perlinSel.setSeed(rnd.nextInt());
-        this.perlinSel = (x2, y2, z2) -> perlinSel.getValue(x2 * selectorFreqX, y2 * selectorFreqY, z2 * selectorFreqZ);
-        this.perlinSel = this.perlinSel.cached(CACHE_SIZE_3D, HASH_3D);
 
         double lowFreqX = conf.lowNoiseFrequencyX;
         double lowFreqY = conf.lowNoiseFrequencyY;
@@ -218,8 +233,6 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         Perlin perlinLow = new Perlin();
         perlinLow.setOctaveCount(conf.lowNoiseOctaves);
         perlinLow.setSeed(rnd.nextInt());
-        this.perlinLow = (x1, y1, z1) -> perlinSel.getValue(x1 * lowFreqX, y1 * lowFreqY, z1 * lowFreqZ);
-        this.perlinLow = this.perlinLow.cached(CACHE_SIZE_3D, HASH_3D);
 
         double highFreqX = conf.highNoiseFrequencyX;
         double highFreqY = conf.highNoiseFrequencyY;
@@ -227,16 +240,43 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         Perlin perlinHigh = new Perlin();
         perlinHigh.setOctaveCount(conf.highNoiseOctaves);
         perlinHigh.setSeed(rnd.nextInt());
-        this.perlinHigh = (x1, y1, z1) -> perlinSel.getValue(x1 * highFreqX, y1 * highFreqY, z1 * highFreqZ);
-        this.perlinHigh = this.perlinHigh.cached(CACHE_SIZE_3D, HASH_3D);
 
         double depthFreqX = conf.depthNoiseFrequencyX;
         double depthFreqZ = conf.depthNoiseFrequencyZ;
         Perlin perlinHeight = new Perlin();
         perlinHeight.setOctaveCount(conf.depthNoiseOctaves);
         perlinHeight.setSeed(rnd.nextInt());
-        this.perlinHeight = (x, y, z) -> perlinSel.getValue(x * depthFreqX, 0, z * depthFreqZ);
+        this.perlinHeight = (x, y, z) -> perlinHeight.getValue(x*depthFreqX, 0, z*depthFreqZ);
         this.perlinHeight = this.perlinHeight.cached2d(CACHE_SIZE_2D, HASH_2D);
+
+        densityBiuilder = HashCacheDensityProvider.create(CACHE_SIZE_3D,
+                (x, y, z) -> x + z * 5 + y * 25,
+                (x, y, z, biomeVolRaw, biomeHeight, height2d) -> {
+                    double biomeVol = biomeVolRaw;
+                    if (y < biomeHeight) {
+                        biomeVol *= specialVariationFactor;
+                    }
+                    biomeVol = biomeVol * heightVarFactor + heightVarOffset;
+
+                    double lowNoise = perlinLow.getValue(x * lowFreqX, y * lowFreqY, z * lowFreqZ) * 2 - 1;
+                    lowNoise = lowNoise * lowFactor + lowOffset;
+
+                    double highNoise = perlinHigh.getValue(x * highFreqX, y * highFreqY, z * highFreqZ) * 2 - 1;
+                    highNoise = highNoise * highFactor + highOffset;
+
+                    double selectorNoise = perlinSel.getValue(x * selectorFreqX, y * selectorFreqY, z * selectorFreqZ) * 2 - 1;
+                    selectorNoise = MathHelper.clamp(selectorNoise * selectorFactor + selectorOffset, 0, 1);
+
+                    double density = (highNoise - lowNoise) * selectorNoise + lowNoise + height2d;
+                    density = density * biomeVol + biomeHeight;
+
+                    if (biomeVol > 0) {
+                        density -= y;
+                    } else {
+                        density += y;
+                    }
+                    return density;
+                });
 
         this.terrainShape = (TerrainShapeReplacer) TerrainShapeReplacer.provider().create(world, conf.replacerConfig);
         this.surface = (SurfaceDefaultReplacer) SurfaceDefaultReplacer.provider().create(world, conf.replacerConfig);
@@ -440,22 +480,8 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         double depthOffset = conf.depthNoiseOffset;
         double depthFactor = conf.depthNoiseFactor;
 
-        double lowOffset = conf.lowNoiseOffset;
-        double lowFactor = conf.lowNoiseFactor;
-
-        double highOffset = conf.highNoiseOffset;
-        double highFactor = conf.highNoiseFactor;
-
-        double selectorOffset = conf.selectorNoiseOffset;
-        double selectorFactor = conf.selectorNoiseFactor;
-
         double heightFactor = conf.heightFactor;
-        double heightVarFactor = conf.heightVariationFactor;
-
         double heightOffset = conf.heightOffset;
-        double heightVarOffset = conf.heightVariationOffset;
-
-        double specialVariationFactor = conf.specialHeightVariationFactorBelowAverageY;
 
         double[] densities = this.densities;
 
@@ -489,31 +515,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
                 for (int ySection = 0; ySection < 3; ySection++) {
                     int xyzIdx = ySection + xzIdx;
                     int blockY = (ySection << 3) + minBlockY;
-
-                    double biomeVol = biomeVolRaw;
-                    if (blockY < biomeHeight) {
-                        biomeVol *= specialVariationFactor;
-                    }
-                    biomeVol = biomeVol * heightVarFactor + heightVarOffset;
-
-                    double lowNoise = perlinLow.get(blockX, blockY, blockZ) * 2 - 1;
-                    lowNoise = lowNoise * lowFactor + lowOffset;
-
-                    double highNoise = perlinHigh.get(blockX, blockY, blockZ) * 2 - 1;
-                    highNoise = highNoise * highFactor + highOffset;
-
-                    double selectorNoise = perlinSel.get(blockX, blockY, blockZ) * 2 - 1;
-                    selectorNoise = MathHelper.clamp(selectorNoise * selectorFactor + selectorOffset, 0, 1);
-
-                    double density = (highNoise - lowNoise) * selectorNoise + lowNoise + depthNoise;
-                    density = density * biomeVol + biomeHeight;
-
-                    if (biomeVol > 0) {
-                        density -= blockY;
-                    } else {
-                        density += blockY;
-                    }
-                    densities[xyzIdx] = density;
+                    densities[xyzIdx] = densityBiuilder.get(blockX, blockY, blockZ, biomeVolRaw, biomeHeight, depthNoise);
                 }
             }
         }
