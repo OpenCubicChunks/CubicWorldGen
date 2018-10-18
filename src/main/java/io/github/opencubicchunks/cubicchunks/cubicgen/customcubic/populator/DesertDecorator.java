@@ -27,11 +27,13 @@ import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
+import io.github.opencubicchunks.cubicchunks.core.event.CCEventFactory;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.feature.WorldGenDesertWells;
+import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
 
 import java.util.Random;
 
@@ -42,18 +44,22 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class DesertDecorator implements ICubicPopulator {
 
     @Override public void generate(World world, Random random, CubePos pos, Biome biome) {
-        if (random.nextInt(1000) == 0) {
-            int xOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
-            int zOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
-            BlockPos blockpos = ((ICubicWorld) world).getSurfaceForCube(pos, xOffset, zOffset, 0, ICubicWorld.SurfaceType.OPAQUE);
-            if (blockpos != null) {
-                (new WorldGenDesertWells()).generate((World) world, random, blockpos.up());
+        if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.DESERT_WELL)) {
+            if (random.nextInt(1000) == 0) {
+                int xOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
+                int zOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
+                BlockPos blockpos = ((ICubicWorld) world).getSurfaceForCube(pos, xOffset, zOffset, 0, ICubicWorld.SurfaceType.OPAQUE);
+                if (blockpos != null) {
+                    (new WorldGenDesertWells()).generate((World) world, random, blockpos.up());
+                }
             }
         }
 
-        // TODO: fossils
-        /*if (random.nextInt(64) == 0) {
-            (new WorldGenFossils()).generate((World) world, random, blockpos);
-        }*/
+        if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.FOSSIL)) {
+            // TODO: fossils
+            /*if (random.nextInt(64) == 0) {
+                (new WorldGenFossils()).generate((World) world, random, blockpos);
+            }*/
+        }
     }
 }

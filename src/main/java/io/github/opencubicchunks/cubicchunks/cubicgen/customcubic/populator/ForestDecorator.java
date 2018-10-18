@@ -27,6 +27,7 @@ import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
+import io.github.opencubicchunks.cubicchunks.core.event.CCEventFactory;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.BlockDoublePlant;
 import net.minecraft.util.math.BlockPos;
@@ -35,6 +36,7 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeForest;
 import net.minecraft.world.gen.feature.WorldGenAbstractTree;
 import net.minecraft.world.gen.feature.WorldGenBigMushroom;
+import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
 
 import java.util.Random;
 
@@ -50,13 +52,15 @@ public class ForestDecorator implements ICubicPopulator {
             this.addMushrooms(world, random, pos, biome);
         }
 
-        int plantAmount = random.nextInt(5) - 3;
+        if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.FLOWERS)) {
+            int plantAmount = random.nextInt(5) - 3;
 
-        if (((BiomeForest) biome).type == BiomeForest.Type.FLOWER) {
-            plantAmount += 2;
+            if (((BiomeForest) biome).type == BiomeForest.Type.FLOWER) {
+                plantAmount += 2;
+            }
+
+            this.addDoublePlants(world, random, pos, biome, plantAmount);
         }
-
-        this.addDoublePlants(world, random, pos, biome, plantAmount);
     }
 
 
@@ -70,14 +74,14 @@ public class ForestDecorator implements ICubicPopulator {
                 if (blockpos == null) {
                     continue;
                 }
-                if (random.nextInt(20) == 0) {
-                    new WorldGenBigMushroom().generate((World) world, random, blockpos);
-                } else {
+                if (random.nextInt(20) == 0 && CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.BIG_SHROOM)) {
+                    new WorldGenBigMushroom().generate(world, random, blockpos);
+                } else if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.TREE)) {
                     WorldGenAbstractTree generator = biome.getRandomTreeFeature(random);
                     generator.setDecorationDefaults();
 
-                    if (generator.generate((World) world, random, blockpos)) {
-                        generator.generateSaplings((World) world, random, blockpos);
+                    if (generator.generate(world, random, blockpos)) {
+                        generator.generateSaplings(world, random, blockpos);
                     }
                 }
             }
@@ -106,7 +110,7 @@ public class ForestDecorator implements ICubicPopulator {
 
                 BlockPos blockPos = ((ICubicWorld) world).getSurfaceForCube(pos, xOffset, zOffset, 0, ICubicWorld.SurfaceType.OPAQUE);
 
-                if (blockPos != null && biome.DOUBLE_PLANT_GENERATOR.generate((World) world, random, blockPos)) {
+                if (blockPos != null && biome.DOUBLE_PLANT_GENERATOR.generate(world, random, blockPos)) {
                     break;
                 }
             }

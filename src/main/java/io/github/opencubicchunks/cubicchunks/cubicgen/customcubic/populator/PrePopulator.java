@@ -26,6 +26,8 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.event.DecorateCubeBiomeEvent;
+import io.github.opencubicchunks.cubicchunks.core.event.CCEventFactory;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.init.Biomes;
@@ -35,6 +37,8 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.feature.WorldGenDungeons;
 import net.minecraft.world.gen.feature.WorldGenLakes;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 
 import java.util.Random;
 
@@ -51,30 +55,33 @@ public class PrePopulator implements ICubicPopulator {
     }
 
     @Override public void generate(World world, Random random, CubePos pos, Biome biome) {
-        if (biome != Biomes.DESERT && biome != Biomes.DESERT_HILLS && cfg.waterLakes && random.nextInt(cfg.waterLakeRarity) == 0) {
-            (new WorldGenLakes(Blocks.WATER)).generate((World) world, random, pos.randomPopulationPos(random));
+        if (biome != Biomes.DESERT && biome != Biomes.DESERT_HILLS
+                && cfg.waterLakes && random.nextInt(cfg.waterLakeRarity) == 0
+                && CCEventFactory.populate(world, random, pos, false, PopulateChunkEvent.Populate.EventType.LAKE)) {
+            (new WorldGenLakes(Blocks.WATER)).generate(world, random, pos.randomPopulationPos(random));
         }
 
         if (random.nextInt(cfg.lavaLakeRarity) == 0 && cfg.lavaLakes) {
             int yOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
             int blockY = pos.getMinBlockY() + yOffset;
-            if (random.nextDouble() <= lavaLakeProbability(cfg, blockY)) {
+            if (random.nextDouble() <= lavaLakeProbability(cfg, blockY)
+                && CCEventFactory.populate(world, random, pos, false, PopulateChunkEvent.Populate.EventType.LAVA)) {
                 int xOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
                 int zOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
 
                 if (blockY < cfg.waterLevel || random.nextInt(cfg.aboveSeaLavaLakeRarity) == 0) {
                     BlockPos blockPos = pos.getMinBlockPos().add(xOffset, yOffset, zOffset);
-                    (new WorldGenLakes(Blocks.LAVA)).generate((World) world, random, blockPos);
+                    (new WorldGenLakes(Blocks.LAVA)).generate(world, random, blockPos);
                 }
             }
         }
 
-        if (cfg.dungeons) {
+        if (cfg.dungeons && CCEventFactory.populate(world, random, pos, false, PopulateChunkEvent.Populate.EventType.DUNGEON)) {
             for (int i = 0; i < cfg.dungeonCount; ++i) {
-                (new WorldGenDungeons()).generate((World) world, random, pos.randomPopulationPos(random));
+                (new WorldGenDungeons()).generate(world, random, pos.randomPopulationPos(random));
             }
         }
-
+        MinecraftForge.EVENT_BUS.post(new DecorateCubeBiomeEvent.Pre(world, random, pos));
     }
 
     private double lavaLakeProbability(CustomGeneratorSettings cfg, int y) {
