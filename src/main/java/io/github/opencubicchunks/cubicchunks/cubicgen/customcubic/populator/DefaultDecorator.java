@@ -322,6 +322,8 @@ public final class DefaultDecorator implements ICubicPopulator {
         return (Math.atan(vanillaY * yScale + yOffset) + Math.PI / 2) * valueScale;
     }
 
+
+
     private void generateOnTop(World world, Random random, CubePos pos, int count, WorldGenerator generator) {
         for (int i = 0; i < count; ++i) {
             int xOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;

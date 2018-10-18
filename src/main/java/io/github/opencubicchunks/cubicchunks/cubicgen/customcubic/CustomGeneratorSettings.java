@@ -193,7 +193,8 @@ public class CustomGeneratorSettings {
             return defaults();
         }
         Gson gson = gson();
-        return gson.fromJson(json, CustomGeneratorSettings.class);
+        CustomGeneratorSettings conf = gson.fromJson(json, CustomGeneratorSettings.class);
+        return conf;
     }
 
     public static CustomGeneratorSettings defaults() {
@@ -838,6 +839,7 @@ public class CustomGeneratorSettings {
                 Object value = getObject(context, e);
                 conf.set(key, value);
             }
+            conf.fillDefaults();
             return conf;
         }
 

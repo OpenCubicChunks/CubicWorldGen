@@ -101,7 +101,7 @@ public abstract class CubicStructureGenerator {
                 long randY = yOrigin * randYMul ^ randX;
                 for (int zOrigin = cubeZOriginBase - radius; zOrigin <= cubeZOriginBase + radius; zOrigin += spacing) {
                     long randZ = zOrigin * randZMul ^ randY;
-                    this.rand.setSeed(randZ);
+                    this.rand.setSeed(randSeed);
                     this.generate(world, cube, xOrigin, yOrigin, zOrigin, cubePos);
                 }
             }

@@ -30,6 +30,7 @@ import net.minecraft.util.ResourceLocation;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
@@ -97,7 +98,7 @@ public class BiomeBlockReplacerConfig {
         return getString(new ResourceLocation(modid, name));
     }
 
-    private Object getValue(ResourceLocation location) {
+    @Nullable private Object getValue(ResourceLocation location) {
         if (overrides.containsKey(location)) {
             return overrides.get(location);
         }
@@ -107,8 +108,11 @@ public class BiomeBlockReplacerConfig {
     public void fillDefaults() {
         CubicBiome.REGISTRY.forEach(biome ->
                 biome.getReplacerProviders().forEach(prov ->
-                        prov.getPossibleConfigOptions().forEach(confOpt ->
-                                setDefault(confOpt.getLocation(), confOpt.getDefaultValue()))
+                        prov.getPossibleConfigOptions().forEach(confOpt -> {
+                            if (getValue(confOpt.getLocation()) == null) {
+                                setDefault(confOpt.getLocation(), confOpt.getDefaultValue());
+                            }
+                        })
                 )
         );
     }

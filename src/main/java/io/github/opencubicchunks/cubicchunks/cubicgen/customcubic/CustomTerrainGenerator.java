@@ -225,29 +225,33 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
 
         Perlin perlinSel = new Perlin();
         perlinSel.setOctaveCount((conf.selectorNoiseOctaves));
-        perlinSel.setSeed(rnd.nextInt());
+        perlinSel.setSeed(nextSeed(rnd));
 
         double lowFreqX = conf.lowNoiseFrequencyX;
         double lowFreqY = conf.lowNoiseFrequencyY;
         double lowFreqZ = conf.lowNoiseFrequencyZ;
         Perlin perlinLow = new Perlin();
         perlinLow.setOctaveCount(conf.lowNoiseOctaves);
-        perlinLow.setSeed(rnd.nextInt());
+        perlinLow.setSeed(nextSeed(rnd));
 
         double highFreqX = conf.highNoiseFrequencyX;
         double highFreqY = conf.highNoiseFrequencyY;
         double highFreqZ = conf.highNoiseFrequencyZ;
         Perlin perlinHigh = new Perlin();
         perlinHigh.setOctaveCount(conf.highNoiseOctaves);
-        perlinHigh.setSeed(rnd.nextInt());
+        perlinHigh.setSeed(nextSeed(rnd));
 
         double depthFreqX = conf.depthNoiseFrequencyX;
         double depthFreqZ = conf.depthNoiseFrequencyZ;
         Perlin perlinHeight = new Perlin();
         perlinHeight.setOctaveCount(conf.depthNoiseOctaves);
-        perlinHeight.setSeed(rnd.nextInt());
+        perlinHeight.setSeed(nextSeed(rnd));
         this.perlinHeight = (x, y, z) -> perlinHeight.getValue(x*depthFreqX, 0, z*depthFreqZ);
         this.perlinHeight = this.perlinHeight.cached2d(CACHE_SIZE_2D, HASH_2D);
+
+        double lowMaxValueInv = 1.0 / (2 - Math.pow(0.5, conf.lowNoiseOctaves - 1));
+        double highMaxValueInv = 1.0 / (2 - Math.pow(0.5, conf.highNoiseOctaves - 1));
+        double selMaxValueInv = 1.0 / (2 - Math.pow(0.5, conf.selectorNoiseOctaves - 1));
 
         densityBiuilder = HashCacheDensityProvider.create(CACHE_SIZE_3D,
                 (x, y, z) -> x + z * 5 + y * 25,
@@ -258,13 +262,19 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
                     }
                     biomeVol = biomeVol * heightVarFactor + heightVarOffset;
 
-                    double lowNoise = perlinLow.getValue(x * lowFreqX, y * lowFreqY, z * lowFreqZ) * 2 - 1;
+                    double lowNoise = perlinLow.getValue(x * lowFreqX, y * lowFreqY, z * lowFreqZ);
+                    lowNoise *= lowMaxValueInv;
+                    lowNoise = lowNoise * 2 - 1;
                     lowNoise = lowNoise * lowFactor + lowOffset;
 
-                    double highNoise = perlinHigh.getValue(x * highFreqX, y * highFreqY, z * highFreqZ) * 2 - 1;
+                    double highNoise = perlinHigh.getValue(x * highFreqX, y * highFreqY, z * highFreqZ);
+                    highNoise *= highMaxValueInv;
+                    highNoise = highNoise * 2 - 1;
                     highNoise = highNoise * highFactor + highOffset;
 
-                    double selectorNoise = perlinSel.getValue(x * selectorFreqX, y * selectorFreqY, z * selectorFreqZ) * 2 - 1;
+                    double selectorNoise = perlinSel.getValue(x * selectorFreqX, y * selectorFreqY, z * selectorFreqZ);
+                    selectorNoise *= selMaxValueInv;
+                    selectorNoise = selectorNoise * 2 - 1;
                     selectorNoise = MathHelper.clamp(selectorNoise * selectorFactor + selectorOffset, 0, 1);
 
                     double density = (highNoise - lowNoise) * selectorNoise + lowNoise + height2d;
@@ -287,6 +297,11 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         this.swamp = (SwampWaterWithLilypadReplacer) SwampWaterWithLilypadReplacer.provider().create(world, conf.replacerConfig);
     }
 
+    private static int nextSeed(Random rand) {
+        long seed = rand.nextLong();
+        int intSeed = (int) (seed ^ (seed >>> 32));
+        return intSeed;
+    }
     private final double[] densities = new double[5 * 5 * 3];
     private final double[] values = new double[16 * 16 * 16 * 4];
 
@@ -485,6 +500,8 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
 
         double[] densities = this.densities;
 
+        double depthMaxValueInv = 1.0 / (2 - Math.pow(0.5, conf.depthNoiseOctaves - 1));
+
         int minBlockX = cubeX * 16;
         int minBlockY = cubeY * 16;
         int minBlockZ = cubeZ * 16;
@@ -495,7 +512,9 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
             for (int zSection = 0; zSection < 5; zSection++) {
                 int xzIdx = zSection * 3 + xIdx;
                 int blockZ = (zSection << 2) + minBlockZ;
-                double depthNoise = perlinHeight.get(blockX, 0, blockZ) * 2 - 1;
+                double depthNoise = perlinHeight.get(blockX, 0, blockZ);
+                depthNoise *= depthMaxValueInv;
+                depthNoise = depthNoise * 2 - 1;
                 depthNoise *= depthFactor;
                 depthNoise += depthOffset;
                 if (depthNoise < 0) {

@@ -160,11 +160,11 @@ public class CubicCaveGenerator extends CubicStructureGenerator {
     @Override
     protected void generate(World world, CubePrimer cube,
             int cubeXOrigin, int cubeYOrigin, int cubeZOrigin, CubePos generatedCubePos) {
-        if (this.rand.nextInt(CAVE_RARITY) != 0) {
+        if (false&&this.rand.nextInt(CAVE_RARITY) != 0) {
             return;
         }
         //very low probability of generating high number
-        int nodes = this.rand.nextInt(this.rand.nextInt(this.rand.nextInt(MAX_INIT_NODES + 1) + 1) + 1);
+        int nodes = this.rand.nextInt(this.rand.nextInt(this.rand.nextInt(MAX_INIT_NODES + 1) + 1) + 1) + 2;
 
         for (int node = 0; node < nodes; ++node) {
             double branchStartX = localToBlock(cubeXOrigin, this.rand.nextInt(ICube.SIZE));
@@ -172,7 +172,7 @@ public class CubicCaveGenerator extends CubicStructureGenerator {
             double branchStartZ = localToBlock(cubeZOrigin, this.rand.nextInt(ICube.SIZE));
             int subBranches = 1;
 
-            if (this.rand.nextInt(LARGE_NODE_RARITY) == 0) {
+            if (true||this.rand.nextInt(LARGE_NODE_RARITY) == 0) {
                 this.generateLargeNode(cube, this.rand.nextLong(), generatedCubePos,
                         branchStartX, branchStartY, branchStartZ);
                 subBranches += this.rand.nextInt(LARGE_NODE_MAX_BRANCHES);

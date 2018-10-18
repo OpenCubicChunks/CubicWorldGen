@@ -73,7 +73,7 @@ public class HashCacheDensityProvider {
         if (keys[index|2] != z) {
             return false;
         }
-        return false;
+        return true;
     }
 
     private int index(int hash) {
