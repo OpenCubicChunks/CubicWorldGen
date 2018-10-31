@@ -34,6 +34,7 @@ import net.minecraft.client.gui.GuiCreateWorld;
 import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.init.Biomes;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldProviderSurface;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.BiomeProvider;
@@ -71,7 +72,7 @@ public class FlatCubicWorldType extends WorldType implements ICubicWorldType {
     }
 
     @Override public boolean hasCubicGeneratorForWorld(World w) {
-        return w.provider.getDimension() == 0;
+        return w.provider.getClass() == WorldProviderSurface.class; // a more general way to check if it's overworld
     }
 
     public boolean isCustomizable() {

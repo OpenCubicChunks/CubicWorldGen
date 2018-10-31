@@ -129,7 +129,7 @@ dependencies {
 
     deobfCompile("io.github.opencubicchunks:cubicchunks:1.12.2-0.0-SNAPSHOT")
     // provided by cubicchunks implementation
-    shade("org.spongepowered:mixin:0.7.5-SNAPSHOT") {
+    shade("org.spongepowered:mixin:0.7.10-SNAPSHOT") {
         isTransitive = false
     }
 
