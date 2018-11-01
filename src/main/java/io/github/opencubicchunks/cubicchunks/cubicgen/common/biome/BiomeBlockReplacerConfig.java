@@ -97,7 +97,7 @@ public class BiomeBlockReplacerConfig {
         return getString(new ResourceLocation(modid, name));
     }
 
-    private Object getValue(ResourceLocation location) {
+    public Object getValue(ResourceLocation location) {
         if (overrides.containsKey(location)) {
             return overrides.get(location);
         }

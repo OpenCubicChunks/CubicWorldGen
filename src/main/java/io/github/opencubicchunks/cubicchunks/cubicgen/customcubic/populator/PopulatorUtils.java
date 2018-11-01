@@ -28,6 +28,7 @@ import static io.github.opencubicchunks.cubicchunks.api.util.Coords.blockToCube;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.api.util.MathUtil;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
+import io.github.opencubicchunks.cubicchunks.core.event.CCEventFactory;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.util.math.BlockPos;
@@ -60,7 +61,7 @@ public class PopulatorUtils {
             }
             int xOffset = random.nextInt(ICube.SIZE);
             int zOffset = random.nextInt(ICube.SIZE);
-            generator.generate((World) world, random, new BlockPos(pos.getMinBlockX() + xOffset, blockY, pos.getMinBlockZ() + zOffset));
+            generator.generate(world, random, new BlockPos(pos.getMinBlockX() + xOffset, blockY, pos.getMinBlockZ() + zOffset));
         }
     }
 

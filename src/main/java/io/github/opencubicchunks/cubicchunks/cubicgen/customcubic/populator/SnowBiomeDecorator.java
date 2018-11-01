@@ -27,11 +27,14 @@ import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
+import io.github.opencubicchunks.cubicchunks.core.event.CCEventFactory;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeSnow;
+import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
+import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 
 import java.util.Random;
 
@@ -46,13 +49,13 @@ public class SnowBiomeDecorator implements ICubicPopulator {
 
         ICubicWorld cworld = (ICubicWorld) world;
 
-        if (snow.superIcy) {
+        if (snow.superIcy && CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.ICE)) {
             for (int i = 0; i < 3; ++i) {
                 int xOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
                 int zOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
                 BlockPos blockPos = cworld.getSurfaceForCube(pos, xOffset, zOffset, 0, ICubicWorld.SurfaceType.SOLID);
                 if (blockPos != null) {
-                    snow.iceSpike.generate((World) world, random, blockPos);
+                    snow.iceSpike.generate(world, random, blockPos);
                 }
             }
 
@@ -61,7 +64,7 @@ public class SnowBiomeDecorator implements ICubicPopulator {
                 int zOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
                 BlockPos blockPos = cworld.getSurfaceForCube(pos, xOffset, zOffset, 0, ICubicWorld.SurfaceType.SOLID);
                 if (blockPos != null) {
-                    snow.icePatch.generate((World) world, random, blockPos);
+                    snow.icePatch.generate(world, random, blockPos);
                 }
             }
         }

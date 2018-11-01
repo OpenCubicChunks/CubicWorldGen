@@ -27,11 +27,13 @@ import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopula
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.WorldGenEntitySpawner;
+import io.github.opencubicchunks.cubicchunks.core.event.CCEventFactory;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicConfig;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.Biome;
+import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 
 import java.util.Random;
 
@@ -44,8 +46,10 @@ public class AnimalsPopulator implements ICubicPopulator {
     @Override public void generate(World world, Random random, CubePos pos, Biome biome) {
     	if(!CustomCubicConfig.worldgenMobSpawn)
     		return;
-    	WorldGenEntitySpawner.initialWorldGenSpawn((WorldServer) world, biome,
-                pos.getXCenter(), pos.getYCenter(), pos.getZCenter(),
-                ICube.SIZE, ICube.SIZE, ICube.SIZE, random);
+		if (CCEventFactory.populate(world, random, pos, false, PopulateChunkEvent.Populate.EventType.ANIMALS)) {
+			WorldGenEntitySpawner.initialWorldGenSpawn((WorldServer) world, biome,
+					pos.getXCenter(), pos.getYCenter(), pos.getZCenter(),
+					ICube.SIZE, ICube.SIZE, ICube.SIZE, random);
+		}
     }
 }

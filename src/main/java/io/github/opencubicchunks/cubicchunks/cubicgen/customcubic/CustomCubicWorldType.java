@@ -28,7 +28,10 @@ import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorldType;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.ICubeGenerator;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.init.Biomes;
+import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldProvider;
+import net.minecraft.world.WorldProviderSurface;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
@@ -61,7 +64,7 @@ public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
     }
 
     @Override public boolean hasCubicGeneratorForWorld(World w) {
-        return w.provider.getDimension() == 0;
+        return w.provider.getClass() == WorldProviderSurface.class; // a more general way to check if it's overworld
     }
 
     public BiomeProvider getBiomeProvider(World world) {

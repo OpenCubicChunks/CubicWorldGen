@@ -25,12 +25,14 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator;
 
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
+import io.github.opencubicchunks.cubicchunks.core.event.CCEventFactory;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.BlockDoublePlant;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeDecorator;
 import net.minecraft.world.biome.BiomePlains;
+import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
 
 import java.util.Random;
 
@@ -52,23 +54,25 @@ public class PlainsDecorator implements ICubicPopulator {
             dec.grassPerChunk = 10;
             Biome.DOUBLE_PLANT_GENERATOR.setPlantType(BlockDoublePlant.EnumPlantType.GRASS);
 
-            for (int i = 0; i < 7; ++i) {
-                // see: DefaultDecorator, flower generator
-                if (random.nextInt(7) != 0) {
-                    continue;
+            if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.GRASS)) {
+                for (int i = 0; i < 7; ++i) {
+                    // see: DefaultDecorator, flower generator
+                    if (random.nextInt(7) != 0) {
+                        continue;
+                    }
+                    Biome.DOUBLE_PLANT_GENERATOR.generate(world, random, pos.randomPopulationPos(random));
                 }
-                Biome.DOUBLE_PLANT_GENERATOR.generate((World) world, random, pos.randomPopulationPos(random));
             }
         }
 
-        if (((BiomePlains)biome).sunflowers) {
+        if (((BiomePlains)biome).sunflowers && CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.FLOWERS)) {
             Biome.DOUBLE_PLANT_GENERATOR.setPlantType(BlockDoublePlant.EnumPlantType.SUNFLOWER);
 
             for (int i = 0; i < 10; ++i) {
                 if (random.nextInt(7) != 0) {
                     continue;
                 }
-                Biome.DOUBLE_PLANT_GENERATOR.generate((World) world, random, pos.randomPopulationPos(random));
+                Biome.DOUBLE_PLANT_GENERATOR.generate(world, random, pos.randomPopulationPos(random));
             }
         }
     }
