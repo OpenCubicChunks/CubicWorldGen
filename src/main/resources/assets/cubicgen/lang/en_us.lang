@@ -23,6 +23,7 @@ cubicgen.gui.cubicgen.layers_title=Customize World Settings%nPage 1 of 1%nLayers
 
 cubicgen.gui.cubicgen.presets.done=Done
 cubicgen.gui.cubicgen.presets.cancel=Cancel
+cubicgen.gui.cubicgen.presets.invalid_json=INVALID JSON
 
 #################################
 ###   flat terrain layers     ###

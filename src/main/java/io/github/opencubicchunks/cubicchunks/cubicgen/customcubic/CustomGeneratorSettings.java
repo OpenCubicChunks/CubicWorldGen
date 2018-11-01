@@ -25,6 +25,7 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic;
 
 import static io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod.MODID;
 
+import com.google.common.base.Objects;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -64,6 +65,7 @@ import net.minecraftforge.common.util.ModFixs;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 import java.io.StringReader;
+import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -186,8 +188,8 @@ public class CustomGeneratorSettings {
         return replacerConfig;
     }
 
-    public String toJson() {
-        Gson gson = gson();
+    public String toJson(boolean minimize) {
+        Gson gson = gson(minimize);
         return gson.toJson(this);
     }
 
@@ -195,7 +197,7 @@ public class CustomGeneratorSettings {
         if (json.isEmpty()) {
             return defaults();
         }
-        Gson gson = gson();
+        Gson gson = gson(true); // minimize option shouldn't matter when deserializing
         return gson.fromJson(json, CustomGeneratorSettings.class);
     }
 
@@ -317,9 +319,9 @@ public class CustomGeneratorSettings {
                 }
                 String generatorOptions = compound.getString("generatorOptions");
                 if (generatorOptions.isEmpty()) {
-                    generatorOptions = new CustomGeneratorSettings().toJson();
+                    generatorOptions = new CustomGeneratorSettings().toJson(false);
                 }
-                Gson gson = gson();
+                Gson gson = gson(false);
 
                 JsonReader reader = new JsonReader(new StringReader(generatorOptions));
                 JsonObject root = new JsonParser().parse(reader).getAsJsonObject();
@@ -447,9 +449,9 @@ public class CustomGeneratorSettings {
                 }
                 String generatorOptions = compound.getString("generatorOptions");
                 if (generatorOptions.isEmpty()) {
-                    generatorOptions = new CustomGeneratorSettings().toJson();
+                    generatorOptions = new CustomGeneratorSettings().toJson(false);
                 }
-                Gson gson = gson();
+                Gson gson = gson(false);
 
                 JsonReader reader = new JsonReader(new StringReader(generatorOptions));
                 JsonObject root = new JsonParser().parse(reader).getAsJsonObject();
@@ -525,7 +527,7 @@ public class CustomGeneratorSettings {
                 }
                 String generatorOptions = compound.getString("generatorOptions");
                 if (generatorOptions.isEmpty()) {
-                    generatorOptions = new CustomGeneratorSettings().toJson();
+                    generatorOptions = new CustomGeneratorSettings().toJson(true);
                 }
                 // this is far simpler that walking through the json and figurring out all the places where it occurs
                 // instead, just do string search and replace. The string shouldn't occur in any other context
@@ -535,13 +537,23 @@ public class CustomGeneratorSettings {
         });
     }
 
-    public static Gson gson() {
+    public static Gson gson(boolean minimize) {
         return new GsonBuilder().serializeSpecialFloatingPointValues()
                 .enableComplexMapKeySerialization()
+                .registerTypeAdapter(CustomGeneratorSettings.class, new Serializer(minimize))
                 .registerTypeHierarchyAdapter(IBlockState.class, BlockStateSerializer.INSTANCE)
                 .registerTypeHierarchyAdapter(Biome.class, new BiomeSerializer())
-                .registerTypeAdapter(BiomeBlockReplacerConfig.class, BiomeBlockReplacerConfigSerializer.INSTANCE)
+                .registerTypeAdapter(BiomeBlockReplacerConfig.class, new BiomeBlockReplacerConfigSerializer(minimize))
                 .create();
+    }
+
+    public static GsonBuilder gsonBuilder(boolean minimize) {
+        return new GsonBuilder().serializeSpecialFloatingPointValues()
+                .enableComplexMapKeySerialization()
+                .registerTypeAdapter(CustomGeneratorSettings.class, new Serializer(minimize))
+                .registerTypeHierarchyAdapter(IBlockState.class, BlockStateSerializer.INSTANCE)
+                .registerTypeHierarchyAdapter(Biome.class, new BiomeSerializer())
+                .registerTypeAdapter(BiomeBlockReplacerConfig.class, new BiomeBlockReplacerConfigSerializer(minimize));
     }
 
     public static class StandardOreConfig {
@@ -796,6 +808,101 @@ public class CustomGeneratorSettings {
         }
     }
 
+
+    private static class Serializer implements JsonDeserializer<CustomGeneratorSettings>, JsonSerializer<CustomGeneratorSettings> {
+
+        private static final Field[] fields = CustomGeneratorSettings.class.getFields();
+
+        static {
+            for (Field f : fields) {
+                f.setAccessible(true);
+            }
+        }
+
+        private static final CustomGeneratorSettings defaults = CustomGeneratorSettings.defaults();
+        private final boolean minimize;
+
+        public Serializer(boolean minimize) {
+            this.minimize = minimize;
+        }
+
+        @Override public CustomGeneratorSettings deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                throws JsonParseException {
+            return deserializeWithDefault(json, defaults, context);
+        }
+
+        private CustomGeneratorSettings deserializeWithDefault(JsonElement element, CustomGeneratorSettings def, JsonDeserializationContext ctx) {
+            try {
+                JsonObject root = element.getAsJsonObject();
+                CustomGeneratorSettings ret = new CustomGeneratorSettings();
+
+                for (Field field : fields) {
+                    if (!field.getName().equals("cubeAreas")) {
+                        if (root.has(field.getName())) {
+                            JsonElement e = root.get(field.getName());
+                            field.set(ret, ctx.deserialize(e, field.getGenericType()));
+                        }
+                    }
+                }
+
+                Map<IntAABB, CustomGeneratorSettings> map = new HashMap<>();
+                // do cubeAreas once everything else is done so we have all the defaults
+                if (root.has("cubeAreas") && root.get("cubeAreas").isJsonArray()) {
+                    JsonArray array = root.get("cubeAreas").getAsJsonArray();
+                    for (JsonElement entry : array) {
+                        JsonArray mapEntry = entry.getAsJsonArray();
+                        JsonElement key = mapEntry.get(0);
+                        JsonElement value = mapEntry.get(1);
+                        IntAABB keyValue = ctx.deserialize(key, IntAABB.class);
+                        CustomGeneratorSettings valueValue = deserializeWithDefault(value, ret, ctx);
+                        map.put(keyValue, valueValue);
+                    }
+                }
+                ret.cubeAreas = map;
+                return ret;
+            } catch (IllegalAccessException e) {
+                // everything should be made accessible in static initializer
+                throw new Error(e);
+            } catch (RuntimeException e) {
+                throw new JsonParseException(e);
+            }
+        }
+
+        @Override public JsonElement serialize(CustomGeneratorSettings src, Type typeOfSrc, JsonSerializationContext context) {
+            return serializeWithDefault(src, defaults, context);
+        }
+
+        private JsonElement serializeWithDefault(CustomGeneratorSettings src, CustomGeneratorSettings def, JsonSerializationContext ctx) {
+            try {
+                JsonObject root = new JsonObject();
+                for (Field field : fields) {
+                    Object defValue = field.get(def);
+                    Object value = field.get(src);
+                    if (minimize && Objects.equal(defValue, value)) {
+                        continue;
+                    }
+                    if (field.getName().equals("cubeAreas")) {
+                        JsonArray cubeAreas = new JsonArray();
+                        for (Map.Entry<IntAABB, CustomGeneratorSettings> entry : src.cubeAreas.entrySet()) {
+                            JsonArray arrEntry = new JsonArray();
+                            arrEntry.add(ctx.serialize(entry.getKey()));
+                            // use current src as default
+                            arrEntry.add(serializeWithDefault(entry.getValue(), src, ctx));
+                            cubeAreas.add(arrEntry);
+                        }
+                        root.add("cubeAreas", cubeAreas);
+                    } else {
+                        root.add(field.getName(), ctx.serialize(value));
+                    }
+                }
+                return root;
+            } catch (IllegalAccessException e) {
+                // everything should be made accessible in static initializer
+                throw new Error(e);
+            }
+        }
+    }
+
     private static class BlockStateSerializer implements JsonDeserializer<IBlockState>, JsonSerializer<IBlockState> {
 
         public static final BlockStateSerializer INSTANCE = new BlockStateSerializer();
@@ -845,7 +952,11 @@ public class CustomGeneratorSettings {
     private static class BiomeBlockReplacerConfigSerializer
             implements JsonDeserializer<BiomeBlockReplacerConfig>, JsonSerializer<BiomeBlockReplacerConfig> {
 
-        public static final BiomeBlockReplacerConfigSerializer INSTANCE = new BiomeBlockReplacerConfigSerializer();
+        private final boolean minimize;
+
+        public BiomeBlockReplacerConfigSerializer(boolean minimize) {
+            this.minimize = minimize;
+        }
 
         @Override public BiomeBlockReplacerConfig deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
                 throws JsonParseException {
@@ -853,7 +964,7 @@ public class CustomGeneratorSettings {
             JsonObject defaults = json.getAsJsonObject().get("defaults").getAsJsonObject();
             JsonObject overrides = json.getAsJsonObject().get("overrides").getAsJsonObject();
 
-            BiomeBlockReplacerConfig conf = new BiomeBlockReplacerConfig();
+            BiomeBlockReplacerConfig conf = BiomeBlockReplacerConfig.defaults();
             for (Map.Entry<String, JsonElement> e : defaults.entrySet()) {
                 ResourceLocation key = new ResourceLocation(e.getKey());
                 Object value = getObject(context, e);
@@ -881,13 +992,19 @@ public class CustomGeneratorSettings {
         @Override public JsonElement serialize(BiomeBlockReplacerConfig src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject root = new JsonObject();
 
+            BiomeBlockReplacerConfig defaultValues = BiomeBlockReplacerConfig.defaults();
+
             JsonObject defaults = new JsonObject();
             JsonObject overrides = new JsonObject();
 
             for (Map.Entry<ResourceLocation, Object> e : src.getDefaults().entrySet()) {
+                if (minimize && Objects.equal(defaultValues.getValue(e.getKey()), e.getValue())) {
+                    continue;
+                }
                 defaults.add(e.getKey().toString(), getJsonElement(context, e));
             }
             for (Map.Entry<ResourceLocation, Object> e : src.getOverrides().entrySet()) {
+                // don't "minimize" overrides
                 overrides.add(e.getKey().toString(), getJsonElement(context, e));
             }
             root.add("defaults", defaults);

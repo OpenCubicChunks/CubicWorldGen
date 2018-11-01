@@ -25,11 +25,13 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator;
 
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
+import io.github.opencubicchunks.cubicchunks.core.event.CCEventFactory;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.BlockDoublePlant;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
 
 import java.util.Random;
 
@@ -42,13 +44,15 @@ public class SavannaDecorator implements ICubicPopulator {
     @Override public void generate(World world, Random random, CubePos pos, Biome biome) {
         biome.DOUBLE_PLANT_GENERATOR.setPlantType(BlockDoublePlant.EnumPlantType.GRASS);
 
-        for (int i = 0; i < 7; ++i) {
-            // see flower generator in DefaultDecorator
-            if (random.nextInt(7) != 0) {
-                continue;
+        if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.GRASS)) {
+            for (int i = 0; i < 7; ++i) {
+                // see flower generator in DefaultDecorator
+                if (random.nextInt(7) != 0) {
+                    continue;
+                }
+                BlockPos blockPos = pos.randomPopulationPos(random);
+                biome.DOUBLE_PLANT_GENERATOR.generate(world, random, blockPos);
             }
-            BlockPos blockPos = pos.randomPopulationPos(random);
-            biome.DOUBLE_PLANT_GENERATOR.generate((World) world, random, blockPos);
         }
     }
 }

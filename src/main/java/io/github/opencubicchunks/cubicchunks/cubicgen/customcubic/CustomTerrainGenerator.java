@@ -25,9 +25,10 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic;
 
 import static io.github.opencubicchunks.cubicchunks.api.util.Coords.blockToLocal;
 
-import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.CubeGeneratorsRegistry;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.event.DecorateCubeBiomeEvent;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.event.PopulateCubeEvent;
 import io.github.opencubicchunks.cubicchunks.cubicgen.BasicCubeGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
@@ -211,11 +212,11 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
             // noticeable issues
             Random rand = Coords.coordsSeedRandom(cube.getWorld().getSeed(), cube.getX(), cube.getY(), cube.getZ());
 
+            MinecraftForge.EVENT_BUS.post(new PopulateCubeEvent.Pre(world, rand, pos.getX(), pos.getY(), pos.getZ(), false));
+            strongholds.generateStructure(world, rand, pos);
             populators.get(cubicBiome.getBiome()).generate(world, rand, pos, cubicBiome.getBiome());
-            CubeGeneratorsRegistry.generateWorld(world, rand, pos, cubicBiome.getBiome());
-
-            strongholds.generateStructure((World) world, rand, pos);
-        }
+            MinecraftForge.EVENT_BUS.post(new PopulateCubeEvent.Post(world, rand, pos.getX(), pos.getY(), pos.getZ(), false));
+            CubeGeneratorsRegistry.generateWorld(world, rand, pos, cubicBiome.getBiome()); }
     }
 
     @Override

@@ -31,6 +31,9 @@ import com.google.gson.JsonSyntaxException;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.BiomeBlockReplacerConfig;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UITextFieldFixed;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.NoTranslationFont;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBorderLayout;
@@ -46,8 +49,10 @@ import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
 import net.malisis.core.client.gui.component.interaction.UIButton;
 import net.malisis.core.client.gui.component.interaction.UITextField;
+import net.malisis.core.client.gui.event.ComponentEvent;
 import net.malisis.core.renderer.font.FontOptions;
 import net.minecraft.client.gui.GuiCreateWorld;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.Map;
@@ -153,25 +158,66 @@ public class CustomCubicGui extends ExtraGui {
                     @Override public void construct() {
 
                         UIButton done, cancel;
-                        UITextField text;
-                        UIVerticalTableLayout<?> table = new UIVerticalTableLayout<>(this, 2);
-                        table.setPadding(HORIZONTAL_PADDING, 0);
-                        table.setSize(UIComponent.INHERITED, UIComponent.INHERITED)
-                                .setInsets(5, 5, 10, 10)
-                                .add(text = new UITextField(this, "").setSize(this.width - 20 - HORIZONTAL_PADDING*2, 10),
-                                        new UIVerticalTableLayout.GridLocation(0, 0, 2))
-                                .add(done = new UIButton(this, malisisText("presets.done")).setAutoSize(false).setSize(0, 20),
-                                        new UIVerticalTableLayout.GridLocation(1, 1, 1))
-                                .add(cancel = new UIButton(this, malisisText("presets.cancel")).setAutoSize(false).setSize(0, 20),
-                                        new UIVerticalTableLayout.GridLocation(0, 1, 1));
-                        text.setFont(NoTranslationFont.DEFAULT);
-                        text.setText(getSettingsJson());
-                        text.getCursorPosition().jumpToEnd();
+                        UITextField textMinified, textExpanded;
+
+                        UISplitLayout<?> presetsSplit = new UISplitLayout<>(this, UISplitLayout.Type.STACKED,
+                                textMinified = new UITextFieldFixed(this, "").setSize(0, 10),
+                                textExpanded = new UITextFieldFixed(this, "", true)
+                        ).setSizeOf(UISplitLayout.Pos.FIRST, 20);
+                        presetsSplit.setPadding(0, 3);
+
+                        UISplitLayout<?> presetsButtonsSplit = new UISplitLayout<>(this, UISplitLayout.Type.STACKED,
+                                presetsSplit,
+                                new UISplitLayout<>(this, UISplitLayout.Type.SIDE_BY_SIDE,
+                                        done = new UIButton(this, malisisText("presets.done")).setAutoSize(false).setSize(0, 20),
+                                        cancel = new UIButton(this, malisisText("presets.cancel")).setAutoSize(false).setSize(0, 20)
+                                )
+                        ).setSizeOf(UISplitLayout.Pos.SECOND, 26);
+                        presetsButtonsSplit.setPadding(HORIZONTAL_PADDING, 0);
+                        ((UIContainer<?>) presetsButtonsSplit.getSecond()).setPadding(0, 3);
+
+                        textMinified.register(new Object() {
+                            @Subscribe
+                            public void onChange(ComponentEvent.ValueChange<UITextField, String> event) {
+                                float scroll = textExpanded.getOffsetY();
+                                try {
+                                    CustomGeneratorSettings settings = CustomGeneratorSettings.fromJson(event.getNewValue());
+                                    textExpanded.setText(getFormattedJson(settings));
+                                    textExpanded.setOffsetY(scroll, 0);// delta doesn't appear to be used
+                                } catch (JsonSyntaxException | NumberFormatException ex) {
+                                    textExpanded.setText(I18n.format("cubicgen.gui.cubicgen.presets.invalid_json"));
+                                }
+                            }
+                        });
+
+                        textExpanded.register(new Object() {
+                            @Subscribe
+                            public void onChange(ComponentEvent.ValueChange<UITextField, String> event) {
+                                try {
+                                    CustomGeneratorSettings settings = CustomGeneratorSettings.fromJson(event.getNewValue());
+                                    textMinified.setText(getSettingsJson(settings, true));
+                                } catch (JsonSyntaxException | NumberFormatException ex) {
+                                    textMinified.setText(I18n.format("cubicgen.gui.cubicgen.presets.invalid_json"));
+                                }
+                            }
+                        });
+
+                        textExpanded.setFont(NoTranslationFont.DEFAULT);
+                        textExpanded.setText(getFormattedJson(getConfig()));
+
+                        // if we don't set the size before setting the text and jumping to the end,
+                        // the end will be shown at the beginning of the
+                        // textField, making the text invisible by default
+                        textMinified.setSize(this.width - HORIZONTAL_PADDING*2, 10);
+                        textMinified.setFont(NoTranslationFont.DEFAULT);
+                        textMinified.setText(getSettingsJson(getConfig(), true));
+                        textMinified.getCursorPosition().jumpToEnd();
+
                         done.register(new Object() {
                             @Subscribe
                             public void onClick(UIButton.ClickEvent evt) {
                                 try {
-                                    CustomGeneratorSettings settings = CustomGeneratorSettings.fromJson(text.getText());
+                                    CustomGeneratorSettings settings = CustomGeneratorSettings.fromJson(textMinified.getText());
                                     CustomCubicGui.this.reinit(settings);
                                     mc.displayGuiScreen(CustomCubicGui.this);
                                 } catch (JsonSyntaxException | NumberFormatException ex) {
@@ -185,8 +231,8 @@ public class CustomCubicGui extends ExtraGui {
                                 mc.displayGuiScreen(CustomCubicGui.this);
                             }
                         });
-                        addToScreen(inPanel(table));
-                        table.setSize(UIComponent.INHERITED, UIComponent.INHERITED);
+                        addToScreen(inPanel(presetsButtonsSplit));
+                        presetsButtonsSplit.setSize(UIComponent.INHERITED, UIComponent.INHERITED);
                     }
                 }.display();
             }
@@ -209,7 +255,7 @@ public class CustomCubicGui extends ExtraGui {
     }
 
     private void done() {
-        parent.chunkProviderSettingsJson = getSettingsJson();
+        parent.chunkProviderSettingsJson = getSettingsJson(getConfig(), true);
         this.mc.displayGuiScreen(parent);
     }
 
@@ -223,7 +269,12 @@ public class CustomCubicGui extends ExtraGui {
         conf.replacerConfig = replacerConf;
         return conf;
     }
-    String getSettingsJson() {
-        return getConfig().toJson();
+
+    String getSettingsJson(CustomGeneratorSettings conf, boolean minimized) {
+        return conf.toJson(minimized);
+    }
+
+    String getFormattedJson(CustomGeneratorSettings conf) {
+        return CustomGeneratorSettings.gsonBuilder(false).setPrettyPrinting().create().toJson(conf);
     }
 }
