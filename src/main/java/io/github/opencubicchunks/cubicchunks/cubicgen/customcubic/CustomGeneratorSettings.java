@@ -838,6 +838,8 @@ public class CustomGeneratorSettings {
                         if (root.has(field.getName())) {
                             JsonElement e = root.get(field.getName());
                             field.set(ret, ctx.deserialize(e, field.getGenericType()));
+                        } else {
+                            field.set(ret, field.get(def));
                         }
                     }
                 }
