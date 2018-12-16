@@ -267,7 +267,6 @@ public class CustomCubicGui extends ExtraGui {
     }
 
     private void done() {
-        getConfig().save(new File(Minecraft.getMinecraft().mcDataDir, "saves/"+parent.saveDirName+"/"));
         settingsJsonString = getSettingsJson(getConfig(), true);
         this.mc.displayGuiScreen(parent);
     }
