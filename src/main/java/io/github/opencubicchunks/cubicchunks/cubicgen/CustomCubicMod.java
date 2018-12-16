@@ -103,9 +103,6 @@ public class CustomCubicMod {
         CustomCubicWorldType.create();
         DebugWorldType.create();
 
-
-        ModFixs fixes = FMLCommonHandler.instance().getDataFixer().init(MODID, FIXER_VERSION);
-        CustomGeneratorSettings.registerDataFixers(fixes);
     }
 
     @Mod.EventHandler
