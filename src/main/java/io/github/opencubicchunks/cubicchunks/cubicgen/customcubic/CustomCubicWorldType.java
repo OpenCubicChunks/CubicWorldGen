@@ -57,6 +57,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
 
+    // This string is not empty when and only when someone used a CustomCubicGUI
+    // and press a Done button both in this CustomCubicGUI and in a WorldCreationGUI
+    public static String pendingCustomCubicSettingsJsonString = "";
+
     private CustomCubicWorldType() {
         super("CustomCubic");
     }
@@ -97,8 +101,8 @@ public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
     
     @Override
     public void onGUICreateWorldPress() { 
-        GuiCreateWorld gui = (GuiCreateWorld) Minecraft.getMinecraft().currentScreen;
-        CustomGeneratorSettings.fromJson(CustomCubicGui.settingsJsonString).save(new File(Minecraft.getMinecraft().mcDataDir, "saves/"+gui.saveDirName+"/"));
+        pendingCustomCubicSettingsJsonString = CustomCubicGui.settingsJsonString;
+        CustomCubicGui.settingsJsonString = "";
     }
 
     @SideOnly(Side.CLIENT)

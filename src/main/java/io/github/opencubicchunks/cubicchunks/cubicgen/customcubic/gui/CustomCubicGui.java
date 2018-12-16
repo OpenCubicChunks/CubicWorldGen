@@ -89,8 +89,8 @@ public class CustomCubicGui extends ExtraGui {
     private Map<CustomGeneratorSettings.IntAABB, CustomGeneratorSettings> areas;
     private BiomeBlockReplacerConfig replacerConf;
     // Store config here between GUI calls, so we would not need to store it in
-    // parent GUI. As a negative side effect - settings will persist across
-    // different new world GUI calls.
+    // parent GUI. Whenever player will press create world GUI button it will be
+    // transfered to CustomCubicWorld type to be saved.
     public static String settingsJsonString = "";
 
     public CustomCubicGui(GuiCreateWorld parent) {
@@ -105,7 +105,7 @@ public class CustomCubicGui extends ExtraGui {
     @Override
     public void construct() {
         CustomGeneratorSettings conf = null;
-        if (settingsJsonString != null)
+        if (!settingsJsonString.isEmpty())
             conf = CustomGeneratorSettings.fromJson(settingsJsonString);
         else
             conf = new CustomGeneratorSettings();

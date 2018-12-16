@@ -215,9 +215,8 @@ public class CustomGeneratorSettings {
         String jsonString = null;
         CustomGeneratorSettings settings = null;
         if (externalGeneratorPresetFile.exists()) {
-            FileReader reader = null;
-            try {
-                reader = new FileReader(externalGeneratorPresetFile);
+            try (FileReader reader = new FileReader(externalGeneratorPresetFile)){
+                ;
                 CharBuffer sb = CharBuffer.allocate(Short.MAX_VALUE << 3);
                 reader.read(sb);
                 sb.flip();
@@ -227,13 +226,11 @@ public class CustomGeneratorSettings {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+        }
+        else if(!CustomCubicWorldType.pendingCustomCubicSettingsJsonString.isEmpty()) {
+            settings = CustomGeneratorSettings.fromJson(CustomCubicWorldType.pendingCustomCubicSettingsJsonString);
+            CustomCubicWorldType.pendingCustomCubicSettingsJsonString = "";
+            settings.save(world);
         }
         else {
             CustomCubicMod.LOGGER.info("No settings provided at " + externalGeneratorPresetFile.getAbsolutePath());
@@ -242,33 +239,25 @@ public class CustomGeneratorSettings {
             jsonString = world.getWorldInfo().getGeneratorOptions();
             jsonString = fixGeneratorOptionsIfNecessary(jsonString);
             settings = fromJson(jsonString);
-            settings.save(world.getSaveHandler().getWorldDirectory());
+            settings.save(world);
         }
         return settings;
     }
     
-    public void save(File worldSaveFolder) {
-        File folder = new File(worldSaveFolder, "/data/" + CustomCubicMod.MODID +"/");
-        FileWriter writer = null;
-        try {
+    public void save(World world) {
+        File folder = new File(world.getSaveHandler().getWorldDirectory(), "/data/" + CustomCubicMod.MODID +"/");
+        File settingsFile = new File(folder,  "custom_generator_settings.json");
+        try (FileWriter writer = new FileWriter(settingsFile)) {
             folder.mkdirs();
-            File settingsFile = new File(folder,  "custom_generator_settings.json");
-            writer = new FileWriter(settingsFile);
+            ;
             writer.write(this.toJson(true));
-            if(settingsFile.exists())
+            if (settingsFile.exists())
                 CustomCubicMod.LOGGER.info("Generator settings saved at " + settingsFile.getAbsolutePath());
             else
                 CustomCubicMod.LOGGER.error("Error creating file at " + settingsFile.getAbsolutePath());
         } catch (IOException e) {
             CustomCubicMod.LOGGER.error("Cannot create new directory at " + folder.getAbsolutePath());
             e.printStackTrace();
-        }
-        if (writer != null) {
-            try {
-                writer.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -351,31 +340,6 @@ public class CustomGeneratorSettings {
         return settings;
     }
 
-    public static CustomGeneratorSettings fromVanilla(ChunkGeneratorSettings settings) {
-        CustomGeneratorSettings obj = defaults();
-
-        obj.lowNoiseFactor = 512.0f / settings.lowerLimitScale;
-        obj.highNoiseFactor = 512.0f / settings.upperLimitScale;
-
-        obj.depthNoiseFrequencyX = ConversionUtils.frequencyFromVanilla(settings.depthNoiseScaleX, 16);
-        obj.depthNoiseFrequencyZ = ConversionUtils.frequencyFromVanilla(settings.depthNoiseScaleZ, 16);
-        // settings.depthNoiseScaleExponent is ignored by vanilla
-
-        obj.selectorNoiseFrequencyX = ConversionUtils.frequencyFromVanilla(settings.coordinateScale / settings.mainNoiseScaleX, 8);
-        obj.selectorNoiseFrequencyY = ConversionUtils.frequencyFromVanilla(settings.heightScale / settings.mainNoiseScaleY, 8);
-        obj.selectorNoiseFrequencyZ = ConversionUtils.frequencyFromVanilla(settings.coordinateScale / settings.mainNoiseScaleZ, 8);
-
-        obj.lowNoiseFrequencyX = ConversionUtils.frequencyFromVanilla(settings.coordinateScale, 16);
-        obj.lowNoiseFrequencyY = ConversionUtils.frequencyFromVanilla(settings.heightScale, 16);
-        obj.lowNoiseFrequencyZ = ConversionUtils.frequencyFromVanilla(settings.coordinateScale, 16);
-
-        obj.highNoiseFrequencyX = ConversionUtils.frequencyFromVanilla(settings.coordinateScale, 16);
-        obj.highNoiseFrequencyY = ConversionUtils.frequencyFromVanilla(settings.heightScale, 16);
-        obj.highNoiseFrequencyZ = ConversionUtils.frequencyFromVanilla(settings.coordinateScale, 16);
-
-        return obj;
-    }
-    
     public static String fixGeneratorOptionsIfNecessary(String generatorOptions) {
         if (generatorOptions.isEmpty()) {
             generatorOptions = new CustomGeneratorSettings().toJson(false);
@@ -383,30 +347,11 @@ public class CustomGeneratorSettings {
         JsonReader reader = new JsonReader(new StringReader(generatorOptions));
         JsonObject root = new JsonParser().parse(reader).getAsJsonObject();
         if (!root.has("version") || root.get("version").getAsInt() < 3) {
-            generatorOptions = fixGeneratorOptions(generatorOptions);
+            generatorOptions = CustomGeneratorSettingsDataFixer.fixGeneratorOptions(generatorOptions);
         }
         return generatorOptions;
     }
 
-    public static String fixGeneratorOptions(String generatorOptionsToFix) {
-        generatorOptionsToFix = generatorOptionsToFix.replaceAll("cubicchunks:", MODID + ":");
-        String newGeneratorOptions = new CustomGeneratorSettings().toJson(true);
-        Gson gson = gson(false);
-        
-        JsonReader readerToFix = new JsonReader(new StringReader(generatorOptionsToFix));
-        JsonObject rootToFix = new JsonParser().parse(readerToFix).getAsJsonObject();
-
-        JsonReader newReader = new JsonReader(new StringReader(newGeneratorOptions));
-        JsonObject newRoot = new JsonParser().parse(newReader).getAsJsonObject();
-
-        for(Entry<String, JsonElement> entry:rootToFix.entrySet()) {
-            if(newRoot.has(entry.getKey())) {
-                newRoot.add(entry.getKey(), entry.getValue());
-            }
-        }
-
-        return gson.toJson(newRoot);
-    }
 
     public static Gson gson(boolean minimize) {
         return new GsonBuilder().serializeSpecialFloatingPointValues()
