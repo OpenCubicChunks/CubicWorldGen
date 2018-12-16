@@ -88,6 +88,10 @@ public class CustomCubicGui extends ExtraGui {
     private AdvancedTerrainShapeTab advancedterrainShapeSettings;
     private Map<CustomGeneratorSettings.IntAABB, CustomGeneratorSettings> areas;
     private BiomeBlockReplacerConfig replacerConf;
+    // Store config here between GUI calls, so we would not need to store it in
+    // parent GUI. As a negative side effect - settings will persist across
+    // different new world GUI calls.
+    public static String settingsJsonString = "";
 
     public CustomCubicGui(GuiCreateWorld parent) {
         super();
@@ -100,7 +104,11 @@ public class CustomCubicGui extends ExtraGui {
      */
     @Override
     public void construct() {
-        CustomGeneratorSettings conf = CustomGeneratorSettings.fromJson(parent.chunkProviderSettingsJson);
+        CustomGeneratorSettings conf = null;
+        if (settingsJsonString != null)
+            conf = CustomGeneratorSettings.fromJson(settingsJsonString);
+        else
+            conf = new CustomGeneratorSettings();
         reinit(conf);
     }
 
@@ -260,8 +268,7 @@ public class CustomCubicGui extends ExtraGui {
 
     private void done() {
         getConfig().save(new File(Minecraft.getMinecraft().mcDataDir, "saves/"+parent.saveDirName+"/"));
-        String settingsJsonString = getSettingsJson(getConfig(), true);
-        parent.chunkProviderSettingsJson = settingsJsonString;
+        settingsJsonString = getSettingsJson(getConfig(), true);
         this.mc.displayGuiScreen(parent);
     }
 

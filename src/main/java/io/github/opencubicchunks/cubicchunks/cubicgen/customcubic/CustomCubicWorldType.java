@@ -47,6 +47,7 @@ import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
@@ -92,6 +93,12 @@ public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
 
     public boolean isCustomizable() {
         return true;
+    }
+    
+    @Override
+    public void onGUICreateWorldPress() { 
+        GuiCreateWorld gui = (GuiCreateWorld) Minecraft.getMinecraft().currentScreen;
+        CustomGeneratorSettings.fromJson(CustomCubicGui.settingsJsonString).save(new File(Minecraft.getMinecraft().mcDataDir, "saves/"+gui.saveDirName+"/"));
     }
 
     @SideOnly(Side.CLIENT)
