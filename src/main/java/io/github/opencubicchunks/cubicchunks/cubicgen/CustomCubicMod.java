@@ -44,6 +44,7 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.Swam
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.TaigaDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.flat.FlatCubicWorldType;
 import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeBeach;
@@ -69,6 +70,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.apache.logging.log4j.Logger;
@@ -93,6 +95,7 @@ public class CustomCubicMod {
     public static final int FIXER_VERSION = 2;
     public static final boolean DEBUG_ENABLED = false;
     public static Logger LOGGER = null;
+    public static MinecraftServer SERVER = null;
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent e) {
@@ -111,6 +114,11 @@ public class CustomCubicMod {
     @Mod.EventHandler
     public void preInit(FMLPostInitializationEvent e) {
         CubicBiome.postInit();
+    }
+    
+    @Mod.EventHandler
+    public void serverStart(FMLServerAboutToStartEvent event) {
+        SERVER = event.getServer();
     }
 
     @SubscribeEvent
