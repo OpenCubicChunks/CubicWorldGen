@@ -6,7 +6,6 @@
     "minVersion": "0.6.15-SNAPSHOT",
     "plugin": "io.github.opencubicchunks.cubicchunks.cubicgen.asm.CubicGenMixinConfig",
     "mixins": [
-        "common.MixinWorldInfo",
         "common.structuregen.MixinStructureStart",
         "common.extras.FarLands"
     ],

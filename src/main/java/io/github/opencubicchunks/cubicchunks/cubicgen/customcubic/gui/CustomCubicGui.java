@@ -51,10 +51,17 @@ import net.malisis.core.client.gui.component.interaction.UIButton;
 import net.malisis.core.client.gui.component.interaction.UITextField;
 import net.malisis.core.client.gui.event.ComponentEvent;
 import net.malisis.core.renderer.font.FontOptions;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiCreateWorld;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -252,7 +259,23 @@ public class CustomCubicGui extends ExtraGui {
     }
 
     private void done() {
-        parent.chunkProviderSettingsJson = getSettingsJson(getConfig(), true);
+        String settingsJsonString = getSettingsJson(getConfig(), true);
+        File folder = new File(Minecraft.getMinecraft().mcDataDir, parent.saveDirName + "/data/" + CustomCubicMod.MODID +"/");
+        try {
+            File settingsFile = new File(folder,  "custom_generator_settings.json");
+            settingsFile.mkdirs();
+            FileWriter writer = new FileWriter(settingsFile);
+            writer.write(settingsJsonString);
+            writer.close();
+            if(settingsFile.exists())
+                CustomCubicMod.LOGGER.info("Generator settings saved at " + settingsFile.getAbsolutePath());
+            else
+                CustomCubicMod.LOGGER.error("Error creating file at " + settingsFile.getAbsolutePath());
+        } catch (IOException e) {
+            CustomCubicMod.LOGGER.error("Cannot create new directory at " + folder.getAbsolutePath());
+            e.printStackTrace();
+        }
+        parent.chunkProviderSettingsJson = settingsJsonString;
         this.mc.displayGuiScreen(parent);
     }
 

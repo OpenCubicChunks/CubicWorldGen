@@ -56,14 +56,21 @@ import net.minecraft.nbt.NBTUtil;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.datafix.FixTypes;
 import net.minecraft.util.datafix.IFixableData;
+import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.ChunkGeneratorSettings;
+import net.minecraft.world.storage.SaveFormatOld;
 import net.minecraftforge.common.util.ModFixs;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -196,6 +203,32 @@ public class CustomGeneratorSettings {
         }
         Gson gson = gson(true); // minimize option shouldn't matter when deserializing
         return gson.fromJson(json, CustomGeneratorSettings.class);
+    }
+    
+    public static CustomGeneratorSettings load(World world) {
+        File externalGeneratorPresetFile = new File(world.getSaveHandler().getWorldDirectory(),
+                "/data/" + CustomCubicMod.MODID + "/custom_generator_settings.json");
+        String jsonString = null;
+        if (externalGeneratorPresetFile.exists()) {
+            try {
+                FileReader reader = new FileReader(externalGeneratorPresetFile);
+                CharBuffer sb = CharBuffer.allocate(Short.MAX_VALUE << 3);
+                reader.read(sb);
+                sb.flip();
+                jsonString = sb.toString();
+                reader.close();
+                CustomCubicMod.LOGGER.info("Loading settings provided at " + externalGeneratorPresetFile.getAbsolutePath());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        else {
+            CustomCubicMod.LOGGER.info("No settings provided at " + externalGeneratorPresetFile.getAbsolutePath());
+            CustomCubicMod.LOGGER.info("Loading settings from 'level.dat'");
+            // Use old format to keep backward-compatibility
+            jsonString = world.getWorldInfo().getGeneratorOptions();
+        }
+        return fromJson(jsonString);
     }
 
     public static CustomGeneratorSettings defaults() {
