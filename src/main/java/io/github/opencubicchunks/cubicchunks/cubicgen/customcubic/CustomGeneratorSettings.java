@@ -184,7 +184,7 @@ public class CustomGeneratorSettings {
     public BiomeBlockReplacerConfig replacerConfig = BiomeBlockReplacerConfig.defaults();
 
     // TODO: public boolean negativeHeightVariationInvertsTerrain = true;
-    public int version = 3;
+    public int version = CustomGeneratorSettingsFixer.VERSION;
 
     public CustomGeneratorSettings() {
     }
@@ -200,13 +200,22 @@ public class CustomGeneratorSettings {
         Gson gson = gson(minimize);
         return gson.toJson(this);
     }
+    
+    public static boolean isOutdated(String settingsJsonString) {
+        JsonReader reader = new JsonReader(new StringReader(settingsJsonString));
+        JsonObject root = new JsonParser().parse(reader).getAsJsonObject();
+        return !root.has("version") || root.get("version").getAsInt() != CustomGeneratorSettingsFixer.VERSION;
+    }
 
-    public static CustomGeneratorSettings fromJson(String json) {
-        if (json.isEmpty()) {
+    public static CustomGeneratorSettings fromJson(String jsonString) {
+        if (jsonString.isEmpty()) {
             return defaults();
         }
+        if (isOutdated(jsonString)) {
+            jsonString = CustomGeneratorSettingsFixer.fixGeneratorOptions(jsonString);
+        }
         Gson gson = gson(true); // minimize option shouldn't matter when deserializing
-        return gson.fromJson(json, CustomGeneratorSettings.class);
+        return gson.fromJson(jsonString, CustomGeneratorSettings.class);
     }
     
     public static CustomGeneratorSettings load(World world) {
@@ -216,13 +225,15 @@ public class CustomGeneratorSettings {
         CustomGeneratorSettings settings = null;
         if (externalGeneratorPresetFile.exists()) {
             try (FileReader reader = new FileReader(externalGeneratorPresetFile)){
-                ;
                 CharBuffer sb = CharBuffer.allocate(Short.MAX_VALUE << 3);
                 reader.read(sb);
                 sb.flip();
                 jsonString = sb.toString();
-                CustomCubicMod.LOGGER.info("Loading settings provided at " + externalGeneratorPresetFile.getAbsolutePath());
+                CustomCubicMod.LOGGER.debug("Loading settings provided at " + externalGeneratorPresetFile.getAbsolutePath());
+                boolean isOutdated = isOutdated(jsonString);
                 settings = fromJson(jsonString);
+                if(isOutdated)
+                    settings.save(world);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -236,9 +247,7 @@ public class CustomGeneratorSettings {
             CustomCubicMod.LOGGER.info("No settings provided at " + externalGeneratorPresetFile.getAbsolutePath());
             CustomCubicMod.LOGGER.info("Loading settings from 'level.dat'");
             // Use old format to keep backward-compatibility
-            jsonString = world.getWorldInfo().getGeneratorOptions();
-            jsonString = fixGeneratorOptionsIfNecessary(jsonString);
-            settings = fromJson(jsonString);
+            settings = fromJson(world.getWorldInfo().getGeneratorOptions());
             settings.save(world);
         }
         return settings;
@@ -249,14 +258,11 @@ public class CustomGeneratorSettings {
         File settingsFile = new File(folder,  "custom_generator_settings.json");
         try (FileWriter writer = new FileWriter(settingsFile)) {
             folder.mkdirs();
-            ;
             writer.write(this.toJson(true));
-            if (settingsFile.exists())
-                CustomCubicMod.LOGGER.info("Generator settings saved at " + settingsFile.getAbsolutePath());
-            else
-                CustomCubicMod.LOGGER.error("Error creating file at " + settingsFile.getAbsolutePath());
+            CustomCubicMod.LOGGER.info("Generator settings saved at " + settingsFile.getAbsolutePath());
         } catch (IOException e) {
             CustomCubicMod.LOGGER.error("Cannot create new directory at " + folder.getAbsolutePath());
+            CustomCubicMod.LOGGER.error(this.toJson(true));
             e.printStackTrace();
         }
     }
@@ -339,19 +345,6 @@ public class CustomGeneratorSettings {
         }
         return settings;
     }
-
-    public static String fixGeneratorOptionsIfNecessary(String generatorOptions) {
-        if (generatorOptions.isEmpty()) {
-            generatorOptions = new CustomGeneratorSettings().toJson(false);
-        }
-        JsonReader reader = new JsonReader(new StringReader(generatorOptions));
-        JsonObject root = new JsonParser().parse(reader).getAsJsonObject();
-        if (!root.has("version") || root.get("version").getAsInt() < 3) {
-            generatorOptions = CustomGeneratorSettingsDataFixer.fixGeneratorOptions(generatorOptions);
-        }
-        return generatorOptions;
-    }
-
 
     public static Gson gson(boolean minimize) {
         return new GsonBuilder().serializeSpecialFloatingPointValues()
