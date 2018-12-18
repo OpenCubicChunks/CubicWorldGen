@@ -29,14 +29,11 @@ import java.io.StringReader;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.stream.JsonReader;
 
-import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.BiomeBlockReplacerConfig;
 import net.minecraft.block.BlockSilverfish;
 import net.minecraft.block.BlockStone;
 import net.minecraft.block.state.IBlockState;
@@ -50,7 +47,7 @@ public class CustomGeneratorSettingsHalfAssedFixer {
         generatorOptions = fixGeneratorOptionsVersion0(generatorOptions);
         generatorOptions = fixGeneratorOptionsVersion1(generatorOptions);
         generatorOptions = fixGeneratorOptionsVersion3(generatorOptions);
-        return CustomGeneratorSettings.fromJson(generatorOptions).toJson(true);
+        return CustomGeneratorSettings.fromJson(generatorOptions).toJson(false);
     }
     
     public static String fixGeneratorOptionsVersion0(String generatorOptions) {
