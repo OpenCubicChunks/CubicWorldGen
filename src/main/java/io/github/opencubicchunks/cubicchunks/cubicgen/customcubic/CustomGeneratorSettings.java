@@ -212,7 +212,7 @@ public class CustomGeneratorSettings {
             return defaults();
         }
         if (isOutdated(jsonString)) {
-            jsonString = CustomGeneratorSettingsFixer.fixGeneratorOptions(jsonString);
+            jsonString = CustomGeneratorSettingsHalfAssedFixer.fixGeneratorOptions(jsonString);
         }
         Gson gson = gson(true); // minimize option shouldn't matter when deserializing
         return gson.fromJson(jsonString, CustomGeneratorSettings.class);
@@ -263,7 +263,7 @@ public class CustomGeneratorSettings {
         } catch (IOException e) {
             CustomCubicMod.LOGGER.error("Cannot create new directory at " + folder.getAbsolutePath());
             CustomCubicMod.LOGGER.error(this.toJson(true));
-            e.printStackTrace();
+            CustomCubicMod.LOGGER.catching(e);
         }
     }
 

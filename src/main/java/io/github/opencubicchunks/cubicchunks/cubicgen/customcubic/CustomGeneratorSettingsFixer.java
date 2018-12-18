@@ -26,7 +26,6 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod.MODID;
 
 import java.io.StringReader;
-import java.util.Map.Entry;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -44,7 +43,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Biomes;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.gen.ChunkGeneratorSettings;
 
 public class CustomGeneratorSettingsFixer {
 
@@ -89,10 +87,10 @@ public class CustomGeneratorSettingsFixer {
         JsonReader oldReader = new JsonReader(new StringReader(generatorOptionsToFix));
         JsonObject oldRoot = new JsonParser().parse(oldReader).getAsJsonObject();
 
-        JsonReader newReader = new JsonReader(new StringReader(""));
+        JsonReader newReader = new JsonReader(new StringReader("{}"));
         JsonObject newRoot = new JsonParser().parse(newReader).getAsJsonObject();
 
-        newRoot.add("version", new JsonPrimitive(VERSION));
+        newRoot.add("version", new JsonPrimitive(3));
         newRoot.add("waterLevel", getWaterLevel(oldRoot));
         newRoot.add("caves", getCaves(oldRoot));
         newRoot.add("strongholds", getStrongholds(oldRoot));
