@@ -26,9 +26,6 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod.MODID;
 
 import java.io.StringReader;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -37,9 +34,6 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.stream.JsonReader;
 
-import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.BiomeBlockReplacerConfig;
-import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings.IntAABB;
 import net.minecraft.block.BlockSilverfish;
 import net.minecraft.block.BlockStone;
 import net.minecraft.block.state.IBlockState;
@@ -85,7 +79,7 @@ public class CustomGeneratorSettingsFixer {
     };
 
     public static String fixGeneratorOptions(JsonObject oldRoot, boolean calledForCubeArea) {
-        Gson gson = CustomGeneratorSettings.gson(false);
+        Gson gson = CustomGeneratorSettings.gson();
         JsonObject newRoot = stringToJson("{}");
 
         if (!calledForCubeArea)
@@ -380,7 +374,7 @@ public class CustomGeneratorSettingsFixer {
     private static JsonElement getPeriodicGaussianOres(JsonObject oldRoot) {
         if (oldRoot.has("periodicGaussianOres"))
             return oldRoot.get("periodicGaussianOres");
-        Gson gson = CustomGeneratorSettings.gson(false);
+        Gson gson = CustomGeneratorSettings.gson();
         JsonArray periodicGaussianOres = new JsonArray();
         JsonObject obj = convertGaussianPeriodicOre(gson, oldRoot, "lapisLazuli", Blocks.LAPIS_ORE.getDefaultState(),
                 null);
@@ -393,7 +387,7 @@ public class CustomGeneratorSettingsFixer {
     private static JsonElement getStandardOres(JsonObject oldRoot) {
         if (oldRoot.has("standardOres"))
             return oldRoot.get("standardOres");
-        Gson gson = CustomGeneratorSettings.gson(false);
+        Gson gson = CustomGeneratorSettings.gson();
         JsonArray standardOres = new JsonArray();
         for (int i = 0; i < standard.length; i++) {
             JsonObject obj = convertStandardOre(gson, oldRoot, standard[i], standardBlockstates[i], standardBiomes[i]);

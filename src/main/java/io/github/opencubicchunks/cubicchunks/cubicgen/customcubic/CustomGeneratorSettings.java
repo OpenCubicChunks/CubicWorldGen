@@ -25,7 +25,23 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic;
 
 import static io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod.MODID;
 
-import com.google.common.base.Objects;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
+import java.nio.CharBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -39,7 +55,7 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.JsonSyntaxException;
-import com.google.gson.stream.JsonReader;
+
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
@@ -47,7 +63,6 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.BiomeBlockRep
 import net.minecraft.block.BlockSilverfish;
 import net.minecraft.block.BlockStone;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.init.Biomes;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.JsonToNBT;
@@ -55,34 +70,9 @@ import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.datafix.FixTypes;
-import net.minecraft.util.datafix.IFixableData;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.gen.ChunkGeneratorSettings;
-import net.minecraft.world.storage.SaveFormatOld;
-import net.minecraftforge.common.util.ModFixs;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.StringReader;
-import java.lang.reflect.Field;
-import java.lang.reflect.Type;
-import java.nio.CharBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import javax.annotation.Nullable;
 
 public class CustomGeneratorSettings {
     /**
@@ -196,8 +186,8 @@ public class CustomGeneratorSettings {
         return replacerConfig;
     }
 
-    public String toJson(boolean minimize) {
-        Gson gson = gson(minimize);
+    public String toJson() {
+        Gson gson = gson();
         return gson.toJson(this);
     }
     
@@ -213,7 +203,7 @@ public class CustomGeneratorSettings {
         if (isOutdated(jsonString)) {
             jsonString = CustomGeneratorSettingsFixer.fixGeneratorOptions(CustomGeneratorSettingsFixer.stringToJson(jsonString), false);
         }
-        Gson gson = gson(false);
+        Gson gson = gson();
         return gson.fromJson(jsonString, CustomGeneratorSettings.class);
     }
     
@@ -257,11 +247,11 @@ public class CustomGeneratorSettings {
         File settingsFile = new File(folder,  "custom_generator_settings.json");
         try (FileWriter writer = new FileWriter(settingsFile)) {
             folder.mkdirs();
-            writer.write(this.toJson(false));
+            writer.write(this.toJson());
             CustomCubicMod.LOGGER.info("Generator settings saved at " + settingsFile.getAbsolutePath());
         } catch (IOException e) {
             CustomCubicMod.LOGGER.error("Cannot create new directory at " + folder.getAbsolutePath());
-            CustomCubicMod.LOGGER.error(this.toJson(false));
+            CustomCubicMod.LOGGER.error(this.toJson());
             CustomCubicMod.LOGGER.catching(e);
         }
     }
@@ -345,18 +335,18 @@ public class CustomGeneratorSettings {
         return settings;
     }
 
-    public static Gson gson(boolean minimize) {
-        return gsonBuilder(minimize).create();
+    public static Gson gson() {
+        return gsonBuilder().create();
     }
 
-    public static GsonBuilder gsonBuilder(boolean minimize) {
+    public static GsonBuilder gsonBuilder() {
         GsonBuilder builder = new GsonBuilder();
         builder.serializeSpecialFloatingPointValues();
         builder.enableComplexMapKeySerialization();
-        builder.registerTypeAdapter(CustomGeneratorSettings.class, new Serializer(minimize));
+        builder.registerTypeAdapter(CustomGeneratorSettings.class, new Serializer());
         builder.registerTypeHierarchyAdapter(IBlockState.class, BlockStateSerializer.INSTANCE);
         builder.registerTypeHierarchyAdapter(Biome.class, new BiomeSerializer());
-        builder.registerTypeAdapter(BiomeBlockReplacerConfig.class, new BiomeBlockReplacerConfigSerializer(minimize));
+        builder.registerTypeAdapter(BiomeBlockReplacerConfig.class, new BiomeBlockReplacerConfigSerializer());
         return builder;
     }
 
@@ -398,7 +388,6 @@ public class CustomGeneratorSettings {
             private float spawnProbability;
             private float minHeight = Float.NEGATIVE_INFINITY;
             private float maxHeight = Float.POSITIVE_INFINITY;
-            private Set<IBlockState> blockstates = new HashSet<>();
 
             public Builder block(IBlockState blockstate) {
                 this.blockstate = blockstate;
@@ -624,11 +613,6 @@ public class CustomGeneratorSettings {
         }
 
         private static final CustomGeneratorSettings defaults = CustomGeneratorSettings.defaults();
-        private final boolean minimize;
-
-        public Serializer(boolean minimize) {
-            this.minimize = minimize;
-        }
 
         @Override public CustomGeneratorSettings deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
                 throws JsonParseException {
@@ -682,11 +666,7 @@ public class CustomGeneratorSettings {
             try {
                 JsonObject root = new JsonObject();
                 for (Field field : fields) {
-                    Object defValue = field.get(def);
                     Object value = field.get(src);
-                    if (minimize && Objects.equal(defValue, value)) {
-                        continue;
-                    }
                     if (field.getName().equals("cubeAreas")) {
                         JsonArray cubeAreas = new JsonArray();
                         for (Map.Entry<IntAABB, CustomGeneratorSettings> entry : src.cubeAreas.entrySet()) {
@@ -735,12 +715,6 @@ public class CustomGeneratorSettings {
     private static class BiomeBlockReplacerConfigSerializer
             implements JsonDeserializer<BiomeBlockReplacerConfig>, JsonSerializer<BiomeBlockReplacerConfig> {
 
-        private final boolean minimize;
-
-        public BiomeBlockReplacerConfigSerializer(boolean minimize) {
-            this.minimize = minimize;
-        }
-
         @Override public BiomeBlockReplacerConfig deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
                 throws JsonParseException {
 
@@ -775,19 +749,13 @@ public class CustomGeneratorSettings {
         @Override public JsonElement serialize(BiomeBlockReplacerConfig src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject root = new JsonObject();
 
-            BiomeBlockReplacerConfig defaultValues = BiomeBlockReplacerConfig.defaults();
-
             JsonObject defaults = new JsonObject();
             JsonObject overrides = new JsonObject();
 
             for (Map.Entry<ResourceLocation, Object> e : src.getDefaults().entrySet()) {
-                if (minimize && Objects.equal(defaultValues.getValue(e.getKey()), e.getValue())) {
-                    continue;
-                }
                 defaults.add(e.getKey().toString(), getJsonElement(context, e));
             }
             for (Map.Entry<ResourceLocation, Object> e : src.getOverrides().entrySet()) {
-                // don't "minimize" overrides
                 overrides.add(e.getKey().toString(), getJsonElement(context, e));
             }
             root.add("defaults", defaults);
