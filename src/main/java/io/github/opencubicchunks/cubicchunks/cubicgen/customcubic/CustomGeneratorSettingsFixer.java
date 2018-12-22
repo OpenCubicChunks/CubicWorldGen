@@ -527,7 +527,7 @@ public class CustomGeneratorSettingsFixer {
         return obj;
     }
     
-    static JsonObject stringToJson(String jsonString) {
+    public static JsonObject stringToJson(String jsonString) {
         JsonReader reader = new JsonReader(new StringReader(jsonString));
         return new JsonParser().parse(reader).getAsJsonObject();
     }
