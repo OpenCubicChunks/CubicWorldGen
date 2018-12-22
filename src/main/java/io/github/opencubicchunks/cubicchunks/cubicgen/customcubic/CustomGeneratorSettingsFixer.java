@@ -26,6 +26,8 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod.MODID;
 
 import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -37,6 +39,7 @@ import com.google.gson.stream.JsonReader;
 
 import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.BiomeBlockReplacerConfig;
+import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings.IntAABB;
 import net.minecraft.block.BlockSilverfish;
 import net.minecraft.block.BlockStone;
 import net.minecraft.block.state.IBlockState;
@@ -81,84 +84,151 @@ public class CustomGeneratorSettingsFixer {
                                                                                // gold
     };
 
-    public static String fixGeneratorOptions(String generatorOptionsToFix) {
+    public static String fixGeneratorOptions(JsonObject oldRoot, boolean calledForCubeArea) {
         Gson gson = CustomGeneratorSettings.gson(false);
+        JsonObject newRoot = stringToJson("{}");
 
-        JsonReader oldReader = new JsonReader(new StringReader(generatorOptionsToFix));
-        JsonObject oldRoot = new JsonParser().parse(oldReader).getAsJsonObject();
-
-        JsonReader newReader = new JsonReader(new StringReader("{}"));
-        JsonObject newRoot = new JsonParser().parse(newReader).getAsJsonObject();
-
-        newRoot.add("version", new JsonPrimitive(3));
-        newRoot.add("waterLevel", getWaterLevel(oldRoot));
-        newRoot.add("caves", getCaves(oldRoot));
-        newRoot.add("strongholds", getStrongholds(oldRoot));
-        newRoot.add("alternateStrongholdsPositions", getAlternateStrongholdsPositions(oldRoot));
-        newRoot.add("villages", getVillages(oldRoot));
-        newRoot.add("mineshafts", getMineshafts(oldRoot));
-        newRoot.add("temples", getTemples(oldRoot));
-        newRoot.add("oceanMonuments", getOceanMonuments(oldRoot));
-        newRoot.add("woodlandMansions", getWoodlandMansions(oldRoot));
-        newRoot.add("ravines", getRavines(oldRoot));
-        newRoot.add("dungeons", getDungeons(oldRoot));
-        newRoot.add("dungeonCount", getDungeonCount(oldRoot));
-        newRoot.add("waterLakes", getWaterLakes(oldRoot));
-        newRoot.add("waterLakeRarity", getWaterLakeRarity(oldRoot));
-        newRoot.add("lavaLakes", getLavaLakes(oldRoot));
-        newRoot.add("lavaLakeRarity", getLavaLakeRarity(oldRoot));
-        newRoot.add("aboveSeaLavaLakeRarity", getAboveSeaLavaLakeRarity(oldRoot));
-        newRoot.add("lavaOceans", getLavaOceans(oldRoot));
-        newRoot.add("biome", getBiome(oldRoot));
-        newRoot.add("biomeSize", getBiomeSize(oldRoot));
-        newRoot.add("riverSize", getRiverSize(oldRoot));
-        newRoot.add("standardOres", getStandardOres(oldRoot));
-        newRoot.add("periodicGaussianOres", getPeriodicGaussianOres(oldRoot));
-        newRoot.add("expectedBaseHeight", getExpectedBaseHeight(oldRoot));
-        newRoot.add("expectedHeightVariation", getExpectedHeightVariation(oldRoot));
-        newRoot.add("actualHeight", getActualHeight(oldRoot));
-        newRoot.add("heightVariationFactor", getHeightVariationFactor(oldRoot));
-        newRoot.add("specialHeightVariationFactorBelowAverageY", getSpecialHeightVariationFactorBelowAverageY(oldRoot));
-        newRoot.add("heightVariationOffset", getHeightVariationOffset(oldRoot));
-        newRoot.add("heightFactor", getHeightFactor(oldRoot));
-        newRoot.add("heightOffset", getHeightOffset(oldRoot));
-        newRoot.add("depthNoiseFactor", getDepthNoiseFactor(oldRoot));
-        newRoot.add("depthNoiseOffset", getDepthNoiseOffset(oldRoot));
-        newRoot.add("depthNoiseFrequencyX", getDepthNoiseFrequencyX(oldRoot));
-        newRoot.add("depthNoiseFrequencyZ", getDepthNoiseFrequencyZ(oldRoot));
-        newRoot.add("depthNoiseOctaves", getDepthNoiseOctaves(oldRoot));
-        newRoot.add("selectorNoiseFactor", getSelectorNoiseFactor(oldRoot));
-        newRoot.add("selectorNoiseOffset", getSelectorNoiseOffset(oldRoot));
-        newRoot.add("selectorNoiseFrequencyX", getSelectorNoiseFrequencyX(oldRoot));
-        newRoot.add("selectorNoiseFrequencyY", getSelectorNoiseFrequencyY(oldRoot));
-        newRoot.add("selectorNoiseFrequencyZ", getSelectorNoiseFrequencyZ(oldRoot));
-        newRoot.add("selectorNoiseOctaves", getSelectorNoiseOctaves(oldRoot));
-        newRoot.add("lowNoiseFactor", getLowNoiseFactor(oldRoot));
-        newRoot.add("lowNoiseOffset", getLowNoiseOffset(oldRoot));
-        newRoot.add("lowNoiseFrequencyX", getLowNoiseFrequencyX(oldRoot));
-        newRoot.add("lowNoiseFrequencyY", getLowNoiseFrequencyY(oldRoot));
-        newRoot.add("lowNoiseFrequencyZ", getLowNoiseFrequencyZ(oldRoot));
-        newRoot.add("lowNoiseOctaves", getLowNoiseOctaves(oldRoot));
-        newRoot.add("highNoiseFactor", getHighNoiseFactor(oldRoot));
-        newRoot.add("highNoiseOffset", getHighNoiseOffset(oldRoot));
-        newRoot.add("highNoiseFrequencyX", getHighNoiseFrequencyX(oldRoot));
-        newRoot.add("highNoiseFrequencyY", getHighNoiseFrequencyY(oldRoot));
-        newRoot.add("highNoiseFrequencyZ", getHighNoiseFrequencyZ(oldRoot));
-        newRoot.add("highNoiseOctaves", getHighNoiseOctaves(oldRoot));
-        newRoot.add("cubeAreas", getCubeAreas(oldRoot));
-        newRoot.add("replacerConfig", getReplacerConfig(oldRoot));
+        if (!calledForCubeArea)
+            newRoot.add("version", new JsonPrimitive(3));
+        if (!calledForCubeArea || oldRoot.has("waterLevel"))
+            newRoot.add("waterLevel", getWaterLevel(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("caves"))
+            newRoot.add("caves", getCaves(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("strongholds"))
+            newRoot.add("strongholds", getStrongholds(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("alternateStrongholdsPositions"))
+            newRoot.add("alternateStrongholdsPositions", getAlternateStrongholdsPositions(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("villages"))
+            newRoot.add("villages", getVillages(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("mineshafts"))
+            newRoot.add("mineshafts", getMineshafts(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("temples"))
+            newRoot.add("temples", getTemples(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("oceanMonuments"))
+            newRoot.add("oceanMonuments", getOceanMonuments(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("woodlandMansions"))
+            newRoot.add("woodlandMansions", getWoodlandMansions(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("ravines"))
+            newRoot.add("ravines", getRavines(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("dungeons"))
+            newRoot.add("dungeons", getDungeons(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("dungeonCount"))
+            newRoot.add("dungeonCount", getDungeonCount(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("waterLakes"))
+            newRoot.add("waterLakes", getWaterLakes(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("waterLakeRarity"))
+            newRoot.add("waterLakeRarity", getWaterLakeRarity(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("lavaLakes"))
+            newRoot.add("lavaLakes", getLavaLakes(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("lavaLakeRarity"))
+            newRoot.add("lavaLakeRarity", getLavaLakeRarity(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("aboveSeaLavaLakeRarity"))
+            newRoot.add("aboveSeaLavaLakeRarity", getAboveSeaLavaLakeRarity(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("lavaOceans"))
+            newRoot.add("lavaOceans", getLavaOceans(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("biome"))
+            newRoot.add("biome", getBiome(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("biomeSize"))
+            newRoot.add("biomeSize", getBiomeSize(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("riverSize"))
+            newRoot.add("riverSize", getRiverSize(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("standardOres"))
+            newRoot.add("standardOres", getStandardOres(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("periodicGaussianOres"))
+            newRoot.add("periodicGaussianOres", getPeriodicGaussianOres(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("expectedBaseHeight"))
+            newRoot.add("expectedBaseHeight", getExpectedBaseHeight(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("expectedHeightVariation"))
+            newRoot.add("expectedHeightVariation", getExpectedHeightVariation(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("actualHeight"))
+            newRoot.add("actualHeight", getActualHeight(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("heightVariationFactor"))
+            newRoot.add("heightVariationFactor", getHeightVariationFactor(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("specialHeightVariationFactorBelowAverageY"))
+            newRoot.add("specialHeightVariationFactorBelowAverageY",
+                    getSpecialHeightVariationFactorBelowAverageY(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("heightVariationOffset"))
+            newRoot.add("heightVariationOffset", getHeightVariationOffset(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("heightFactor"))
+            newRoot.add("heightFactor", getHeightFactor(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("heightOffset"))
+            newRoot.add("heightOffset", getHeightOffset(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("depthNoiseFactor"))
+            newRoot.add("depthNoiseFactor", getDepthNoiseFactor(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("depthNoiseOffset"))
+            newRoot.add("depthNoiseOffset", getDepthNoiseOffset(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("depthNoiseFrequencyX"))
+            newRoot.add("depthNoiseFrequencyX", getDepthNoiseFrequencyX(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("depthNoiseFrequencyZ"))
+            newRoot.add("depthNoiseFrequencyZ", getDepthNoiseFrequencyZ(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("depthNoiseOctaves"))
+            newRoot.add("depthNoiseOctaves", getDepthNoiseOctaves(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("selectorNoiseFactor"))
+            newRoot.add("selectorNoiseFactor", getSelectorNoiseFactor(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("selectorNoiseOffset"))
+            newRoot.add("selectorNoiseOffset", getSelectorNoiseOffset(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("selectorNoiseFrequencyX"))
+            newRoot.add("selectorNoiseFrequencyX", getSelectorNoiseFrequencyX(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("selectorNoiseFrequencyY"))
+            newRoot.add("selectorNoiseFrequencyY", getSelectorNoiseFrequencyY(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("selectorNoiseFrequencyZ"))
+            newRoot.add("selectorNoiseFrequencyZ", getSelectorNoiseFrequencyZ(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("selectorNoiseOctaves"))
+            newRoot.add("selectorNoiseOctaves", getSelectorNoiseOctaves(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("lowNoiseFactor"))
+            newRoot.add("lowNoiseFactor", getLowNoiseFactor(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("lowNoiseOffset"))
+            newRoot.add("lowNoiseOffset", getLowNoiseOffset(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("lowNoiseFrequencyX"))
+            newRoot.add("lowNoiseFrequencyX", getLowNoiseFrequencyX(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("lowNoiseFrequencyY"))
+            newRoot.add("lowNoiseFrequencyY", getLowNoiseFrequencyY(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("lowNoiseFrequencyZ"))
+            newRoot.add("lowNoiseFrequencyZ", getLowNoiseFrequencyZ(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("lowNoiseOctaves"))
+            newRoot.add("lowNoiseOctaves", getLowNoiseOctaves(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("highNoiseFactor"))
+            newRoot.add("highNoiseFactor", getHighNoiseFactor(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("highNoiseOffset"))
+            newRoot.add("highNoiseOffset", getHighNoiseOffset(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("highNoiseFrequencyX"))
+            newRoot.add("highNoiseFrequencyX", getHighNoiseFrequencyX(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("highNoiseFrequencyY"))
+            newRoot.add("highNoiseFrequencyY", getHighNoiseFrequencyY(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("highNoiseFrequencyZ"))
+            newRoot.add("highNoiseFrequencyZ", getHighNoiseFrequencyZ(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("highNoiseOctaves"))
+            newRoot.add("highNoiseOctaves", getHighNoiseOctaves(oldRoot));
+        if (!calledForCubeArea)
+            newRoot.add("cubeAreas", getCubeAreas(oldRoot));
+        if (!calledForCubeArea || oldRoot.has("replacerConfig"))
+            newRoot.add("replacerConfig", getReplacerConfig(oldRoot));
 
         String newGeneratorOptions = gson.toJson(newRoot).replaceAll("cubicchunks:", MODID + ":");
         return newGeneratorOptions;
     }
 
     private static JsonElement getReplacerConfig(JsonObject json) {
-        Gson gson = CustomGeneratorSettings.gson(false);
-        return getOrDefault(json, "replacerConfig", gson.toJsonTree(BiomeBlockReplacerConfig.defaults()));
+        JsonReader reader = new JsonReader(new StringReader("{\"defaults\":{\"cubicgen:biome_fill_noise_octaves\":4.0,\"cubicgen:ocean_block\":{\"Properties\":{\"level\":\"0\"},\"Name\":\"minecraft:water\"},\"cubicgen:height_scale\":64.0,\"cubicgen:biome_fill_noise_freq\":0.0078125,\"cubicgen:water_level\":63.0,\"cubicgen:biome_fill_depth_factor\":2.3333333333333335,\"cubicgen:terrain_fill_block\":{\"Properties\":{\"variant\":\"stone\"},\"Name\":\"minecraft:stone\"},\"cubicgen:mesa_depth\":16.0,\"cubicgen:biome_fill_depth_offset\":3.0,\"cubicgen:horizontal_gradient_depth_decrease_weight\":1.0,\"cubicgen:height_offset\":64.0},\"overrides\":{}}"));
+        JsonObject biomeBlockReplacerConfigDefaultJson = new JsonParser().parse(reader).getAsJsonObject();
+        return getOrDefault(json, "replacerConfig", biomeBlockReplacerConfigDefaultJson);
     }
 
     private static JsonElement getCubeAreas(JsonObject json) {
-        return getOrDefault(json, "cubeAreas", new JsonArray());
+        JsonArray cubeAreas = new JsonArray();
+        if (json.has("cubeAreas") && json.get("cubeAreas").isJsonArray()) {
+            JsonArray array = json.get("cubeAreas").getAsJsonArray();
+            for (JsonElement entry : array) {
+                JsonArray mapEntry = entry.getAsJsonArray();
+                JsonElement key = mapEntry.get(0);
+                JsonObject value = stringToJson(fixGeneratorOptions(mapEntry.get(1).getAsJsonObject(), true));
+                JsonArray newEntry = new JsonArray();
+                newEntry.add(key);
+                newEntry.add(value);
+                cubeAreas.add(newEntry);
+            }
+        }
+        return cubeAreas;
     }
 
     private static JsonElement getHighNoiseOctaves(JsonObject json) {
@@ -167,17 +237,17 @@ public class CustomGeneratorSettingsFixer {
 
     private static JsonElement getHighNoiseFrequencyZ(JsonObject json) {
         return getOrDefault(json, "highNoiseFrequencyZ",
-                new JsonPrimitive(ConversionUtils.VANILLA_LOWHIGH_NOISE_FREQUENCY_XZ));
+                new JsonPrimitive(0.005221649));
     }
 
     private static JsonElement getHighNoiseFrequencyY(JsonObject json) {
         return getOrDefault(json, "highNoiseFrequencyY",
-                new JsonPrimitive(ConversionUtils.VANILLA_LOWHIGH_NOISE_FREQUENCY_Y));
+                new JsonPrimitive(0.0026108245));
     }
 
     private static JsonElement getHighNoiseFrequencyX(JsonObject json) {
         return getOrDefault(json, "highNoiseFrequencyX",
-                new JsonPrimitive(ConversionUtils.VANILLA_LOWHIGH_NOISE_FREQUENCY_XZ));
+                new JsonPrimitive(0.005221649));
     }
 
     private static JsonElement getHighNoiseOffset(JsonObject json) {
@@ -190,17 +260,17 @@ public class CustomGeneratorSettingsFixer {
 
     private static JsonElement getLowNoiseFrequencyZ(JsonObject json) {
         return getOrDefault(json, "lowNoiseFrequencyZ",
-                new JsonPrimitive(ConversionUtils.VANILLA_LOWHIGH_NOISE_FREQUENCY_XZ));
+                new JsonPrimitive(0.005221649));
     }
 
     private static JsonElement getLowNoiseFrequencyY(JsonObject json) {
         return getOrDefault(json, "lowNoiseFrequencyY",
-                new JsonPrimitive(ConversionUtils.VANILLA_LOWHIGH_NOISE_FREQUENCY_Y));
+                new JsonPrimitive(0.0026108245));
     }
 
     private static JsonElement getLowNoiseFrequencyX(JsonObject json) {
         return getOrDefault(json, "lowNoiseFrequencyX",
-                new JsonPrimitive(ConversionUtils.VANILLA_LOWHIGH_NOISE_FREQUENCY_XZ));
+                new JsonPrimitive(0.005221649));
     }
 
     private static JsonElement getLowNoiseOffset(JsonObject json) {
@@ -221,27 +291,27 @@ public class CustomGeneratorSettingsFixer {
 
     private static JsonElement getSelectorNoiseFrequencyZ(JsonObject json) {
         return getOrDefault(json, "selectorNoiseFrequencyZ",
-                new JsonPrimitive(ConversionUtils.VANILLA_SELECTOR_NOISE_FREQUENCY_XZ));
+                new JsonPrimitive(0.016709277));
     }
 
     private static JsonElement getSelectorNoiseFrequencyX(JsonObject json) {
         return getOrDefault(json, "selectorNoiseFrequencyX",
-                new JsonPrimitive(ConversionUtils.VANILLA_SELECTOR_NOISE_FREQUENCY_XZ));
+                new JsonPrimitive(0.016709277));
     }
 
     private static JsonElement getSelectorNoiseFrequencyY(JsonObject json) {
         return getOrDefault(json, "selectorNoiseFrequencyY",
-                new JsonPrimitive(ConversionUtils.VANILLA_SELECTOR_NOISE_FREQUENCY_Y));
+                new JsonPrimitive(0.008354639));
     }
 
     private static JsonElement getSelectorNoiseOffset(JsonObject json) {
         return getOrDefault(json, "selectorNoiseOffset",
-                new JsonPrimitive(ConversionUtils.VANILLA_SELECTOR_NOISE_OFFSET));
+                new JsonPrimitive(0.5));
     }
 
     private static JsonElement getSelectorNoiseFactor(JsonObject json) {
         return getOrDefault(json, "selectorNoiseFactor",
-                new JsonPrimitive(ConversionUtils.VANILLA_SELECTOR_NOISE_FACTOR));
+                new JsonPrimitive(12.75));
     }
 
     private static JsonElement getDepthNoiseOctaves(JsonObject json) {
@@ -250,12 +320,12 @@ public class CustomGeneratorSettingsFixer {
 
     private static JsonElement getDepthNoiseFrequencyZ(JsonObject json) {
         return getOrDefault(json, "depthNoiseFrequencyZ",
-                new JsonPrimitive(ConversionUtils.VANILLA_DEPTH_NOISE_FREQUENCY));
+                new JsonPrimitive(0.0015258789));
     }
 
     private static JsonElement getDepthNoiseFrequencyX(JsonObject json) {
         return getOrDefault(json, "depthNoiseFrequencyX",
-                new JsonPrimitive(ConversionUtils.VANILLA_DEPTH_NOISE_FREQUENCY));
+                new JsonPrimitive(0.0015258789));
     }
 
     private static JsonElement getDepthNoiseOffset(JsonObject json) {
@@ -263,7 +333,7 @@ public class CustomGeneratorSettingsFixer {
     }
 
     private static JsonElement getDepthNoiseFactor(JsonObject json) {
-        return getOrDefault(json, "depthNoiseFactor", new JsonPrimitive(ConversionUtils.VANILLA_DEPTH_NOISE_FACTOR));
+        return getOrDefault(json, "depthNoiseFactor", new JsonPrimitive(1.024));
     }
 
     private static JsonElement getHeightOffset(JsonObject json) {
@@ -461,5 +531,10 @@ public class CustomGeneratorSettingsFixer {
         obj.add("heightStdDeviation", root.remove(ore + "HeightStdDeviation"));
         obj.add("heightSpacing", root.remove(ore + "HeightSpacing"));
         return obj;
+    }
+    
+    static JsonObject stringToJson(String jsonString) {
+        JsonReader reader = new JsonReader(new StringReader(jsonString));
+        return new JsonParser().parse(reader).getAsJsonObject();
     }
 }

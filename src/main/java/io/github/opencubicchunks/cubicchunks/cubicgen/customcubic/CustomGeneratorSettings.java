@@ -202,8 +202,7 @@ public class CustomGeneratorSettings {
     }
     
     public static boolean isOutdated(String settingsJsonString) {
-        JsonReader reader = new JsonReader(new StringReader(settingsJsonString));
-        JsonObject root = new JsonParser().parse(reader).getAsJsonObject();
+        JsonObject root = CustomGeneratorSettingsFixer.stringToJson(settingsJsonString);
         return !root.has("version") || root.get("version").getAsInt() != CustomGeneratorSettingsFixer.VERSION;
     }
 
@@ -212,9 +211,9 @@ public class CustomGeneratorSettings {
             return defaults();
         }
         if (isOutdated(jsonString)) {
-            jsonString = CustomGeneratorSettingsHalfAssedFixer.fixGeneratorOptions(jsonString);
+            jsonString = CustomGeneratorSettingsFixer.fixGeneratorOptions(CustomGeneratorSettingsFixer.stringToJson(jsonString), false);
         }
-        Gson gson = gson(true); // minimize option shouldn't matter when deserializing
+        Gson gson = gson(false);
         return gson.fromJson(jsonString, CustomGeneratorSettings.class);
     }
     
@@ -258,11 +257,11 @@ public class CustomGeneratorSettings {
         File settingsFile = new File(folder,  "custom_generator_settings.json");
         try (FileWriter writer = new FileWriter(settingsFile)) {
             folder.mkdirs();
-            writer.write(this.toJson(true));
+            writer.write(this.toJson(false));
             CustomCubicMod.LOGGER.info("Generator settings saved at " + settingsFile.getAbsolutePath());
         } catch (IOException e) {
             CustomCubicMod.LOGGER.error("Cannot create new directory at " + folder.getAbsolutePath());
-            CustomCubicMod.LOGGER.error(this.toJson(true));
+            CustomCubicMod.LOGGER.error(this.toJson(false));
             CustomCubicMod.LOGGER.catching(e);
         }
     }
