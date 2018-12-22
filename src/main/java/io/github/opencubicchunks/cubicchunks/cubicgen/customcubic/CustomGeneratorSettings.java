@@ -346,22 +346,18 @@ public class CustomGeneratorSettings {
     }
 
     public static Gson gson(boolean minimize) {
-        return new GsonBuilder().serializeSpecialFloatingPointValues()
-                .enableComplexMapKeySerialization()
-                .registerTypeAdapter(CustomGeneratorSettings.class, new Serializer(minimize))
-                .registerTypeHierarchyAdapter(IBlockState.class, BlockStateSerializer.INSTANCE)
-                .registerTypeHierarchyAdapter(Biome.class, new BiomeSerializer())
-                .registerTypeAdapter(BiomeBlockReplacerConfig.class, new BiomeBlockReplacerConfigSerializer(minimize))
-                .create();
+        return gsonBuilder(minimize).create();
     }
 
     public static GsonBuilder gsonBuilder(boolean minimize) {
-        return new GsonBuilder().serializeSpecialFloatingPointValues()
-                .enableComplexMapKeySerialization()
-                .registerTypeAdapter(CustomGeneratorSettings.class, new Serializer(minimize))
-                .registerTypeHierarchyAdapter(IBlockState.class, BlockStateSerializer.INSTANCE)
-                .registerTypeHierarchyAdapter(Biome.class, new BiomeSerializer())
-                .registerTypeAdapter(BiomeBlockReplacerConfig.class, new BiomeBlockReplacerConfigSerializer(minimize));
+        GsonBuilder builder = new GsonBuilder();
+        builder.serializeSpecialFloatingPointValues();
+        builder.enableComplexMapKeySerialization();
+        builder.registerTypeAdapter(CustomGeneratorSettings.class, new Serializer(minimize));
+        builder.registerTypeHierarchyAdapter(IBlockState.class, BlockStateSerializer.INSTANCE);
+        builder.registerTypeHierarchyAdapter(Biome.class, new BiomeSerializer());
+        builder.registerTypeAdapter(BiomeBlockReplacerConfig.class, new BiomeBlockReplacerConfigSerializer(minimize));
+        return builder;
     }
 
     public static class StandardOreConfig {

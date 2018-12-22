@@ -24,29 +24,20 @@
 package io.github.opencubicchunks.cubicchunks.cubicgen;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
 
-import java.io.IOException;
+import java.lang.reflect.Field;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
-import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld;
-import io.github.opencubicchunks.cubicchunks.api.util.Coords;
-import io.github.opencubicchunks.cubicchunks.cubicgen.testutil.MinecraftEnvironment;
-import net.minecraft.world.World;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
-import io.github.opencubicchunks.cubicchunks.cubicgen.flat.FlatGeneratorSettings;
-import io.github.opencubicchunks.cubicchunks.cubicgen.flat.FlatTerrainProcessor;
-import io.github.opencubicchunks.cubicchunks.cubicgen.flat.Layer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.testutil.MinecraftEnvironment;
 import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.world.storage.WorldInfo;
-import org.mockito.Mockito;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
@@ -174,11 +165,14 @@ public class TestCustomGeneratorSettingsFixer {
     @Before
     public void setUp() {
         MinecraftEnvironment.init();
+        CustomCubicMod.LOGGER = LogManager.getLogger("CustomCubicModTest");;
+        CubicBiome.init();
+        CubicBiome.postInit();
     }
 
     @Test
     public void testCustomGeneratorSettingsFixer() {
-        CustomGeneratorSettings settings  = CustomGeneratorSettings.fromJson(cc655ExamplePreset);
-        assertEquals(settings.standardOres.size(),10);
+        CustomGeneratorSettings settings = CustomGeneratorSettings.fromJson(cc655ExamplePreset);
+        assertEquals(13,settings.standardOres.size());
     }
 }
