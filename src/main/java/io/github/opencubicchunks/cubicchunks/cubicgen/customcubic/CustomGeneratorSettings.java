@@ -244,9 +244,9 @@ public class CustomGeneratorSettings {
     
     public void save(World world) {
         File folder = new File(world.getSaveHandler().getWorldDirectory(), "/data/" + CustomCubicMod.MODID +"/");
+        folder.mkdirs();
         File settingsFile = new File(folder,  "custom_generator_settings.json");
         try (FileWriter writer = new FileWriter(settingsFile)) {
-            folder.mkdirs();
             writer.write(this.toJson());
             CustomCubicMod.LOGGER.info("Generator settings saved at " + settingsFile.getAbsolutePath());
         } catch (IOException e) {
