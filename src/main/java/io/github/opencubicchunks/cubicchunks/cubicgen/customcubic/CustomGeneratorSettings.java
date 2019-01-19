@@ -214,7 +214,7 @@ public class CustomGeneratorSettings {
         CustomGeneratorSettings settings = null;
         if (externalGeneratorPresetFile.exists()) {
             try (FileReader reader = new FileReader(externalGeneratorPresetFile)){
-                CharBuffer sb = CharBuffer.allocate(Short.MAX_VALUE << 3);
+                CharBuffer sb = CharBuffer.allocate((int) externalGeneratorPresetFile.length() * 2);
                 reader.read(sb);
                 sb.flip();
                 jsonString = sb.toString();
@@ -341,6 +341,7 @@ public class CustomGeneratorSettings {
 
     public static GsonBuilder gsonBuilder() {
         GsonBuilder builder = new GsonBuilder();
+        builder.setPrettyPrinting();
         builder.serializeSpecialFloatingPointValues();
         builder.enableComplexMapKeySerialization();
         builder.registerTypeAdapter(CustomGeneratorSettings.class, new Serializer());

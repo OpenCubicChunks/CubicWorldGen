@@ -105,7 +105,7 @@ public class CustomCubicMod {
     public void preInit(FMLPostInitializationEvent e) {
         CubicBiome.postInit();
     }
-    
+
     @SubscribeEvent
     public static void registerRegistries(RegistryEvent.NewRegistry evt) {
         CubicBiome.init();
