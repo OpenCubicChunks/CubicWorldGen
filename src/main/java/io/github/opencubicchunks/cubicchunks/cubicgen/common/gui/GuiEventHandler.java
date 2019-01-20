@@ -61,7 +61,7 @@ public class GuiEventHandler {
             String json = CustomGeneratorSettings.loadJsonStringFromSaveFolder(isavehandler);
             isavehandler.flush();
             if (json != null) {
-                CustomCubicGui.settingsJsonString = json;
+                CustomCubicWorldType.pendingCustomCubicSettingsJsonString = json;
             }
         }
     }

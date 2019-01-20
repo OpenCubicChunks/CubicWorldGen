@@ -237,9 +237,10 @@ public class CustomGeneratorSettings {
             settings = fromJson(jsonString);
             if (isOutdated)
                 settings.save(world);
-        } else if (!CustomCubicWorldType.pendingCustomCubicSettingsJsonString.isEmpty()) {
+        } else if (CustomCubicWorldType.createNewWorld && !CustomCubicWorldType.pendingCustomCubicSettingsJsonString.isEmpty()) {
             settings = CustomGeneratorSettings.fromJson(CustomCubicWorldType.pendingCustomCubicSettingsJsonString);
             CustomCubicWorldType.pendingCustomCubicSettingsJsonString = "";
+            CustomCubicWorldType.createNewWorld = false;
             settings.save(world);
         } else {
             CustomCubicMod.LOGGER

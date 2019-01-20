@@ -57,6 +57,7 @@ public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
     // This string is not empty when and only when someone used a CustomCubicGUI
     // and press a Done button both in this CustomCubicGUI and in a WorldCreationGUI
     public static String pendingCustomCubicSettingsJsonString = "";
+    public static boolean createNewWorld = false;
 
     private CustomCubicWorldType() {
         super("CustomCubic");
@@ -98,8 +99,7 @@ public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
     
     @Override
     public void onGUICreateWorldPress() { 
-        pendingCustomCubicSettingsJsonString = CustomCubicGui.settingsJsonString;
-        CustomCubicGui.settingsJsonString = "";
+        createNewWorld = true;
     }
 
     @SideOnly(Side.CLIENT)

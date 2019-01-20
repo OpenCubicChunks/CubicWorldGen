@@ -32,6 +32,7 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.BiomeBlockRep
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UITextFieldFixed;
+import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomCubicWorldType;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.NoTranslationFont;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBorderLayout;
@@ -75,10 +76,6 @@ public class CustomCubicGui extends ExtraGui {
     private AdvancedTerrainShapeTab advancedterrainShapeSettings;
     private Map<CustomGeneratorSettings.IntAABB, CustomGeneratorSettings> areas;
     private BiomeBlockReplacerConfig replacerConf;
-    // Store config here between GUI calls, so we would not need to store it in
-    // parent GUI. Whenever player will press create world GUI button it will be
-    // transfered to CustomCubicWorld type to be saved.
-    public static String settingsJsonString = "";
 
     public CustomCubicGui(GuiCreateWorld parent) {
         super();
@@ -92,10 +89,10 @@ public class CustomCubicGui extends ExtraGui {
     @Override
     public void construct() {
         CustomGeneratorSettings conf = null;
-        if (!settingsJsonString.isEmpty())
-            conf = CustomGeneratorSettings.fromJson(settingsJsonString);
+        if (!CustomCubicWorldType.pendingCustomCubicSettingsJsonString.isEmpty())
+            conf = CustomGeneratorSettings.fromJson(CustomCubicWorldType.pendingCustomCubicSettingsJsonString);
         else
-            conf = new CustomGeneratorSettings();
+            conf = CustomGeneratorSettings.defaults();
         reinit(conf);
     }
 
@@ -254,7 +251,7 @@ public class CustomCubicGui extends ExtraGui {
     }
 
     private void done() {
-        settingsJsonString = getSettingsJson(getConfig());
+        CustomCubicWorldType.pendingCustomCubicSettingsJsonString = getSettingsJson(getConfig());
         this.mc.displayGuiScreen(parent);
     }
 
