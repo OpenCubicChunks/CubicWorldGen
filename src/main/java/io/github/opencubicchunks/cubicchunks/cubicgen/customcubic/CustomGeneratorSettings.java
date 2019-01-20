@@ -72,6 +72,7 @@ import net.minecraft.nbt.NBTUtil;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.storage.ISaveHandler;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 public class CustomGeneratorSettings {
@@ -201,39 +202,48 @@ public class CustomGeneratorSettings {
             return defaults();
         }
         if (isOutdated(jsonString)) {
-            jsonString = CustomGeneratorSettingsFixer.fixGeneratorOptions(CustomGeneratorSettingsFixer.stringToJson(jsonString), false);
+            jsonString = CustomGeneratorSettingsFixer.fixGeneratorOptions(jsonString, null);
         }
         Gson gson = gson();
         return gson.fromJson(jsonString, CustomGeneratorSettings.class);
     }
     
-    public static CustomGeneratorSettings load(World world) {
-        File externalGeneratorPresetFile = new File(world.getSaveHandler().getWorldDirectory(),
-                "/data/" + CustomCubicMod.MODID + "/custom_generator_settings.json");
-        String jsonString = null;
-        CustomGeneratorSettings settings = null;
+    @Nullable
+    public static String loadJsonStringFromSaveFolder(ISaveHandler saveHandler) {
+        File externalGeneratorPresetFile = getPresetFile(saveHandler);
         if (externalGeneratorPresetFile.exists()) {
             try (FileReader reader = new FileReader(externalGeneratorPresetFile)){
-                CharBuffer sb = CharBuffer.allocate((int) externalGeneratorPresetFile.length() * 2);
+                CharBuffer sb = CharBuffer.allocate((int) externalGeneratorPresetFile.length());
                 reader.read(sb);
                 sb.flip();
-                jsonString = sb.toString();
-                CustomCubicMod.LOGGER.debug("Loading settings provided at " + externalGeneratorPresetFile.getAbsolutePath());
-                boolean isOutdated = isOutdated(jsonString);
-                settings = fromJson(jsonString);
-                if(isOutdated)
-                    settings.save(world);
+                return sb.toString();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        else if(!CustomCubicWorldType.pendingCustomCubicSettingsJsonString.isEmpty()) {
+        return null;
+    }
+    
+    public static File getPresetFile(ISaveHandler saveHandler) {
+        return new File(saveHandler.getWorldDirectory(),
+                "/data/" + CustomCubicMod.MODID + "/custom_generator_settings.json");
+    }
+    
+    public static CustomGeneratorSettings load(World world) {
+        String jsonString = loadJsonStringFromSaveFolder(world.getSaveHandler());
+        CustomGeneratorSettings settings = null;
+        if (jsonString != null) {
+            boolean isOutdated = isOutdated(jsonString);
+            settings = fromJson(jsonString);
+            if (isOutdated)
+                settings.save(world);
+        } else if (!CustomCubicWorldType.pendingCustomCubicSettingsJsonString.isEmpty()) {
             settings = CustomGeneratorSettings.fromJson(CustomCubicWorldType.pendingCustomCubicSettingsJsonString);
             CustomCubicWorldType.pendingCustomCubicSettingsJsonString = "";
             settings.save(world);
-        }
-        else {
-            CustomCubicMod.LOGGER.info("No settings provided at " + externalGeneratorPresetFile.getAbsolutePath());
+        } else {
+            CustomCubicMod.LOGGER
+                    .info("No settings provided at " + getPresetFile(world.getSaveHandler()).getAbsolutePath());
             CustomCubicMod.LOGGER.info("Loading settings from 'level.dat'");
             // Use old format to keep backward-compatibility
             settings = fromJson(world.getWorldInfo().getGeneratorOptions());

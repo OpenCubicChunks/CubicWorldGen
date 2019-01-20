@@ -42,6 +42,7 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.Snow
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.SwampDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.TaigaDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.flat.FlatCubicWorldType;
+import io.github.opencubicchunks.cubicchunks.cubicgen.proxy.CommonProxy;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.Biome;
@@ -64,6 +65,7 @@ import net.minecraft.world.biome.BiomeSwamp;
 import net.minecraft.world.biome.BiomeTaiga;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -90,6 +92,10 @@ public class CustomCubicMod {
     public static final int FIXER_VERSION = 2;
     public static final boolean DEBUG_ENABLED = false;
     public static Logger LOGGER = null;
+    
+    @SidedProxy(clientSide = "io.github.opencubicchunks.cubicchunks.cubicgen.proxy.ClientProxy", serverSide = "io.github.opencubicchunks.cubicchunks.cubicgen.proxy.ServerProxy")
+    public static CommonProxy proxy;
+
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent e) {
@@ -99,6 +105,7 @@ public class CustomCubicMod {
         FlatCubicWorldType.create();
         CustomCubicWorldType.create();
         DebugWorldType.create();
+        proxy.preInit();
     }
 
     @Mod.EventHandler
