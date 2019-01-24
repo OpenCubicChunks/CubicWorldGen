@@ -88,11 +88,7 @@ public class CustomCubicGui extends ExtraGui {
      */
     @Override
     public void construct() {
-        CustomGeneratorSettings conf = null;
-        if (!CustomCubicWorldType.pendingCustomCubicSettingsJsonString.isEmpty())
-            conf = CustomGeneratorSettings.fromJson(CustomCubicWorldType.pendingCustomCubicSettingsJsonString);
-        else
-            conf = CustomGeneratorSettings.defaults();
+        CustomGeneratorSettings conf = CustomGeneratorSettings.fromJson(parent.chunkProviderSettingsJson);
         reinit(conf);
     }
 
@@ -251,7 +247,7 @@ public class CustomCubicGui extends ExtraGui {
     }
 
     private void done() {
-        CustomCubicWorldType.pendingCustomCubicSettingsJsonString = getSettingsJson(getConfig());
+        parent.chunkProviderSettingsJson = getSettingsJson(getConfig());
         this.mc.displayGuiScreen(parent);
     }
 

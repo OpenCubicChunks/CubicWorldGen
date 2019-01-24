@@ -230,39 +230,23 @@ public class CustomGeneratorSettings {
     }
     
     public static CustomGeneratorSettings load(World world) {
-        String jsonString = loadJsonStringFromSaveFolder(world.getSaveHandler());
-        CustomGeneratorSettings settings = null;
-        if (jsonString != null) {
-            boolean isOutdated = isOutdated(jsonString);
-            settings = fromJson(jsonString);
-            if (isOutdated)
-                settings.save(world);
-        } else if (CustomCubicWorldType.createNewWorld && !CustomCubicWorldType.pendingCustomCubicSettingsJsonString.isEmpty()) {
-            settings = CustomGeneratorSettings.fromJson(CustomCubicWorldType.pendingCustomCubicSettingsJsonString);
-            CustomCubicWorldType.pendingCustomCubicSettingsJsonString = "";
-            CustomCubicWorldType.createNewWorld = false;
-            settings.save(world);
-        } else {
-            CustomCubicMod.LOGGER
-                    .info("No settings provided at " + getPresetFile(world.getSaveHandler()).getAbsolutePath());
-            CustomCubicMod.LOGGER.info("Loading settings from 'level.dat'");
-            // Use old format to keep backward-compatibility
-            settings = fromJson(world.getWorldInfo().getGeneratorOptions());
-            settings.save(world);
-        }
-        return settings;
+        return fromJson(world.getWorldInfo().getGeneratorOptions());
     }
     
     public void save(World world) {
-        File folder = new File(world.getSaveHandler().getWorldDirectory(), "/data/" + CustomCubicMod.MODID +"/");
+        saveToFile(world.getSaveHandler(), toJson());
+    }
+
+    public static void saveToFile(ISaveHandler saveHandler, String json) {
+        File folder = new File(saveHandler.getWorldDirectory(), "/data/" + CustomCubicMod.MODID + "/");
         folder.mkdirs();
-        File settingsFile = new File(folder,  "custom_generator_settings.json");
+        File settingsFile = new File(folder, "custom_generator_settings.json");
         try (FileWriter writer = new FileWriter(settingsFile)) {
-            writer.write(this.toJson());
+            writer.write(json);
             CustomCubicMod.LOGGER.info("Generator settings saved at " + settingsFile.getAbsolutePath());
         } catch (IOException e) {
             CustomCubicMod.LOGGER.error("Cannot create new directory at " + folder.getAbsolutePath());
-            CustomCubicMod.LOGGER.error(this.toJson());
+            CustomCubicMod.LOGGER.error(json);
             CustomCubicMod.LOGGER.catching(e);
         }
     }

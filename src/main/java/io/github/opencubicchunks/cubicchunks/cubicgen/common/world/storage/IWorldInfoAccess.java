@@ -21,15 +21,8 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package io.github.opencubicchunks.cubicchunks.cubicgen.proxy;
+package io.github.opencubicchunks.cubicchunks.cubicgen.common.world.storage;
 
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.GuiEventHandler;
-import net.minecraftforge.common.MinecraftForge;
-
-public class ClientProxy extends CommonProxy {
-
-    @Override
-    public void preInit() {
-        MinecraftForge.EVENT_BUS.register(new GuiEventHandler());
-    }
+public interface IWorldInfoAccess {
+    void setGeneratorOptions(String generatorOptionsIn);
 }
