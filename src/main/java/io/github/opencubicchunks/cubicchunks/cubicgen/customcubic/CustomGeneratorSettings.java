@@ -192,6 +192,8 @@ public class CustomGeneratorSettings {
     }
     
     public static CustomGeneratorSettings fromJson(String jsonString) {
+        if (jsonString.isEmpty())
+            return defaults();
         boolean isOutdated = !CustomGeneratorSettingsFixer.isUpToDate(jsonString);
         if (isOutdated) {
             jsonString = CustomGeneratorSettingsFixer.fixGeneratorOptions(jsonString, null);
