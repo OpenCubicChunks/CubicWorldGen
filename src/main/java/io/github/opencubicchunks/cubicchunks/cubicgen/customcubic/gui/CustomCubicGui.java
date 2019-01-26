@@ -28,22 +28,19 @@ import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisG
 
 import com.google.common.eventbus.Subscribe;
 import com.google.gson.JsonSyntaxException;
-import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.BiomeBlockReplacerConfig;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UITextFieldFixed;
+import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomCubicWorldType;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.NoTranslationFont;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBorderLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIColoredPanel;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIMultilineLabel;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UITabbedContainer;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIVerticalTableLayout;
 import mcp.MethodsReturnNonnullByDefault;
 import net.malisis.core.client.gui.Anchor;
-import net.malisis.core.client.gui.GuiTexture;
 import net.malisis.core.client.gui.MalisisGui;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
@@ -53,8 +50,6 @@ import net.malisis.core.client.gui.event.ComponentEvent;
 import net.malisis.core.renderer.font.FontOptions;
 import net.minecraft.client.gui.GuiCreateWorld;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.util.ResourceLocation;
-
 import java.util.Map;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -192,7 +187,7 @@ public class CustomCubicGui extends ExtraGui {
                             public void onChange(ComponentEvent.ValueChange<UITextField, String> event) {
                                 try {
                                     CustomGeneratorSettings settings = CustomGeneratorSettings.fromJson(event.getNewValue());
-                                    textMinified.setText(getSettingsJson(settings, true));
+                                    textMinified.setText(getSettingsJson(settings));
                                 } catch (JsonSyntaxException | NumberFormatException ex) {
                                     textMinified.setText(I18n.format("cubicgen.gui.cubicgen.presets.invalid_json"));
                                 }
@@ -207,7 +202,7 @@ public class CustomCubicGui extends ExtraGui {
                         // textField, making the text invisible by default
                         textMinified.setSize(this.width - HORIZONTAL_PADDING*2, 10);
                         textMinified.setFont(NoTranslationFont.DEFAULT);
-                        textMinified.setText(getSettingsJson(getConfig(), true));
+                        textMinified.setText(getSettingsJson(getConfig()));
                         textMinified.getCursorPosition().jumpToEnd();
 
                         done.register(new Object() {
@@ -252,7 +247,7 @@ public class CustomCubicGui extends ExtraGui {
     }
 
     private void done() {
-        parent.chunkProviderSettingsJson = getSettingsJson(getConfig(), true);
+        parent.chunkProviderSettingsJson = getSettingsJson(getConfig());
         this.mc.displayGuiScreen(parent);
     }
 
@@ -267,11 +262,11 @@ public class CustomCubicGui extends ExtraGui {
         return conf;
     }
 
-    String getSettingsJson(CustomGeneratorSettings conf, boolean minimized) {
-        return conf.toJson(minimized);
+    String getSettingsJson(CustomGeneratorSettings conf) {
+        return conf.toJson();
     }
 
     String getFormattedJson(CustomGeneratorSettings conf) {
-        return CustomGeneratorSettings.gsonBuilder(false).setPrettyPrinting().create().toJson(conf);
+        return CustomGeneratorSettings.gsonBuilder().setPrettyPrinting().create().toJson(conf);
     }
 }
