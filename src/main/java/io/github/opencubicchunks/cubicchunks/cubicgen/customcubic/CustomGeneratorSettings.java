@@ -25,23 +25,6 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic;
 
 import static io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod.MODID;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Type;
-import java.nio.CharBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -55,7 +38,6 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.JsonSyntaxException;
-
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
@@ -74,6 +56,23 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.storage.ISaveHandler;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
+import java.nio.CharBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nullable;
 
 public class CustomGeneratorSettings {
     /**
@@ -192,20 +191,12 @@ public class CustomGeneratorSettings {
         return gson.toJson(this);
     }
     
-    public static boolean isOutdated(String settingsJsonString) {
-        JsonObject root = CustomGeneratorSettingsFixer.stringToJson(settingsJsonString);
-        return !root.has("version") || root.get("version").getAsInt() != CustomGeneratorSettingsFixer.VERSION;
-    }
-
     public static CustomGeneratorSettings fromJson(String jsonString) {
-        if (jsonString.isEmpty()) {
-            return defaults();
-        }
-        if (isOutdated(jsonString)) {
+        boolean isOutdated = !CustomGeneratorSettingsFixer.isUpToDate(jsonString);
+        if (isOutdated) {
             jsonString = CustomGeneratorSettingsFixer.fixGeneratorOptions(jsonString, null);
         }
-        Gson gson = gson();
-        return gson.fromJson(jsonString, CustomGeneratorSettings.class);
+        return gson().fromJson(jsonString, CustomGeneratorSettings.class);
     }
     
     @Nullable
@@ -224,13 +215,33 @@ public class CustomGeneratorSettings {
         return null;
     }
     
-    public static File getPresetFile(ISaveHandler saveHandler) {
+    public static File getPresetFolder(ISaveHandler saveHandler) {
         return new File(saveHandler.getWorldDirectory(),
-                "/data/" + CustomCubicMod.MODID + "/custom_generator_settings.json");
+                "/data/" + CustomCubicMod.MODID + "/");
+    }
+
+    public static File getPresetFile(ISaveHandler saveHandler) {
+        return new File(getPresetFolder(saveHandler),
+                "custom_generator_settings.json");
     }
     
     public static CustomGeneratorSettings load(World world) {
-        return fromJson(world.getWorldInfo().getGeneratorOptions());
+        String jsonString = world.getWorldInfo().getGeneratorOptions();
+        CustomGeneratorSettings settings;
+        if (jsonString.isEmpty()) {
+            settings = defaults();
+            settings.save(world);
+            return settings;
+        }
+        boolean isOutdated = !CustomGeneratorSettingsFixer.isUpToDate(jsonString);
+        if (isOutdated) {
+            jsonString = CustomGeneratorSettingsFixer.fixGeneratorOptions(jsonString, null);
+        }
+        Gson gson = gson();
+        settings = gson.fromJson(jsonString, CustomGeneratorSettings.class);
+        if (isOutdated || !getPresetFile(world.getSaveHandler()).exists())
+            settings.save(world);
+        return settings;
     }
     
     public void save(World world) {
@@ -238,9 +249,9 @@ public class CustomGeneratorSettings {
     }
 
     public static void saveToFile(ISaveHandler saveHandler, String json) {
-        File folder = new File(saveHandler.getWorldDirectory(), "/data/" + CustomCubicMod.MODID + "/");
+        File folder = getPresetFolder(saveHandler);
         folder.mkdirs();
-        File settingsFile = new File(folder, "custom_generator_settings.json");
+        File settingsFile = getPresetFile(saveHandler);
         try (FileWriter writer = new FileWriter(settingsFile)) {
             writer.write(json);
             CustomCubicMod.LOGGER.info("Generator settings saved at " + settingsFile.getAbsolutePath());

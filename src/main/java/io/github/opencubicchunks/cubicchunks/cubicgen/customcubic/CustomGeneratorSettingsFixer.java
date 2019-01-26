@@ -74,109 +74,106 @@ public class CustomGeneratorSettingsFixer {
             { Biomes.EXTREME_HILLS, Biomes.EXTREME_HILLS_EDGE, Biomes.EXTREME_HILLS_WITH_TREES,
                     Biomes.MUTATED_EXTREME_HILLS, Biomes.MUTATED_EXTREME_HILLS_WITH_TREES }, // emerald
             { Biomes.EXTREME_HILLS, Biomes.EXTREME_HILLS_EDGE, Biomes.EXTREME_HILLS_WITH_TREES,
-                    Biomes.MUTATED_EXTREME_HILLS, Biomes.MUTATED_EXTREME_HILLS_WITH_TREES }, // monster
-                                                                                             // egg
+                    Biomes.MUTATED_EXTREME_HILLS, Biomes.MUTATED_EXTREME_HILLS_WITH_TREES }, // monster egg
             { Biomes.MESA, Biomes.MESA_CLEAR_ROCK, Biomes.MESA_ROCK, Biomes.MUTATED_MESA,
-                    Biomes.MUTATED_MESA_CLEAR_ROCK, Biomes.MUTATED_MESA_ROCK },// mesa
-                                                                               // gold
+                    Biomes.MUTATED_MESA_CLEAR_ROCK, Biomes.MUTATED_MESA_ROCK },// mesa gold
     };
 
-    private static boolean isActual(JsonObject root) {
-        return root.has("version") && root.get("version").getAsInt() == 3;
+    private static boolean isVersionUpToDate(JsonObject root) {
+        return root.has("version") && root.get("version").getAsInt() >= 3;
     }
-    
-    public static String fixGeneratorOptions(String json, @Nullable JsonObject parent) {
-        Gson gson = CustomGeneratorSettings.gson();
-        JsonObject oldRoot = CustomGeneratorSettingsFixer.stringToJson(json);
-        boolean rootIsActual = isActual(oldRoot);
-        if (rootIsActual) {
-            if (parent != null) {
-                return json;
-            } else {
-                boolean cubeAreasHasOutdatedContent = false;
-                if (oldRoot.has("cubeAreas") && oldRoot.get("cubeAreas").isJsonArray()) {
-                    JsonArray array = oldRoot.get("cubeAreas").getAsJsonArray();
-                    for (JsonElement entry : array) {
-                        JsonArray mapEntry = entry.getAsJsonArray();
-                        JsonObject value = mapEntry.get(1).getAsJsonObject();
-                        if (!isActual(value)) {
-                            cubeAreasHasOutdatedContent = true;
-                            break;
-                        }
-                    }
-                }
-                if (!cubeAreasHasOutdatedContent) {
-                    // Do not touch anything if all data is OK
-                    return json;
+
+    public static boolean isUpToDate(String json) {
+        return isUpToDate(stringToJson(json));
+    }
+
+    public static boolean isUpToDate(JsonObject root) {
+        boolean rootIsUpToDate = isVersionUpToDate(root);
+        if (!rootIsUpToDate)
+            return false;
+        if (root.has("cubeAreas") && root.get("cubeAreas").isJsonArray()) {
+            JsonArray array = root.get("cubeAreas").getAsJsonArray();
+            for (JsonElement entry : array) {
+                JsonArray mapEntry = entry.getAsJsonArray();
+                JsonObject value = mapEntry.get(1).getAsJsonObject();
+                if (!isUpToDate(value)) {
+                    return false;
                 }
             }
         }
+        return true;
+    }
+
+    public static String fixGeneratorOptions(String json, @Nullable JsonObject parent) {
+        Gson gson = CustomGeneratorSettings.gson();
+        JsonObject oldRoot = CustomGeneratorSettingsFixer.stringToJson(json);
         JsonObject newRoot = stringToJson("{}");
         newRoot.add("version", new JsonPrimitive(3));
-        newRoot.add("waterLevel", getWaterLevel(oldRoot,parent));
-        newRoot.add("caves", getCaves(oldRoot,parent));
-        newRoot.add("strongholds", getStrongholds(oldRoot,parent));
-        newRoot.add("alternateStrongholdsPositions", getAlternateStrongholdsPositions(oldRoot,parent));
-        newRoot.add("villages", getVillages(oldRoot,parent));
-        newRoot.add("mineshafts", getMineshafts(oldRoot,parent));
-        newRoot.add("temples", getTemples(oldRoot,parent));
-        newRoot.add("oceanMonuments", getOceanMonuments(oldRoot,parent));
-        newRoot.add("woodlandMansions", getWoodlandMansions(oldRoot,parent));
-        newRoot.add("ravines", getRavines(oldRoot,parent));
-        newRoot.add("dungeons", getDungeons(oldRoot,parent));
-        newRoot.add("dungeonCount", getDungeonCount(oldRoot,parent));
-        newRoot.add("waterLakes", getWaterLakes(oldRoot,parent));
-        newRoot.add("waterLakeRarity", getWaterLakeRarity(oldRoot,parent));
-        newRoot.add("lavaLakes", getLavaLakes(oldRoot,parent));
-        newRoot.add("lavaLakeRarity", getLavaLakeRarity(oldRoot,parent));
-        newRoot.add("aboveSeaLavaLakeRarity", getAboveSeaLavaLakeRarity(oldRoot,parent));
-        newRoot.add("lavaOceans", getLavaOceans(oldRoot,parent));
-        newRoot.add("biome", getBiome(oldRoot,parent));
-        newRoot.add("biomeSize", getBiomeSize(oldRoot,parent));
-        newRoot.add("riverSize", getRiverSize(oldRoot,parent));
-        newRoot.add("standardOres", getStandardOres(oldRoot,parent));
-        newRoot.add("periodicGaussianOres", getPeriodicGaussianOres(oldRoot,parent));
-        newRoot.add("expectedBaseHeight", getExpectedBaseHeight(oldRoot,parent));
-        newRoot.add("expectedHeightVariation", getExpectedHeightVariation(oldRoot,parent));
-        newRoot.add("actualHeight", getActualHeight(oldRoot,parent));
-        newRoot.add("heightVariationFactor", getHeightVariationFactor(oldRoot,parent));
-        newRoot.add("specialHeightVariationFactorBelowAverageY", getSpecialHeightVariationFactorBelowAverageY(oldRoot,parent));
-        newRoot.add("heightVariationOffset", getHeightVariationOffset(oldRoot,parent));
-        newRoot.add("heightFactor", getHeightFactor(oldRoot,parent));
-        newRoot.add("heightOffset", getHeightOffset(oldRoot,parent));
-        newRoot.add("depthNoiseFactor", getDepthNoiseFactor(oldRoot,parent));
-        newRoot.add("depthNoiseOffset", getDepthNoiseOffset(oldRoot,parent));
-        newRoot.add("depthNoiseFrequencyX", getDepthNoiseFrequencyX(oldRoot,parent));
-        newRoot.add("depthNoiseFrequencyZ", getDepthNoiseFrequencyZ(oldRoot,parent));
-        newRoot.add("depthNoiseOctaves", getDepthNoiseOctaves(oldRoot,parent));
-        newRoot.add("selectorNoiseFactor", getSelectorNoiseFactor(oldRoot,parent));
-        newRoot.add("selectorNoiseOffset", getSelectorNoiseOffset(oldRoot,parent));
-        newRoot.add("selectorNoiseFrequencyX", getSelectorNoiseFrequencyX(oldRoot,parent));
-        newRoot.add("selectorNoiseFrequencyY", getSelectorNoiseFrequencyY(oldRoot,parent));
-        newRoot.add("selectorNoiseFrequencyZ", getSelectorNoiseFrequencyZ(oldRoot,parent));
-        newRoot.add("selectorNoiseOctaves", getSelectorNoiseOctaves(oldRoot,parent));
-        newRoot.add("lowNoiseFactor", getLowNoiseFactor(oldRoot,parent));
-        newRoot.add("lowNoiseOffset", getLowNoiseOffset(oldRoot,parent));
-        newRoot.add("lowNoiseFrequencyX", getLowNoiseFrequencyX(oldRoot,parent));
-        newRoot.add("lowNoiseFrequencyY", getLowNoiseFrequencyY(oldRoot,parent));
-        newRoot.add("lowNoiseFrequencyZ", getLowNoiseFrequencyZ(oldRoot,parent));
-        newRoot.add("lowNoiseOctaves", getLowNoiseOctaves(oldRoot,parent));
-        newRoot.add("highNoiseFactor", getHighNoiseFactor(oldRoot,parent));
-        newRoot.add("highNoiseOffset", getHighNoiseOffset(oldRoot,parent));
-        newRoot.add("highNoiseFrequencyX", getHighNoiseFrequencyX(oldRoot,parent));
-        newRoot.add("highNoiseFrequencyY", getHighNoiseFrequencyY(oldRoot,parent));
-        newRoot.add("highNoiseFrequencyZ", getHighNoiseFrequencyZ(oldRoot,parent));
-        newRoot.add("highNoiseOctaves", getHighNoiseOctaves(oldRoot,parent));
-        newRoot.add("replacerConfig", getReplacerConfig(oldRoot,parent));
-        if (parent == null) // cube areas allowed only for root
-            newRoot.add("cubeAreas", getCubeAreas(oldRoot));
+        newRoot.add("waterLevel", getWaterLevel(oldRoot, parent));
+        newRoot.add("caves", getCaves(oldRoot, parent));
+        newRoot.add("strongholds", getStrongholds(oldRoot, parent));
+        newRoot.add("alternateStrongholdsPositions", getAlternateStrongholdsPositions(oldRoot, parent));
+        newRoot.add("villages", getVillages(oldRoot, parent));
+        newRoot.add("mineshafts", getMineshafts(oldRoot, parent));
+        newRoot.add("temples", getTemples(oldRoot, parent));
+        newRoot.add("oceanMonuments", getOceanMonuments(oldRoot, parent));
+        newRoot.add("woodlandMansions", getWoodlandMansions(oldRoot, parent));
+        newRoot.add("ravines", getRavines(oldRoot, parent));
+        newRoot.add("dungeons", getDungeons(oldRoot, parent));
+        newRoot.add("dungeonCount", getDungeonCount(oldRoot, parent));
+        newRoot.add("waterLakes", getWaterLakes(oldRoot, parent));
+        newRoot.add("waterLakeRarity", getWaterLakeRarity(oldRoot, parent));
+        newRoot.add("lavaLakes", getLavaLakes(oldRoot, parent));
+        newRoot.add("lavaLakeRarity", getLavaLakeRarity(oldRoot, parent));
+        newRoot.add("aboveSeaLavaLakeRarity", getAboveSeaLavaLakeRarity(oldRoot, parent));
+        newRoot.add("lavaOceans", getLavaOceans(oldRoot, parent));
+        newRoot.add("biome", getBiome(oldRoot, parent));
+        newRoot.add("biomeSize", getBiomeSize(oldRoot, parent));
+        newRoot.add("riverSize", getRiverSize(oldRoot, parent));
+        newRoot.add("standardOres", getStandardOres(oldRoot, parent));
+        newRoot.add("periodicGaussianOres", getPeriodicGaussianOres(oldRoot, parent));
+        newRoot.add("expectedBaseHeight", getExpectedBaseHeight(oldRoot, parent));
+        newRoot.add("expectedHeightVariation", getExpectedHeightVariation(oldRoot, parent));
+        newRoot.add("actualHeight", getActualHeight(oldRoot, parent));
+        newRoot.add("heightVariationFactor", getHeightVariationFactor(oldRoot, parent));
+        newRoot.add("specialHeightVariationFactorBelowAverageY",
+                getSpecialHeightVariationFactorBelowAverageY(oldRoot, parent));
+        newRoot.add("heightVariationOffset", getHeightVariationOffset(oldRoot, parent));
+        newRoot.add("heightFactor", getHeightFactor(oldRoot, parent));
+        newRoot.add("heightOffset", getHeightOffset(oldRoot, parent));
+        newRoot.add("depthNoiseFactor", getDepthNoiseFactor(oldRoot, parent));
+        newRoot.add("depthNoiseOffset", getDepthNoiseOffset(oldRoot, parent));
+        newRoot.add("depthNoiseFrequencyX", getDepthNoiseFrequencyX(oldRoot, parent));
+        newRoot.add("depthNoiseFrequencyZ", getDepthNoiseFrequencyZ(oldRoot, parent));
+        newRoot.add("depthNoiseOctaves", getDepthNoiseOctaves(oldRoot, parent));
+        newRoot.add("selectorNoiseFactor", getSelectorNoiseFactor(oldRoot, parent));
+        newRoot.add("selectorNoiseOffset", getSelectorNoiseOffset(oldRoot, parent));
+        newRoot.add("selectorNoiseFrequencyX", getSelectorNoiseFrequencyX(oldRoot, parent));
+        newRoot.add("selectorNoiseFrequencyY", getSelectorNoiseFrequencyY(oldRoot, parent));
+        newRoot.add("selectorNoiseFrequencyZ", getSelectorNoiseFrequencyZ(oldRoot, parent));
+        newRoot.add("selectorNoiseOctaves", getSelectorNoiseOctaves(oldRoot, parent));
+        newRoot.add("lowNoiseFactor", getLowNoiseFactor(oldRoot, parent));
+        newRoot.add("lowNoiseOffset", getLowNoiseOffset(oldRoot, parent));
+        newRoot.add("lowNoiseFrequencyX", getLowNoiseFrequencyX(oldRoot, parent));
+        newRoot.add("lowNoiseFrequencyY", getLowNoiseFrequencyY(oldRoot, parent));
+        newRoot.add("lowNoiseFrequencyZ", getLowNoiseFrequencyZ(oldRoot, parent));
+        newRoot.add("lowNoiseOctaves", getLowNoiseOctaves(oldRoot, parent));
+        newRoot.add("highNoiseFactor", getHighNoiseFactor(oldRoot, parent));
+        newRoot.add("highNoiseOffset", getHighNoiseOffset(oldRoot, parent));
+        newRoot.add("highNoiseFrequencyX", getHighNoiseFrequencyX(oldRoot, parent));
+        newRoot.add("highNoiseFrequencyY", getHighNoiseFrequencyY(oldRoot, parent));
+        newRoot.add("highNoiseFrequencyZ", getHighNoiseFrequencyZ(oldRoot, parent));
+        newRoot.add("highNoiseOctaves", getHighNoiseOctaves(oldRoot, parent));
+        newRoot.add("replacerConfig", getReplacerConfig(oldRoot, parent));
+        newRoot.add("cubeAreas", getCubeAreas(oldRoot));
 
         String newGeneratorOptions = gson.toJson(newRoot).replaceAll("cubicchunks:", MODID + ":");
         return newGeneratorOptions;
     }
 
     private static JsonElement getReplacerConfig(JsonObject json, @Nullable JsonObject parent) {
-        JsonReader reader = new JsonReader(new StringReader("{\"defaults\":{\"cubicgen:biome_fill_noise_octaves\":4.0,\"cubicgen:ocean_block\":{\"Properties\":{\"level\":\"0\"},\"Name\":\"minecraft:water\"},\"cubicgen:height_scale\":64.0,\"cubicgen:biome_fill_noise_freq\":0.0078125,\"cubicgen:water_level\":63.0,\"cubicgen:biome_fill_depth_factor\":2.3333333333333335,\"cubicgen:terrain_fill_block\":{\"Properties\":{\"variant\":\"stone\"},\"Name\":\"minecraft:stone\"},\"cubicgen:mesa_depth\":16.0,\"cubicgen:biome_fill_depth_offset\":3.0,\"cubicgen:horizontal_gradient_depth_decrease_weight\":1.0,\"cubicgen:height_offset\":64.0},\"overrides\":{}}"));
+        JsonReader reader = new JsonReader(new StringReader(
+                "{\"defaults\":{\"cubicgen:biome_fill_noise_octaves\":4.0,\"cubicgen:ocean_block\":{\"Properties\":{\"level\":\"0\"},\"Name\":\"minecraft:water\"},\"cubicgen:height_scale\":64.0,\"cubicgen:biome_fill_noise_freq\":0.0078125,\"cubicgen:water_level\":63.0,\"cubicgen:biome_fill_depth_factor\":2.3333333333333335,\"cubicgen:terrain_fill_block\":{\"Properties\":{\"variant\":\"stone\"},\"Name\":\"minecraft:stone\"},\"cubicgen:mesa_depth\":16.0,\"cubicgen:biome_fill_depth_offset\":3.0,\"cubicgen:horizontal_gradient_depth_decrease_weight\":1.0,\"cubicgen:height_offset\":64.0},\"overrides\":{}}"));
         JsonObject biomeBlockReplacerConfigDefaultJson = new JsonParser().parse(reader).getAsJsonObject();
         return getOrDefault(json, parent, "replacerConfig", biomeBlockReplacerConfigDefaultJson);
     }
@@ -188,7 +185,8 @@ public class CustomGeneratorSettingsFixer {
             for (JsonElement entry : array) {
                 JsonArray mapEntry = entry.getAsJsonArray();
                 JsonElement key = mapEntry.get(0);
-                JsonObject value = stringToJson(fixGeneratorOptions(CustomGeneratorSettings.gson().toJson(mapEntry.get(1).getAsJsonObject()), json));
+                JsonObject value = stringToJson(fixGeneratorOptions(
+                        CustomGeneratorSettings.gson().toJson(mapEntry.get(1).getAsJsonObject()), json));
                 JsonArray newEntry = new JsonArray();
                 newEntry.add(key);
                 newEntry.add(value);
@@ -203,18 +201,15 @@ public class CustomGeneratorSettingsFixer {
     }
 
     private static JsonElement getHighNoiseFrequencyZ(JsonObject json, @Nullable JsonObject parent) {
-        return getOrDefault(json, parent, "highNoiseFrequencyZ",
-                new JsonPrimitive(0.005221649));
+        return getOrDefault(json, parent, "highNoiseFrequencyZ", new JsonPrimitive(0.005221649));
     }
 
     private static JsonElement getHighNoiseFrequencyY(JsonObject json, @Nullable JsonObject parent) {
-        return getOrDefault(json, parent, "highNoiseFrequencyY",
-                new JsonPrimitive(0.0026108245));
+        return getOrDefault(json, parent, "highNoiseFrequencyY", new JsonPrimitive(0.0026108245));
     }
 
     private static JsonElement getHighNoiseFrequencyX(JsonObject json, @Nullable JsonObject parent) {
-        return getOrDefault(json, parent, "highNoiseFrequencyX",
-                new JsonPrimitive(0.005221649));
+        return getOrDefault(json, parent, "highNoiseFrequencyX", new JsonPrimitive(0.005221649));
     }
 
     private static JsonElement getHighNoiseOffset(JsonObject json, @Nullable JsonObject parent) {
@@ -226,18 +221,15 @@ public class CustomGeneratorSettingsFixer {
     }
 
     private static JsonElement getLowNoiseFrequencyZ(JsonObject json, @Nullable JsonObject parent) {
-        return getOrDefault(json, parent, "lowNoiseFrequencyZ",
-                new JsonPrimitive(0.005221649));
+        return getOrDefault(json, parent, "lowNoiseFrequencyZ", new JsonPrimitive(0.005221649));
     }
 
     private static JsonElement getLowNoiseFrequencyY(JsonObject json, @Nullable JsonObject parent) {
-        return getOrDefault(json, parent, "lowNoiseFrequencyY",
-                new JsonPrimitive(0.0026108245));
+        return getOrDefault(json, parent, "lowNoiseFrequencyY", new JsonPrimitive(0.0026108245));
     }
 
     private static JsonElement getLowNoiseFrequencyX(JsonObject json, @Nullable JsonObject parent) {
-        return getOrDefault(json, parent, "lowNoiseFrequencyX",
-                new JsonPrimitive(0.005221649));
+        return getOrDefault(json, parent, "lowNoiseFrequencyX", new JsonPrimitive(0.005221649));
     }
 
     private static JsonElement getLowNoiseOffset(JsonObject json, @Nullable JsonObject parent) {
@@ -257,28 +249,23 @@ public class CustomGeneratorSettingsFixer {
     }
 
     private static JsonElement getSelectorNoiseFrequencyZ(JsonObject json, @Nullable JsonObject parent) {
-        return getOrDefault(json, parent, "selectorNoiseFrequencyZ",
-                new JsonPrimitive(0.016709277));
+        return getOrDefault(json, parent, "selectorNoiseFrequencyZ", new JsonPrimitive(0.016709277));
     }
 
     private static JsonElement getSelectorNoiseFrequencyX(JsonObject json, @Nullable JsonObject parent) {
-        return getOrDefault(json, parent, "selectorNoiseFrequencyX",
-                new JsonPrimitive(0.016709277));
+        return getOrDefault(json, parent, "selectorNoiseFrequencyX", new JsonPrimitive(0.016709277));
     }
 
     private static JsonElement getSelectorNoiseFrequencyY(JsonObject json, @Nullable JsonObject parent) {
-        return getOrDefault(json, parent, "selectorNoiseFrequencyY",
-                new JsonPrimitive(0.008354639));
+        return getOrDefault(json, parent, "selectorNoiseFrequencyY", new JsonPrimitive(0.008354639));
     }
 
     private static JsonElement getSelectorNoiseOffset(JsonObject json, @Nullable JsonObject parent) {
-        return getOrDefault(json, parent, "selectorNoiseOffset",
-                new JsonPrimitive(0.5));
+        return getOrDefault(json, parent, "selectorNoiseOffset", new JsonPrimitive(0.5));
     }
 
     private static JsonElement getSelectorNoiseFactor(JsonObject json, @Nullable JsonObject parent) {
-        return getOrDefault(json, parent, "selectorNoiseFactor",
-                new JsonPrimitive(12.75));
+        return getOrDefault(json, parent, "selectorNoiseFactor", new JsonPrimitive(12.75));
     }
 
     private static JsonElement getDepthNoiseOctaves(JsonObject json, @Nullable JsonObject parent) {
@@ -286,13 +273,11 @@ public class CustomGeneratorSettingsFixer {
     }
 
     private static JsonElement getDepthNoiseFrequencyZ(JsonObject json, @Nullable JsonObject parent) {
-        return getOrDefault(json, parent, "depthNoiseFrequencyZ",
-                new JsonPrimitive(0.0015258789));
+        return getOrDefault(json, parent, "depthNoiseFrequencyZ", new JsonPrimitive(0.0015258789));
     }
 
     private static JsonElement getDepthNoiseFrequencyX(JsonObject json, @Nullable JsonObject parent) {
-        return getOrDefault(json, parent, "depthNoiseFrequencyX",
-                new JsonPrimitive(0.0015258789));
+        return getOrDefault(json, parent, "depthNoiseFrequencyX", new JsonPrimitive(0.0015258789));
     }
 
     private static JsonElement getDepthNoiseOffset(JsonObject json, @Nullable JsonObject parent) {
@@ -315,7 +300,8 @@ public class CustomGeneratorSettingsFixer {
         return getOrDefault(json, parent, "heightVariationOffset", new JsonPrimitive(0));
     }
 
-    private static JsonElement getSpecialHeightVariationFactorBelowAverageY(JsonObject json, @Nullable JsonObject parent) {
+    private static JsonElement getSpecialHeightVariationFactorBelowAverageY(JsonObject json,
+            @Nullable JsonObject parent) {
         return getOrDefault(json, parent, "specialHeightVariationFactorBelowAverageY", new JsonPrimitive(0.25f));
     }
 
@@ -341,7 +327,8 @@ public class CustomGeneratorSettingsFixer {
     }
 
     private static JsonElement getExpectedHeightVariation(JsonObject json, @Nullable JsonObject parent) {
-        return getOrDefault(json, parent, "expectedHeightVariation", getOrDefault(json, parent, "heightFactor", new JsonPrimitive(64)));
+        return getOrDefault(json, parent, "expectedHeightVariation",
+                getOrDefault(json, parent, "heightFactor", new JsonPrimitive(64)));
     }
 
     private static JsonElement getPeriodicGaussianOres(JsonObject oldRoot, JsonObject parent) {
@@ -459,7 +446,8 @@ public class CustomGeneratorSettingsFixer {
         return getOrDefault(json, parent, "waterLevel", new JsonPrimitive(63));
     }
 
-    private static JsonElement getOrDefault(JsonObject source, @Nullable JsonObject parent, String name, JsonElement jsonElement) {
+    private static JsonElement getOrDefault(JsonObject source, @Nullable JsonObject parent, String name,
+            JsonElement jsonElement) {
         if (source.has(name))
             return source.get(name);
         if (parent != null && parent.has(name))
@@ -505,7 +493,7 @@ public class CustomGeneratorSettingsFixer {
         obj.add("heightSpacing", root.remove(ore + "HeightSpacing"));
         return obj;
     }
-    
+
     public static JsonObject stringToJson(String jsonString) {
         JsonReader reader = new JsonReader(new StringReader(jsonString));
         return new JsonParser().parse(reader).getAsJsonObject();

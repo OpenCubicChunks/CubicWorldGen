@@ -90,7 +90,7 @@ public class CustomCubicMod {
     public static final int FIXER_VERSION = 2;
     public static final boolean DEBUG_ENABLED = false;
     public static Logger LOGGER = null;
-    
+
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent e) {
         LOGGER = e.getModLog();

@@ -91,9 +91,6 @@ public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
     public boolean isCustomizable() {
         return true;
     }
-    
-    @Override
-    public void onGUICreateWorldPress() { }
 
     @SideOnly(Side.CLIENT)
     public void onCustomizeButton(Minecraft mc, GuiCreateWorld guiCreateWorld) {
