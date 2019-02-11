@@ -36,7 +36,7 @@ import net.minecraft.client.shader.ShaderManager;
 public class UIShaderComponent<T extends UIShaderComponent<T>> extends UIComponent<T> {
 
     protected Icon icon;
-    protected final ShaderManager shader;
+    protected ShaderManager shader;
 
     public UIShaderComponent(MalisisGui gui, ShaderManager shader) {
         super(gui);

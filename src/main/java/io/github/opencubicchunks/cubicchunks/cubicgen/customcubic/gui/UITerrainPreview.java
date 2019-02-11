@@ -29,11 +29,12 @@ import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisG
 import com.flowpowered.noise.NoiseQuality;
 import com.flowpowered.noise.Utils;
 import io.github.opencubicchunks.cubicchunks.api.util.MathUtil;
+import io.github.opencubicchunks.cubicchunks.core.CubicChunks;
+import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIShaderComponent;
-import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
-import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.render.DynamicTexture;
+import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import net.malisis.core.client.gui.ClipArea;
 import net.malisis.core.client.gui.GuiRenderer;
 import net.malisis.core.client.gui.component.IClipable;
@@ -50,6 +51,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector2f;
@@ -67,12 +69,11 @@ public class UITerrainPreview extends UIShaderComponent<UITerrainPreview> implem
     private static final BufferedImage perlinTexture;
 
     static {
-        int texSize = 256;
+        int texSize = 32;
         int samplesPerPreiod = 8;
         float freq = 1.0f / samplesPerPreiod;
-        int sampleCount = texSize / samplesPerPreiod;
 
-        perlinTexture = new BufferedImage(texSize, texSize, BufferedImage.TYPE_INT_ARGB);
+        perlinTexture = new BufferedImage(texSize*samplesPerPreiod, texSize*samplesPerPreiod, BufferedImage.TYPE_INT_ARGB);
 
         // replicate seed selection logic in CustomTerrainGenerator
         Random rnd = new Random(123456);
@@ -85,7 +86,6 @@ public class UITerrainPreview extends UIShaderComponent<UITerrainPreview> implem
         int seedHigh = (int) ((rawSeedHigh & 0xFFFFFFFF) ^ (rawSeedHigh >>> 32));
         int seedDepth = (int) ((rawSeedDepth & 0xFFFFFFFF) ^ (rawSeedDepth >>> 32));
 
-        float max = 0, min = 0;
         for (int x = 0; x < perlinTexture.getWidth(); x++) {
             for (int y = 0; y < perlinTexture.getHeight(); y++) {
                 float sel = (float) gradientCoherentNoise3DTileable(
@@ -172,6 +172,11 @@ public class UITerrainPreview extends UIShaderComponent<UITerrainPreview> implem
 
 
     @Override protected void shaderDraw(GuiRenderer guiRenderer, int mouseX, int mouseY, float partialTicks) {
+        if (CubicChunks.DEBUG_ENABLED && Keyboard.isKeyDown(Keyboard.KEY_R)) {
+            shader.deleteShader();
+            shader = createShader((CustomCubicGui) getGui());
+            super.shader = shader;
+        }
         //previewTransform.m30 = (float) Math.sin((System.currentTimeMillis()%10000)*0.001f)*20;
         this.icon.setUVs(-getWidth() / 2, -getHeight() / 2, getWidth() / 2, getHeight() / 2);
 

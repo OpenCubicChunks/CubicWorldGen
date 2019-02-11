@@ -92,7 +92,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
     @Nonnull private CubicFeatureGenerator strongholds;
 
     public CustomTerrainGenerator(World world, final long seed) {
-        this(world, CustomGeneratorSettings.fromJson(world.getWorldInfo().getGeneratorOptions()), seed);
+        this(world, CustomGeneratorSettings.load(world), seed);
     }
 
     public CustomTerrainGenerator(World world, CustomGeneratorSettings settings, final long seed) {

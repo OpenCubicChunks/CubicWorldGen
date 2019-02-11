@@ -33,9 +33,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiCreateWorld;
 import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.init.Biomes;
-import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldProvider;
 import net.minecraft.world.WorldProviderSurface;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldType;
@@ -65,8 +63,7 @@ public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
     }
 
     @Override public IntRange calculateGenerationHeightRange(WorldServer world) {
-        String string = world.getWorldInfo().getGeneratorOptions();
-        CustomGeneratorSettings opts = CustomGeneratorSettings.fromJson(string);
+        CustomGeneratorSettings opts = CustomGeneratorSettings.load(world);
         // TODO: better handling of min height
         return new IntRange(0, (int) opts.actualHeight);
     }
