@@ -25,7 +25,6 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic;
 
 import static io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod.MODID;
 
-import com.google.common.base.Objects;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -39,9 +38,9 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.JsonSyntaxException;
-import com.google.gson.stream.JsonReader;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
+import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.BiomeBlockReplacerConfig;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockSilverfish;
@@ -58,17 +57,21 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.datafix.DataFixer;
-import net.minecraft.util.datafix.FixTypes;
-import net.minecraft.util.datafix.IFixableData;
+import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.ChunkProviderSettings;
 import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraft.world.storage.ISaveHandler;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.server.FMLServerHandler;
 
-import java.io.StringReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -193,6 +196,7 @@ public class CustomGeneratorSettings {
     public BiomeBlockReplacerConfig replacerConfig = BiomeBlockReplacerConfig.defaults();
 
     // TODO: public boolean negativeHeightVariationInvertsTerrain = true;
+    public int version = CustomGeneratorSettingsFixer.VERSION;
 
     public CustomGeneratorSettings() {
     }
@@ -204,17 +208,82 @@ public class CustomGeneratorSettings {
         return replacerConfig;
     }
 
-    public String toJson(boolean minimize) {
-        Gson gson = gson(minimize);
+    public String toJson() {
+        Gson gson = gson();
         return gson.toJson(this);
     }
 
-    public static CustomGeneratorSettings fromJson(String json) {
-        if (json.isEmpty()) {
+    public static CustomGeneratorSettings fromJson(String jsonString) {
+        if (jsonString.isEmpty())
             return defaults();
+        boolean isOutdated = !CustomGeneratorSettingsFixer.isUpToDate(jsonString);
+        if (isOutdated) {
+            jsonString = CustomGeneratorSettingsFixer.fixGeneratorOptions(jsonString, null);
         }
-        Gson gson = gson(true); // minimize option shouldn't matter when deserializing
-        return gson.fromJson(json, CustomGeneratorSettings.class);
+        return gson().fromJson(jsonString, CustomGeneratorSettings.class);
+    }
+
+    @Nullable
+    public static String loadJsonStringFromSaveFolder(ISaveHandler saveHandler) {
+        File externalGeneratorPresetFile = getPresetFile(saveHandler);
+        if (externalGeneratorPresetFile.exists()) {
+            try (FileReader reader = new FileReader(externalGeneratorPresetFile)){
+                CharBuffer sb = CharBuffer.allocate((int) externalGeneratorPresetFile.length());
+                reader.read(sb);
+                sb.flip();
+                return sb.toString();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    public static File getPresetFolder(ISaveHandler saveHandler) {
+        return new File(saveHandler.getWorldDirectory(),
+                "/data/" + CustomCubicMod.MODID + "/");
+    }
+
+    public static File getPresetFile(ISaveHandler saveHandler) {
+        return new File(getPresetFolder(saveHandler),
+                "custom_generator_settings.json");
+    }
+
+    public static CustomGeneratorSettings load(World world) {
+        String jsonString = world.getWorldInfo().getGeneratorOptions();
+        CustomGeneratorSettings settings;
+        if (jsonString.isEmpty()) {
+            settings = defaults();
+            settings.save(world);
+            return settings;
+        }
+        boolean isOutdated = !CustomGeneratorSettingsFixer.isUpToDate(jsonString);
+        if (isOutdated) {
+            jsonString = CustomGeneratorSettingsFixer.fixGeneratorOptions(jsonString, null);
+        }
+        Gson gson = gson();
+        settings = gson.fromJson(jsonString, CustomGeneratorSettings.class);
+        if (isOutdated || !getPresetFile(world.getSaveHandler()).exists())
+            settings.save(world);
+        return settings;
+    }
+
+    public void save(World world) {
+        saveToFile(world.getSaveHandler(), toJson());
+    }
+
+    public static void saveToFile(ISaveHandler saveHandler, String json) {
+        File folder = getPresetFolder(saveHandler);
+        folder.mkdirs();
+        File settingsFile = getPresetFile(saveHandler);
+        try (FileWriter writer = new FileWriter(settingsFile)) {
+            writer.write(json);
+            CustomCubicMod.LOGGER.info("Generator settings saved at " + settingsFile.getAbsolutePath());
+        } catch (IOException e) {
+            CustomCubicMod.LOGGER.error("Cannot create new directory at " + folder.getAbsolutePath());
+            CustomCubicMod.LOGGER.error(json);
+            CustomCubicMod.LOGGER.catching(e);
+        }
     }
 
     public static CustomGeneratorSettings defaults() {
@@ -296,280 +365,20 @@ public class CustomGeneratorSettings {
         return settings;
     }
 
-    public static CustomGeneratorSettings fromVanilla(ChunkProviderSettings settings) {
-        CustomGeneratorSettings obj = defaults();
-
-        obj.lowNoiseFactor = 512.0f / settings.lowerLimitScale;
-        obj.highNoiseFactor = 512.0f / settings.upperLimitScale;
-
-        obj.depthNoiseFrequencyX = ConversionUtils.frequencyFromVanilla(settings.depthNoiseScaleX, 16);
-        obj.depthNoiseFrequencyZ = ConversionUtils.frequencyFromVanilla(settings.depthNoiseScaleZ, 16);
-        // settings.depthNoiseScaleExponent is ignored by vanilla
-
-        obj.selectorNoiseFrequencyX = ConversionUtils.frequencyFromVanilla(settings.coordinateScale / settings.mainNoiseScaleX, 8);
-        obj.selectorNoiseFrequencyY = ConversionUtils.frequencyFromVanilla(settings.heightScale / settings.mainNoiseScaleY, 8);
-        obj.selectorNoiseFrequencyZ = ConversionUtils.frequencyFromVanilla(settings.coordinateScale / settings.mainNoiseScaleZ, 8);
-
-        obj.lowNoiseFrequencyX = ConversionUtils.frequencyFromVanilla(settings.coordinateScale, 16);
-        obj.lowNoiseFrequencyY = ConversionUtils.frequencyFromVanilla(settings.heightScale, 16);
-        obj.lowNoiseFrequencyZ = ConversionUtils.frequencyFromVanilla(settings.coordinateScale, 16);
-
-        obj.highNoiseFrequencyX = ConversionUtils.frequencyFromVanilla(settings.coordinateScale, 16);
-        obj.highNoiseFrequencyY = ConversionUtils.frequencyFromVanilla(settings.heightScale, 16);
-        obj.highNoiseFrequencyZ = ConversionUtils.frequencyFromVanilla(settings.coordinateScale, 16);
-
-        return obj;
+    public static Gson gson() {
+        return gsonBuilder().create();
     }
 
-    public static void registerDataFixers() {
-        // TODO: redo data fixers
-
-        fixerSupplierProxy.get().registerFix(FixTypes.LEVEL, new IFixableData() {
-            @Override public int getFixVersion() {
-                return 0;
-            }
-
-            @Override public NBTTagCompound fixTagCompound(NBTTagCompound compound) {
-                if (!compound.getString("generatorName").equals("CustomCubic")) {
-                    return compound;
-                }
-                String generatorOptions = compound.getString("generatorOptions");
-                if (generatorOptions.isEmpty()) {
-                    generatorOptions = new CustomGeneratorSettings().toJson(false);
-                }
-                Gson gson = gson(false);
-
-                JsonReader reader = new JsonReader(new StringReader(generatorOptions));
-                JsonObject root = new JsonParser().parse(reader).getAsJsonObject();
-
-                // some old saves are broken, especially 1.11.2 ones from the 1.12.2->1.11.2 backport, build 847
-                // this preserves the existing ores
-                JsonArray standardOres =
-                        root.has("standardOres") ? root.getAsJsonArray("standardOres") : new JsonArray();
-                JsonArray periodicGaussianOres =
-                        root.has("periodicGaussianOres") ?
-                                root.getAsJsonArray("periodicGaussianOres") : new JsonArray();
-
-
-                // kind of ugly but I don'twant to make a special class just so store these 3 objects...
-                String[] standard = {
-                        "dirt",
-                        "gravel",
-                        "granite",
-                        "diorite",
-                        "andesite",
-                        "coalOre",
-                        "ironOre",
-                        "goldOre",
-                        "redstoneOre",
-                        "diamondOre",
-                        "hillsEmeraldOre",
-                        "hillsSilverfishStone",
-                        "mesaAddedGoldOre"
-                };
-                IBlockState[] standardBlockstates = {
-                        Blocks.DIRT.getDefaultState(),
-                        Blocks.GRAVEL.getDefaultState(),
-                        Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT, BlockStone.EnumType.GRANITE),
-                        Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT, BlockStone.EnumType.DIORITE),
-                        Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT, BlockStone.EnumType.ANDESITE),
-                        Blocks.COAL_ORE.getDefaultState(),
-                        Blocks.IRON_ORE.getDefaultState(),
-                        Blocks.GOLD_ORE.getDefaultState(),
-                        Blocks.REDSTONE_ORE.getDefaultState(),
-                        Blocks.DIAMOND_ORE.getDefaultState(),
-                        Blocks.EMERALD_ORE.getDefaultState(),
-                        Blocks.MONSTER_EGG.getDefaultState().withProperty(BlockSilverfish.VARIANT, BlockSilverfish.EnumType.STONE),
-                        Blocks.GOLD_ORE.getDefaultState()
-                };
-                Biome[][] standardBiomes = {
-                        null, // dirt
-                        null, // gravel
-                        null, // granite
-                        null, // diorite
-                        null, // andesite
-                        null, // coal
-                        null, // iron
-                        null, // gold
-                        null, // redstone
-                        null, // diamond
-                        {Biomes.EXTREME_HILLS, Biomes.EXTREME_HILLS_EDGE, Biomes.EXTREME_HILLS_WITH_TREES, Biomes.MUTATED_EXTREME_HILLS,
-                                Biomes.MUTATED_EXTREME_HILLS_WITH_TREES},//emerald
-                        {Biomes.EXTREME_HILLS, Biomes.EXTREME_HILLS_EDGE, Biomes.EXTREME_HILLS_WITH_TREES, Biomes.MUTATED_EXTREME_HILLS,
-                                Biomes.MUTATED_EXTREME_HILLS_WITH_TREES},//monster egg
-                        {Biomes.MESA, Biomes.MESA_CLEAR_ROCK, Biomes.MESA_ROCK, Biomes.MUTATED_MESA, Biomes.MUTATED_MESA_CLEAR_ROCK,
-                                Biomes.MUTATED_MESA_ROCK},//mesa gold
-                };
-                for (int i = 0; i < standard.length; i++) {
-                    JsonObject obj = convertStandardOre(gson, root, standard[i], standardBlockstates[i], standardBiomes[i]);
-                    if (obj != null) {
-                        standardOres.add(obj);
-                    }
-
-                }
-                JsonObject lapis = convertGaussianPeriodicOre(gson, root, "lapisLazuli", Blocks.LAPIS_ORE.getDefaultState(), null);
-                if (lapis != null) {
-                    periodicGaussianOres.add(lapis);
-                }
-                root.add("standardOres", standardOres);
-                root.add("periodicGaussianOres", periodicGaussianOres);
-                compound.setString("generatorOptions", gson.toJson(root));
-                return compound;
-            }
-
-            private JsonObject convertStandardOre(Gson gson, JsonObject root, String ore, IBlockState state, Biome[] biomes) {
-                if (!root.has(ore + "SpawnTries")) {
-                    // some old saves are broken, especially 1.11.2 ones from the 1.12.2->1.11.2 backport, build 847
-                    // this avoids adding a lot of air ores
-                    return null;
-                }
-
-                JsonObject obj = new JsonObject();
-                obj.add("blockstate", gson.toJsonTree(state));
-                if (biomes != null) {
-                    obj.add("biomes", gson.toJsonTree(biomes));
-                }
-                if (root.has(ore + "SpawnSize")) {
-                    obj.add("spawnSize", root.remove(ore + "SpawnSize"));
-                } else {
-                    // emerald doesn't have size defined in the old format
-                    obj.add("spawnSize", new JsonPrimitive(3));
-                }
-                obj.add("spawnTries", root.remove(ore + "SpawnTries"));
-                obj.add("spawnProbability", root.remove(ore + "SpawnProbability"));
-                obj.add("minHeight", root.remove(ore + "SpawnMinHeight"));
-                obj.add("maxHeight", root.remove(ore + "SpawnMaxHeight"));
-                return obj;
-            }
-
-            private JsonObject convertGaussianPeriodicOre(Gson gson, JsonObject root, String ore, IBlockState state, Biome[] biomes) {
-                JsonObject obj = convertStandardOre(gson, root, ore, state, biomes);
-                if (obj == null) {
-                    return null;
-                }
-                obj.add("heightMean", root.remove(ore + "HeightMean"));
-                obj.add("heightStdDeviation", root.remove(ore + "HeightStdDeviation"));
-                obj.add("heightSpacing", root.remove(ore + "HeightSpacing"));
-                return obj;
-            }
-        });
-
-        fixerSupplierProxy.get().registerFix(FixTypes.LEVEL, new IFixableData() {
-            @Override public int getFixVersion() {
-                return 1;
-            }
-
-            @Override public NBTTagCompound fixTagCompound(NBTTagCompound compound) {
-                if (!compound.getString("generatorName").equals("CustomCubic")) {
-                    return compound;
-                }
-                String generatorOptions = compound.getString("generatorOptions");
-                if (generatorOptions.isEmpty()) {
-                    generatorOptions = new CustomGeneratorSettings().toJson(false);
-                }
-                Gson gson = gson(false);
-
-                JsonReader reader = new JsonReader(new StringReader(generatorOptions));
-                JsonObject root = new JsonParser().parse(reader).getAsJsonObject();
-
-                float heightVariationOffset = root.get("heightVariationOffset").getAsFloat();
-                float offset = root.get("heightOffset").getAsFloat();
-                float factor = root.get("heightFactor").getAsFloat();
-                if (!root.has("expectedBaseHeight")) {
-                    root.add("expectedBaseHeight", root.get("heightOffset"));
-                }
-                if (!root.has("expectedHeightVariation")) {
-                    root.add("expectedHeightVariation", root.get("heightFactor"));
-                }
-                if (!root.has("actualHeight")) {
-                    root.add("actualHeight", new JsonPrimitive(
-                            (offset + heightVariationOffset +
-                                    Math.max(factor * 2 + heightVariationOffset, factor + heightVariationOffset * 2))
-                    ));
-                }
-                if (!root.has("cubeAreas")) {
-                    root.add("cubeAreas", new JsonObject());
-                }
-                if (!root.has("replacerConfig")) {
-                    JsonObject replacerConf = new JsonObject();
-                    {
-                        JsonObject defaults = new JsonObject();
-                        {
-                            defaults.add(MODID + ":horizontal_gradient_depth_decrease_weight", new JsonPrimitive(1.0f));
-                            defaults.add(MODID + ":height_offset", new JsonPrimitive(offset));
-                            JsonObject terrainfill = new JsonObject();
-                            {
-                                JsonObject properties = new JsonObject();
-                                properties.add("variant", new JsonPrimitive("stone"));
-                                terrainfill.add("Properties", properties);
-                                terrainfill.add("Name", new JsonPrimitive("minecraft:stone"));
-                            }
-                            JsonObject oceanblock = new JsonObject();
-
-                            {
-                                JsonObject properties = new JsonObject();
-                                properties.add("level", new JsonPrimitive("0"));
-                                oceanblock.add("Properties", properties);
-                                oceanblock.add("Name", new JsonPrimitive("minecraft:water"));
-                            }
-                            defaults.add(MODID + ":biome_fill_depth_offset", new JsonPrimitive(3.0f));
-                            defaults.add(MODID + ":biome_fill_noise_octaves", new JsonPrimitive(4.0f));
-                            defaults.add(MODID + ":height_scale", new JsonPrimitive(factor));
-                            defaults.add(MODID + ":biome_fill_depth_factor", new JsonPrimitive(2.3333333333333335f));
-                            defaults.add(MODID + ":mesa_depth", new JsonPrimitive(16.0f));
-                            defaults.add(MODID + ":water_level", root.get("waterLevel"));
-                            defaults.add(MODID + ":biome_fill_noise_freq", new JsonPrimitive(0.0078125f));
-                        }
-                        replacerConf.add("defaults", defaults);
-                        replacerConf.add("overrides", new JsonObject());
-                    }
-
-                    root.add("replacerConfig", replacerConf);
-                }
-                compound.setString("generatorOptions", gson.toJson(root));
-                return compound;
-            }
-        });
-
-
-        fixerSupplierProxy.get().registerFix(FixTypes.LEVEL, new IFixableData() {
-            @Override public int getFixVersion() {
-                return 2;
-            }
-
-            @Override public NBTTagCompound fixTagCompound(NBTTagCompound compound) {
-                if (!compound.getString("generatorName").equals("CustomCubic")) {
-                    return compound;
-                }
-                String generatorOptions = compound.getString("generatorOptions");
-                if (generatorOptions.isEmpty()) {
-                    generatorOptions = new CustomGeneratorSettings().toJson(true);
-                }
-                // this is far simpler that walking through the json and figurring out all the places where it occurs
-                // instead, just do string search and replace. The string shouldn't occur in any other context
-                compound.setString("generatorOptions", generatorOptions.replaceAll(MODID + ":", MODID + ":"));
-                return compound;
-            }
-        });
-    }
-
-    public static Gson gson(boolean minimize) {
-        return new GsonBuilder().serializeSpecialFloatingPointValues()
-                .enableComplexMapKeySerialization()
-                .registerTypeAdapter(CustomGeneratorSettings.class, new Serializer(minimize))
-                .registerTypeHierarchyAdapter(IBlockState.class, BlockStateSerializer.INSTANCE)
-                .registerTypeHierarchyAdapter(Biome.class, new BiomeSerializer())
-                .registerTypeAdapter(BiomeBlockReplacerConfig.class, new BiomeBlockReplacerConfigSerializer(minimize))
-                .create();
-    }
-
-    public static GsonBuilder gsonBuilder(boolean minimize) {
-        return new GsonBuilder().serializeSpecialFloatingPointValues()
-                .enableComplexMapKeySerialization()
-                .registerTypeAdapter(CustomGeneratorSettings.class, new Serializer(minimize))
-                .registerTypeHierarchyAdapter(IBlockState.class, BlockStateSerializer.INSTANCE)
-                .registerTypeHierarchyAdapter(Biome.class, new BiomeSerializer())
-                .registerTypeAdapter(BiomeBlockReplacerConfig.class, new BiomeBlockReplacerConfigSerializer(minimize));
+    public static GsonBuilder gsonBuilder() {
+        GsonBuilder builder = new GsonBuilder();
+        builder.setPrettyPrinting();
+        builder.serializeSpecialFloatingPointValues();
+        builder.enableComplexMapKeySerialization();
+        builder.registerTypeAdapter(CustomGeneratorSettings.class, new Serializer());
+        builder.registerTypeHierarchyAdapter(IBlockState.class, BlockStateSerializer.INSTANCE);
+        builder.registerTypeHierarchyAdapter(Biome.class, new BiomeSerializer());
+        builder.registerTypeAdapter(BiomeBlockReplacerConfig.class, new BiomeBlockReplacerConfigSerializer());
+        return builder;
     }
 
     public static class StandardOreConfig {
@@ -610,7 +419,6 @@ public class CustomGeneratorSettings {
             private float spawnProbability;
             private float minHeight = Float.NEGATIVE_INFINITY;
             private float maxHeight = Float.POSITIVE_INFINITY;
-            private Set<IBlockState> blockstates = new HashSet<>();
 
             public Builder block(IBlockState blockstate) {
                 this.blockstate = blockstate;
@@ -836,11 +644,6 @@ public class CustomGeneratorSettings {
         }
 
         private static final CustomGeneratorSettings defaults = CustomGeneratorSettings.defaults();
-        private final boolean minimize;
-
-        public Serializer(boolean minimize) {
-            this.minimize = minimize;
-        }
 
         @Override public CustomGeneratorSettings deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
                 throws JsonParseException {
@@ -894,11 +697,7 @@ public class CustomGeneratorSettings {
             try {
                 JsonObject root = new JsonObject();
                 for (Field field : fields) {
-                    Object defValue = field.get(def);
                     Object value = field.get(src);
-                    if (minimize && Objects.equal(defValue, value)) {
-                        continue;
-                    }
                     if (field.getName().equals("cubeAreas")) {
                         JsonArray cubeAreas = new JsonArray();
                         for (Map.Entry<IntAABB, CustomGeneratorSettings> entry : src.cubeAreas.entrySet()) {
@@ -970,12 +769,6 @@ public class CustomGeneratorSettings {
     private static class BiomeBlockReplacerConfigSerializer
             implements JsonDeserializer<BiomeBlockReplacerConfig>, JsonSerializer<BiomeBlockReplacerConfig> {
 
-        private final boolean minimize;
-
-        public BiomeBlockReplacerConfigSerializer(boolean minimize) {
-            this.minimize = minimize;
-        }
-
         @Override public BiomeBlockReplacerConfig deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
                 throws JsonParseException {
 
@@ -1010,19 +803,13 @@ public class CustomGeneratorSettings {
         @Override public JsonElement serialize(BiomeBlockReplacerConfig src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject root = new JsonObject();
 
-            BiomeBlockReplacerConfig defaultValues = BiomeBlockReplacerConfig.defaults();
-
             JsonObject defaults = new JsonObject();
             JsonObject overrides = new JsonObject();
 
             for (Map.Entry<ResourceLocation, Object> e : src.getDefaults().entrySet()) {
-                if (minimize && Objects.equal(defaultValues.getValue(e.getKey()), e.getValue())) {
-                    continue;
-                }
                 defaults.add(e.getKey().toString(), getJsonElement(context, e));
             }
             for (Map.Entry<ResourceLocation, Object> e : src.getOverrides().entrySet()) {
-                // don't "minimize" overrides
                 overrides.add(e.getKey().toString(), getJsonElement(context, e));
             }
             root.add("defaults", defaults);

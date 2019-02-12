@@ -28,17 +28,26 @@ buildscript {
             setUrl("https://plugins.gradle.org/m2/")
         }
     }
+    dependencies {
+        classpath("org.ajoberstar.grgit:grgit-gradle:3.0.0-beta.1")
+        classpath("org.spongepowered:mixingradle:0.5-SNAPSHOT")
+        classpath("com.github.jengelman.gradle.plugins:shadow:2.0.4")
+        classpath("gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0")
+        classpath("net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT")
+    }
 }
 
 plugins {
     base
     java
     maven
-    id("net.minecraftforge.gradle.forge").version("2.2-SNAPSHOT")
-    id("org.spongepowered.mixin").version("0.5-SNAPSHOT")
-    id("com.github.johnrengelman.shadow").version("2.0.4")
-    id("com.github.hierynomus.license").version("0.14.0")
-    id("org.ajoberstar.grgit").version("3.0.0-beta.1")
+}
+
+apply {
+    plugin<ForgePlugin>()
+    plugin<ShadowPlugin>()
+    plugin<MixinGradlePlugin>()
+    plugin<LicensePlugin>()
 }
 
 // TODO: Reduce duplication of buildscript code between CC projects?
@@ -156,7 +165,7 @@ tasks {
             mappingType = ReobfMappingType.SEARGE
         }
     }
-    "assemble"().dependsOn("reobfShadeJar")
+    tasks["assemble"].dependsOn("reobfShadeJar")
 
     "test"(Test::class) {
         systemProperty("lwts.tweaker", "io.github.opencubicchunks.cubicchunks.tweaker.MixinTweakerServer")
@@ -263,7 +272,7 @@ tasks {
 fun getMcVersion(): String {
     return theForgeVersion.split("-")[0]
 }
-
+println(tasks["uploadArchives"]);
 //returns version string according to this: http://mcforge.readthedocs.org/en/latest/conventions/versioning/
 //format: MCVERSION-MAJORMOD.MAJORAPI.MINOR.PATCH(-final/rcX/betaX)
 //rcX and betaX are not implemented yet

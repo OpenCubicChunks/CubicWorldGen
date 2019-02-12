@@ -98,8 +98,6 @@ public class CustomCubicMod {
         FlatCubicWorldType.create();
         CustomCubicWorldType.create();
         DebugWorldType.create();
-
-        CustomGeneratorSettings.registerDataFixers();
     }
 
     @Mod.EventHandler
