@@ -27,15 +27,18 @@ import io.github.opencubicchunks.cubicchunks.api.util.IntRange;
 import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorldType;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.ICubeGenerator;
 import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.*;
 import net.minecraft.init.Biomes;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldProviderSurface;
-import net.minecraft.world.WorldServer;
-import net.minecraft.world.WorldType;
+import net.minecraft.world.*;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeProvider;
+import net.minecraft.world.gen.ChunkProviderSettings;
 import net.minecraft.world.gen.layer.GenLayer;
 import net.minecraft.world.gen.layer.IntCache;
+import net.minecraft.world.storage.WorldInfo;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -71,13 +74,42 @@ public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
                 this.biomeIndexLayer = new GenLayerDebug(4 + 2);
             }};
         } else {
-            return super.getBiomeProvider(world);
+            CustomGeneratorSettings conf = CustomGeneratorSettings.load(world);
+            WorldSettings fakeSettings = new WorldSettings(world.getWorldInfo());
+            ChunkProviderSettings.Factory fakeGenOpts = new ChunkProviderSettings.Factory();
+            fakeGenOpts.biomeSize = conf.biomeSize;
+            fakeGenOpts.riverSize = conf.riverSize;
+            fakeGenOpts.fixedBiome = conf.biome;
+            fakeSettings.setGeneratorOptions(fakeGenOpts.toString());
+            WorldInfo fakeInfo = new WorldInfo(fakeSettings, world.getWorldInfo().getWorldName());
+            fakeInfo.setTerrainType(WorldType.CUSTOMIZED);
+            return new BiomeProvider(fakeInfo);
         }
     }
 
     @Override
     public ICubeGenerator createCubeGenerator(World world) {
         return new CustomTerrainGenerator(world, world.getSeed());
+    }
+
+    public boolean isCustomizable() {
+        return true;
+    }
+
+    @SideOnly(Side.CLIENT)
+    public void onCustomizeButton(Minecraft mc, GuiCreateWorld guiCreateWorld) {
+
+        mc.displayGuiScreen(new MinimalCustomizeWorldGui(guiCreateWorld,
+                CustomGeneratorSettings.fromJson(guiCreateWorld.chunkProviderSettingsJson)
+                        .toJson().replace("\n", "").replaceAll(" ", ""),
+                preset -> {
+            try {
+                CustomGeneratorSettings.fromJson(preset);
+                return true;
+            } catch (RuntimeException ex) {
+                return false;
+            }
+        }));
     }
 
     private static class GenLayerDebug extends GenLayer {

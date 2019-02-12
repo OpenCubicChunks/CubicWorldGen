@@ -38,6 +38,7 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.annotations.Expose;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
@@ -84,19 +85,6 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 public class CustomGeneratorSettings {
-
-    @SidedProxy public static Supplier<DataFixer> fixerSupplierProxy;
-    public static class ClientProxy implements Supplier<DataFixer> {
-        @Override public DataFixer get() {
-            return Minecraft.getMinecraft().getDataFixer();
-        }
-    }
-    public static class ServerProxy implements Supplier<DataFixer> {
-        @Override public DataFixer get() {
-            return FMLServerHandler.instance().getServer().getDataFixer();
-        }
-    }
-
     /**
      * Note: many of these values are unused yet
      */

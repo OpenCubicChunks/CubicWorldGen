@@ -26,7 +26,10 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.flat;
 import io.github.opencubicchunks.cubicchunks.api.util.IntRange;
 import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorldType;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.ICubeGenerator;
+import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.MinimalCustomizeWorldGui;
 import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiCreateWorld;
 import net.minecraft.init.Biomes;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProviderSurface;
@@ -34,6 +37,8 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.BiomeProvider;
 import net.minecraft.world.biome.BiomeProviderSingle;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -65,5 +70,23 @@ public class FlatCubicWorldType extends WorldType implements ICubicWorldType {
 
     @Override public boolean hasCubicGeneratorForWorld(World w) {
         return w.provider.getClass() == WorldProviderSurface.class; // a more general way to check if it's overworld
+    }
+
+    public boolean isCustomizable() {
+        return true;
+    }
+
+    @SideOnly(Side.CLIENT)
+    public void onCustomizeButton(Minecraft mc, GuiCreateWorld guiCreateWorld) {
+        mc.displayGuiScreen(new MinimalCustomizeWorldGui(guiCreateWorld,
+                FlatGeneratorSettings.fromJson(guiCreateWorld.chunkProviderSettingsJson).toJson(),
+                preset -> {
+            try {
+                FlatGeneratorSettings.fromJson(preset);
+                return true;
+            } catch (RuntimeException ex) {
+                return false;
+            }
+        }));
     }
 }
