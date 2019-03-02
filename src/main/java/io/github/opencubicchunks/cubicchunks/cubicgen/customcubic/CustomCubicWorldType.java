@@ -34,6 +34,7 @@ import net.minecraft.init.Biomes;
 import net.minecraft.world.*;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeProvider;
+import net.minecraft.world.biome.BiomeProviderSingle;
 import net.minecraft.world.gen.ChunkGeneratorSettings;
 import net.minecraft.world.gen.layer.GenLayer;
 import net.minecraft.world.gen.layer.IntCache;
@@ -76,6 +77,8 @@ public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
                 this.biomeIndexLayer = new GenLayerDebug(4 + 2);
             }};
         } else {
+            if (world.isRemote)
+                return new BiomeProviderSingle(Biomes.PLAINS);
             CustomGeneratorSettings conf = CustomGeneratorSettings.load(world);
             WorldSettings fakeSettings = new WorldSettings(world.getWorldInfo());
             ChunkGeneratorSettings.Factory fakeGenOpts = new ChunkGeneratorSettings.Factory();
