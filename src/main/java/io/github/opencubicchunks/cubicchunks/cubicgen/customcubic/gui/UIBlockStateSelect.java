@@ -30,9 +30,12 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBlo
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIOptionScrollbar;
 import net.malisis.core.client.gui.ClipArea;
 import net.malisis.core.client.gui.GuiRenderer;
+import net.malisis.core.client.gui.component.IClipable;
 import net.malisis.core.client.gui.component.container.UIContainer;
+import net.malisis.core.client.gui.component.control.IScrollable;
 import net.malisis.core.client.gui.component.control.UIScrollBar;
 import net.malisis.core.client.gui.component.decoration.UITooltip;
+import net.malisis.core.client.gui.component.interaction.UITextField;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -49,12 +52,54 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.lwjgl.opengl.GL11;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIContainer<T> {
 
+    private static final MethodHandle ClipAreaConstrOld, ClipAreaConstrNew;
+
+    static {
+        MethodHandle handle;
+        try {
+            handle = MethodHandles.lookup().findConstructor(
+                ClipArea.class,
+                MethodType.methodType(
+                    void.class,
+                    IClipable.class, int.class, int.class, int.class, int.class, boolean.class
+                )
+            );
+        } catch (NoSuchMethodException e) {
+            handle = null;
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        ClipAreaConstrOld = handle;
+
+        try {
+            handle = MethodHandles.lookup().findConstructor(
+                ClipArea.class,
+                MethodType.methodType(
+                    void.class,
+                    IClipable.class, IScrollable.class, boolean.class
+                )
+            );
+        } catch (NoSuchMethodException e) {
+            handle = null;
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        ClipAreaConstrNew = handle;
+        if (ClipAreaConstrOld == null && ClipAreaConstrNew == null) {
+            throw new NoSuchMethodError("Expected to find either old or new ClipArea constructor");
+        }
+    }
     private static final int PADDING_VERT = 20;
     private static final int PADDING_HORIZ = 20;
 
@@ -102,7 +147,20 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
     }
 
     @Override public ClipArea getClipArea() {
-        return new ClipArea(this, getLeftPadding(), getTopPadding(), getWidth() - getRightPadding(), getHeight() - getBottomPadding(), false);
+        if (ClipAreaConstrOld != null) {
+            try {
+                return (ClipArea) ClipAreaConstrOld.invoke(
+                    this, getLeftPadding(), getTopPadding(), getWidth() - getRightPadding(), getHeight() - getBottomPadding(), false);
+            } catch (Throwable t) {
+                throw new RuntimeException(t);
+            }
+        } else {
+            try {
+                return (ClipArea) ClipAreaConstrNew.invoke(this, this, false);
+            } catch (Throwable t) {
+                throw new RuntimeException(t);
+            }
+        }
     }
 
     @Override public boolean onMouseMove(int lastX, int lastY, int x, int y) {

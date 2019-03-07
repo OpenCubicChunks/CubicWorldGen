@@ -77,7 +77,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 @Mod(modid = CustomCubicMod.MODID,
-        dependencies = "required:cubicchunks@[0.0.853.0,);required:forge@[14.23.3.2658,);after:malisiscore@[1.12.2-6.3.0,1.12.2-6.5.0)",
+        dependencies = "required:cubicchunks@[0.0.853.0,);required:forge@[14.23.3.2658,)",
         acceptableRemoteVersions = "*"
 )
 @Mod.EventBusSubscriber

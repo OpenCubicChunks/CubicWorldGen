@@ -26,10 +26,9 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui;
 import static java.lang.Math.round;
 
 import com.google.common.base.Converter;
+import com.google.common.base.Predicate;
 import com.google.common.eventbus.Subscribe;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.BiomeOption;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UICheckboxNoAutoSize;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIRangeSlider;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISliderImproved;
@@ -44,22 +43,66 @@ import net.malisis.core.client.gui.component.interaction.UICheckBox;
 import net.malisis.core.client.gui.component.interaction.UISelect;
 import net.malisis.core.client.gui.component.interaction.UISlider;
 import net.malisis.core.client.gui.component.interaction.UITextField;
-import net.malisis.core.client.gui.event.component.SpaceChangeEvent;
+import net.malisis.core.client.gui.event.ComponentEvent;
 import net.malisis.core.renderer.font.FontOptions;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiPredicate;
 import java.util.function.DoubleSupplier;
+import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 
 public class MalisisGuiUtils {
 
+    // MalisisCore 6.5.1 removed validator and replaced it with filter
+    private static final MethodHandle setValidator, setFilter;
+
+    static {
+        MethodHandle handle;
+        try {
+            handle = MethodHandles.lookup().findVirtual(
+                UITextField.class,
+                "setValidator",
+                MethodType.methodType(
+                    UITextField.class,
+                    Predicate/*<String>*/.class
+                )
+            );
+        } catch (NoSuchMethodException e) {
+            handle = null;
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        setValidator = handle;
+
+        try {
+            handle = MethodHandles.lookup().findVirtual(
+                UITextField.class,
+                "setFilter",
+                MethodType.methodType(
+                    void.class,
+                    Function/*<String, String>*/.class
+                )
+            );
+        } catch (NoSuchMethodException e) {
+            handle = null;
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        setFilter = handle;
+        if (setFilter == null && setValidator == null) {
+            throw new NoSuchMethodError("Expected to find either setFilter or setValidator in UITextField");
+        }
+    }
     public static UISlider<Float> makeFloatSlider(MalisisGui gui, String name, float min, float max, float defaultVal) {
 
         UISlider<Float>[] wrappedSlider = new UISlider[1];
@@ -240,14 +283,102 @@ public class MalisisGuiUtils {
     // textInput as argument so that it's easy to access it later
     // otherwise, to access the value of the text field, it would be necessary to get it out of implementation-specific contaier
     public static UIComponent<?> floatInput(ExtraGui gui, String text, UITextField textField, float defaultValue) {
-        textField.setValidator(str -> {
+        if (setValidator != null) {
             try {
-                Float.parseFloat(str);
-                return true;
-            } catch (NumberFormatException e2) {
-                return false;
+                setValidator.invoke(textField, (Predicate<String>) str -> {
+                    try {
+                        Float.parseFloat(str);
+                        return true;
+                    } catch (NumberFormatException e) {
+                        return false;
+                    }
+                });
+            } catch (Throwable t) {
+                throw new RuntimeException(t);
             }
-        });
+        } else {
+            try {
+                Function<String, String> filter = newStr -> {
+                    try {
+                        Float.parseFloat(newStr);
+                        return newStr;
+                    } catch (NumberFormatException e1) {
+                        // bug in 6.5.1 where the old text is actually the new text
+                        String str = textField.getText();
+                        try {
+                            Float.parseFloat(newStr);
+                            return str; // return old text
+                        } catch (NumberFormatException e2) {
+                            // this is ugly...
+
+                            // first, is it empty or a single character that doesn't parse?
+                            if (str.length() <= 1) {
+                                return "";
+                            }
+                            // this should cover all the "user is typing" cases
+                            int length = str.length();
+                            // iterate end-to-beginning and check if after removing that character, it becomes a valid number
+                            for (int i = length - 1; i >= 0; i--) {
+                                String sub = str.substring(0, i) + str.substring(i + 1);
+                                try {
+                                    Float.parseFloat(sub);
+                                    return sub;
+                                } catch (NumberFormatException e3) {
+                                }
+                            }
+                            // uh... we still didn't return?
+                            // I don't know what could trigger this, but this is the way we will try to handle it:
+                            // iterate over the characters and remove everything we don't want.
+                            //  * up until the dot, remove everything non-digit
+                            //    * except 'e' if it's second or later character, then assume there was no dot, and after that, that we are past 'e'
+                            //  * if there was no dot, or we are past the dot, remove everything non-digit except 'e'
+                            //  * after an 'e', remove everything non-digit
+                            // If it *still* doesn't parse, give up and return empty string
+                            StringBuilder newsb = new StringBuilder(str.length());
+                            boolean seenFirstDigit = false;
+                            boolean seenDot = false;
+                            boolean seenE = false;
+                            for (char ch : str.toCharArray()) {
+                                if (ch >= '0' && ch <= '9') {
+                                    newsb.append(ch);
+                                    seenFirstDigit = true;
+                                } else if (ch == 'e' || ch == 'E') {
+                                    if (!seenE && seenFirstDigit) {
+                                        newsb.append(ch);
+                                        seenE = true;
+                                        seenDot = true;
+                                    }
+                                } else if (ch == '.') {
+                                    if (!seenDot) {
+                                        newsb.append(ch);
+                                        seenDot = true;
+                                    }
+                                }
+                            }
+                            str = newsb.toString();
+                            try {
+                                Float.parseFloat(str);
+                                return str;
+                            } catch (NumberFormatException e3) {
+                                return "";
+                            }
+                        }
+                    }
+                };
+                setFilter.invoke(textField, filter);
+                // another (imperfect) hack because filter isn't applied when remoing characters
+                textField.register(new Object() {
+                    @Subscribe public void onValueChange(ComponentEvent.ValueChange<UITextField, String> change) {
+                        String newText = filter.apply(change.getNewValue());
+                        if (!newText.equals(change.getNewValue())) {
+                            textField.setText(newText);
+                        }
+                    }
+                });
+            } catch (Throwable t) {
+                throw new RuntimeException(t);
+            }
+        }
         textField.setEditable(true);
         textField.setText(String.format("%.1f", defaultValue));
         textField.setFontOptions(FontOptions.builder().color(0xFFFFFF).build());
