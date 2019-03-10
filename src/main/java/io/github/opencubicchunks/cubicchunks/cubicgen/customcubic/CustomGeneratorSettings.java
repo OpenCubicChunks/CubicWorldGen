@@ -42,6 +42,7 @@ import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.BiomeBlockReplacerConfig;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.world.storage.IWorldInfoAccess;
 import net.minecraft.block.BlockSilverfish;
 import net.minecraft.block.BlockStone;
 import net.minecraft.block.state.IBlockState;
@@ -232,17 +233,18 @@ public class CustomGeneratorSettings {
         CustomGeneratorSettings settings;
         if (jsonString.isEmpty()) {
             settings = defaults();
-            settings.save(world);
+            IWorldInfoAccess wia = (IWorldInfoAccess) world.getWorldInfo();
+            wia.setGeneratorOptions(settings.toJson());
             return settings;
         }
         boolean isOutdated = !CustomGeneratorSettingsFixer.isUpToDate(jsonString);
         if (isOutdated) {
             jsonString = CustomGeneratorSettingsFixer.fixGeneratorOptions(jsonString, null);
+            IWorldInfoAccess wia = (IWorldInfoAccess) world.getWorldInfo();
+            wia.setGeneratorOptions(jsonString);
         }
         Gson gson = gson();
         settings = gson.fromJson(jsonString, CustomGeneratorSettings.class);
-        if (isOutdated || !getPresetFile(world.getSaveHandler()).exists())
-            settings.save(world);
         return settings;
     }
     
