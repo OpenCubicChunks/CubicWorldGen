@@ -33,6 +33,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.world.storage.IWorldInfoAccess;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
+import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettingsFixer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.storage.ISaveHandler;
 import net.minecraft.world.storage.SaveHandler;
@@ -48,10 +49,15 @@ public class MixinSaveHandler {
         String generatorOptions = CustomGeneratorSettings.loadJsonStringFromSaveFolder((ISaveHandler) (Object) this);
         if (generatorOptions == null)
             return;
+        boolean isOutdated = !CustomGeneratorSettingsFixer.isUpToDate(generatorOptions);
+        if (isOutdated) {
+            generatorOptions = CustomGeneratorSettingsFixer.fixGeneratorOptions(generatorOptions, null);
+            CustomGeneratorSettings.saveToFile((ISaveHandler) (Object) this, generatorOptions);
+        }
         IWorldInfoAccess worldInfo = (IWorldInfoAccess) cir.getReturnValue();
         worldInfo.setGeneratorOptions(generatorOptions);
     }
-    
+
     @Inject(method = "saveWorldInfoWithPlayer", at = @At("RETURN"))
     public void onSavingWorldInfoWithPlayer(WorldInfo worldInformation, @Nullable NBTTagCompound tagCompound,
             CallbackInfo ci) {
