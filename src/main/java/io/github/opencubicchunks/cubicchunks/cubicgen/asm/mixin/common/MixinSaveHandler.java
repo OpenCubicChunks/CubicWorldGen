@@ -32,6 +32,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.world.storage.IWorldInfoAccess;
+import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomCubicWorldType;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettingsFixer;
 import net.minecraft.nbt.NBTTagCompound;
@@ -44,7 +45,7 @@ public class MixinSaveHandler {
 
     @Inject(method = "loadWorldInfo", at = @At("RETURN"))
     public void onLoadWorldInfo(CallbackInfoReturnable<WorldInfo> cir) {
-        if (cir.getReturnValue() == null)
+        if (cir.getReturnValue() == null || !(cir.getReturnValue().getTerrainType() instanceof CustomCubicWorldType))
             return;
         String generatorOptions = CustomGeneratorSettings.loadJsonStringFromSaveFolder((ISaveHandler) (Object) this);
         if (generatorOptions == null)
@@ -61,6 +62,8 @@ public class MixinSaveHandler {
     @Inject(method = "saveWorldInfoWithPlayer", at = @At("RETURN"))
     public void onSavingWorldInfoWithPlayer(WorldInfo worldInformation, @Nullable NBTTagCompound tagCompound,
             CallbackInfo ci) {
+        if (!(worldInformation.getTerrainType() instanceof CustomCubicWorldType))
+            return;
         if (!CustomGeneratorSettings.getPresetFile((ISaveHandler) (Object) this).exists())
             CustomGeneratorSettings.saveToFile((ISaveHandler) (Object) this, worldInformation.getGeneratorOptions());
     }
