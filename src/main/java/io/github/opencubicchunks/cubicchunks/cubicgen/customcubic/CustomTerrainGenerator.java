@@ -52,6 +52,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BiomeProvider;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
@@ -86,6 +87,8 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
     private final CustomGeneratorSettings conf;
     private final Map<Biome, ICubicPopulator> populators = new HashMap<>();
 
+    private boolean fillCubeBiomes;
+
     //TODO: Implement more structures
     @Nonnull private CubicCaveGenerator caveGenerator = new CubicCaveGenerator();
     @Nonnull private CubicStructureGenerator ravineGenerator;
@@ -96,6 +99,10 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
     }
 
     public CustomTerrainGenerator(World world, CustomGeneratorSettings settings, final long seed) {
+        this(world, settings, seed, true);
+    }
+
+    private CustomTerrainGenerator(World world, CustomGeneratorSettings settings, final long seed, boolean isMainLayer) {
         super(world);
         this.conf = settings;
 
@@ -107,12 +114,14 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         this.strongholds = new CubicStrongholdGenerator(conf);
         this.ravineGenerator = new CubicRavineGenerator(conf);
 
-        this.biomeSource = new BiomeSource(world, conf.createBiomeBlockReplacerConfig(), world.getBiomeProvider(), 2);
+        this.fillCubeBiomes = !isMainLayer;
+        BiomeProvider biomes = isMainLayer ? world.getBiomeProvider() : CustomCubicWorldType.makeBiomeProvider(world, settings);
+        this.biomeSource = new BiomeSource(world, conf.createBiomeBlockReplacerConfig(), biomes, 2);
         initGenerator(seed);
 
         if (settings.cubeAreas != null) {
             for (CustomGeneratorSettings.IntAABB aabb : settings.cubeAreas.keySet()) {
-                this.areaGenerators.put(aabb, new CustomTerrainGenerator(world, settings.cubeAreas.get(aabb), seed));
+                this.areaGenerators.put(aabb, new CustomTerrainGenerator(world, settings.cubeAreas.get(aabb), seed, false));
             }
         }
     }
@@ -195,6 +204,16 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
                 }
                 areaGenerators.get(aabb).populate(cube);
                 return;
+            }
+        }
+        if (fillCubeBiomes) {
+            int minX = cube.getCoords().getMinBlockX();
+            int minZ = cube.getCoords().getMinBlockZ();
+            int y = cube.getCoords().getMinBlockY();
+            for (int dx = 0; dx < 8; dx++) {
+                for (int dz = 0; dz < 8; dz++) {
+                    cube.setBiome(dx, dz, biomeSource.getBiome(minX + dx*2, y, minZ + dz*2).getBiome());
+                }
             }
         }
         /**

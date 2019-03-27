@@ -80,16 +80,20 @@ public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
             if (world.isRemote)
                 return new BiomeProviderSingle(Biomes.PLAINS);
             CustomGeneratorSettings conf = CustomGeneratorSettings.load(world);
-            WorldSettings fakeSettings = new WorldSettings(world.getWorldInfo());
-            ChunkGeneratorSettings.Factory fakeGenOpts = new ChunkGeneratorSettings.Factory();
-            fakeGenOpts.biomeSize = conf.biomeSize;
-            fakeGenOpts.riverSize = conf.riverSize;
-            fakeGenOpts.fixedBiome = conf.biome;
-            fakeSettings.setGeneratorOptions(fakeGenOpts.toString());
-            WorldInfo fakeInfo = new WorldInfo(fakeSettings, world.getWorldInfo().getWorldName());
-            fakeInfo.setTerrainType(WorldType.CUSTOMIZED);
-            return new BiomeProvider(fakeInfo);
+            return makeBiomeProvider(world, conf);
         }
+    }
+
+    public static BiomeProvider makeBiomeProvider(World world, CustomGeneratorSettings conf) {
+        WorldSettings fakeSettings = new WorldSettings(world.getWorldInfo());
+        ChunkGeneratorSettings.Factory fakeGenOpts = new ChunkGeneratorSettings.Factory();
+        fakeGenOpts.biomeSize = conf.biomeSize;
+        fakeGenOpts.riverSize = conf.riverSize;
+        fakeSettings.setGeneratorOptions(fakeGenOpts.toString());
+        WorldInfo fakeInfo = new WorldInfo(fakeSettings, world.getWorldInfo().getWorldName());
+        fakeInfo.setTerrainType(WorldType.CUSTOMIZED);
+        Biome biome = Biome.getBiomeForId(conf.biome);
+        return conf.biome < 0 ? new BiomeProvider(fakeInfo) : new BiomeProviderSingle(biome == null ? Biomes.OCEAN : biome);
     }
 
     @Override
