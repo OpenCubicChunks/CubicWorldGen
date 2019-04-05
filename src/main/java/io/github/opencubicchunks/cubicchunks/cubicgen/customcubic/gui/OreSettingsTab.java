@@ -23,6 +23,7 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui;
 
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeUISelect;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_PADDING;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.label;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeCheckbox;
@@ -179,7 +180,7 @@ class OreSettingsTab {
             this.block = new UIBlockStateButton(gui, config.blockstate);
             this.name = makeLabel(gui, config);
             this.delete = new UIButton(gui, malisisText("delete")).setSize(10, 20).setAutoSize(false);
-            this.type = new UISelect<>(gui, 10, Arrays.asList(OreGenType.values()));
+            this.type = makeUISelect(gui, Arrays.asList(OreGenType.values()));
             this.size = makeIntSlider(gui, malisisText("spawn_size", " %d"), 1, 50, config.spawnSize);
             this.attempts = makeIntSlider(gui, malisisText("spawn_tries", " %d"), 1, 40, config.spawnTries);
             this.probability = makeFloatSlider(gui, malisisText("spawn_probability", " %.3f"), config.spawnProbability);
@@ -387,7 +388,7 @@ class OreSettingsTab {
             this.block = new UIBlockStateButton(gui, config.blockstate);
             this.name = makeLabel(gui, config);
             this.delete = new UIButton(gui, malisisText("delete")).setSize(10, 20).setAutoSize(false);
-            this.type = new UISelect<>(gui, 10, Arrays.asList(OreGenType.values()));
+            this.type = makeUISelect(gui, Arrays.asList(OreGenType.values()));
             this.size = makeIntSlider(gui, malisisText("spawn_size", " %d"), 1, 50, config.spawnSize);
             this.attempts = makeIntSlider(gui, malisisText("spawn_tries", " %d"), 1, 40, config.spawnTries);
             this.mean = makeFloatSlider(gui, malisisText("mean_height", " %.3f"), -4.0f, 4.0f, config.heightMean);

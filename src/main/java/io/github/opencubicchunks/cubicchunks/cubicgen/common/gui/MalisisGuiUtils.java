@@ -54,7 +54,9 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
@@ -254,21 +256,26 @@ public class MalisisGuiUtils {
     }
 
     public static <T> UISelect<T> makeUISelect(MalisisGui gui, Iterable<T> values) {
-        UISelect<T> select = new UISelect<T>(gui, 0, values);
+        UISelect<T> select = new UISelect<T>(gui, 10, values) {{
+            gui.removeFromScreen(this.optionsContainer);
+            ((ExtraGui) gui).delayedAdd(this.optionsContainer);
+        }};
         return select;
     }
 
-    public static UISelect<BiomeOption> makeBiomeList(MalisisGui gui) {
+    public static UISelect<BiomeOption> makeBiomeList(MalisisGui gui, int selectedId) {
         List<BiomeOption> biomes = new ArrayList<>();
+        Map<Integer, BiomeOption> byId = new HashMap<>();
         biomes.add(BiomeOption.ALL);
         for (Biome biome : ForgeRegistries.BIOMES) {
-            if (!biome.isMutation()) {
-                biomes.add(new BiomeOption(biome));
-            }
+            BiomeOption bo = new BiomeOption(biome);
+            biomes.add(bo);
+            byId.put(Biome.REGISTRY.getIDForObject(biome), bo);
         }
         UISelect<BiomeOption> select = makeUISelect(gui, biomes);
 
-        select.select(BiomeOption.ALL);
+        select.select(byId.getOrDefault(selectedId, BiomeOption.ALL));
+
         select.maxDisplayedOptions(8);
         return select;
     }

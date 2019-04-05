@@ -112,7 +112,8 @@ class BasicSettingsTab {
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 5, WIDTH_2_COL))
 
 
-                .add(this.biome = makeBiomeList(gui), new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 6, WIDTH_2_COL))
+                .add(this.biome = makeBiomeList(gui, settings.biome),
+                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 6, WIDTH_2_COL))
                 .add(this.dungeonCount = makeIntSlider(gui, malisisText("dungeonCount", ": %d"), 1, 100, settings.dungeonCount),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 6, WIDTH_2_COL))
 
@@ -131,6 +132,7 @@ class BasicSettingsTab {
                         gui, malisisText("water_level", ": %.2f"),
                         1, 12, 1, 12, settings.waterLevel),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 9, WIDTH_2_COL));
+
 
         this.container = layout;
     }

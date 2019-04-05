@@ -28,14 +28,17 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UILay
 import net.malisis.core.client.gui.MalisisGui;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
+import net.malisis.core.client.gui.component.interaction.UISelect;
 import net.malisis.core.util.MouseButton;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -48,6 +51,8 @@ public abstract class ExtraGui extends MalisisGui {
     private final Field componentsField;
 
     private boolean debug = false;
+
+    private List<UIComponent<?>> toAddLater = new ArrayList<>();
 
     {
         try {
@@ -68,6 +73,15 @@ public abstract class ExtraGui extends MalisisGui {
             }
             return false;
         });
+    }
+
+    public <T> void delayedAdd(UISelect.OptionsContainer toAdd) {
+        this.toAddLater.add(toAdd);
+    }
+
+    protected void afterConstruct() {
+        this.toAddLater.forEach(this::addToScreen);
+        this.toAddLater.clear();
     }
 
     @Override public void addToScreen(UIComponent<?> component) {

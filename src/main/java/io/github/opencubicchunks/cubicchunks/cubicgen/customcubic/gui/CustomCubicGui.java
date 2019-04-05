@@ -107,6 +107,8 @@ public class CustomCubicGui extends ExtraGui {
 
         this.areas = conf.cubeAreas;
         this.replacerConf = conf.replacerConfig;
+
+        super.afterConstruct();
     }
 
     private UIContainer<?> inPanel(UIComponent<?> comp) {
