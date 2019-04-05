@@ -495,6 +495,10 @@ public class CustomGeneratorSettingsFixer {
     }
 
     public static JsonObject stringToJson(String jsonString) {
+        if (jsonString.isEmpty()) {
+            // avoid JsonNull
+            jsonString = "{}";
+        }
         JsonReader reader = new JsonReader(new StringReader(jsonString));
         return new JsonParser().parse(reader).getAsJsonObject();
     }
