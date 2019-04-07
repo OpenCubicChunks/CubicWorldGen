@@ -29,7 +29,10 @@ public class Layer implements Comparable<Layer> {
 
     public int fromY;
     public int toY;
+    public int biome = -1;
     public IBlockState blockState;
+
+    public Layer() { }
 
     public Layer(int fromY1, int toY1, IBlockState block1) {
         fromY = fromY1;

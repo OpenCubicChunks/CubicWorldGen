@@ -41,6 +41,7 @@ import com.google.gson.JsonSyntaxException;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.BlockStateSerializer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.BiomeBlockReplacerConfig;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.world.storage.IWorldInfoAccess;
 import net.minecraft.block.BlockSilverfish;
@@ -697,29 +698,6 @@ public class CustomGeneratorSettings {
                 // everything should be made accessible in static initializer
                 throw new Error(e);
             }
-        }
-    }
-
-    private static class BlockStateSerializer implements JsonDeserializer<IBlockState>, JsonSerializer<IBlockState> {
-
-        public static final BlockStateSerializer INSTANCE = new BlockStateSerializer();
-
-        @Override public IBlockState deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            String jsonString = json.toString();
-            NBTTagCompound tag;
-            try {
-                tag = JsonToNBT.getTagFromJson(jsonString);
-            } catch (NBTException e) {
-                throw new JsonSyntaxException(e);
-            }
-            return NBTUtil.readBlockState(tag);
-        }
-
-        @Override public JsonElement serialize(IBlockState src, Type typeOfSrc, JsonSerializationContext context) {
-            NBTTagCompound tag = new NBTTagCompound();
-            NBTUtil.writeBlockState(tag, src);
-            String tagString = tag.toString();
-            return new JsonParser().parse(tagString);
         }
     }
 
