@@ -28,12 +28,14 @@ import java.util.TreeMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.BlockStateSerializer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 
 public class FlatGeneratorSettings {
 
     public TreeMap<Integer, Layer> layers = new TreeMap<Integer, Layer>();
+    public int version = 1;
 
     public FlatGeneratorSettings() {
         addLayer(Integer.MIN_VALUE + 1, Blocks.BEDROCK.getDefaultState());
@@ -51,7 +53,7 @@ public class FlatGeneratorSettings {
     }
 
     public String toJson() {
-        Gson gson = createGsonBuilder();
+        Gson gson = gson();
         return gson.toJson(this);
     }
 
@@ -59,12 +61,16 @@ public class FlatGeneratorSettings {
         if (json.isEmpty()) {
             return defaults();
         }
-        Gson gson = createGsonBuilder();
+        boolean isOutdated = !FlatGeneratorSettingsFixer.isUpToDate(json);
+        if (isOutdated) {
+            json = FlatGeneratorSettingsFixer.fixGeneratorOptions(json);
+        }
+        Gson gson = gson();
         return gson.fromJson(json, FlatGeneratorSettings.class);
     }
 
-    private static Gson createGsonBuilder() {
-        return new GsonBuilder().registerTypeAdapter(Layer.class, new FlatLayerTypeGsonAdapter()).serializeSpecialFloatingPointValues().create();
+    public static Gson gson() {
+        return new GsonBuilder().registerTypeHierarchyAdapter(IBlockState.class, BlockStateSerializer.INSTANCE).create();
     }
 
     public static FlatGeneratorSettings defaults() {
