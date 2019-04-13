@@ -296,25 +296,11 @@ class OreSettingsTab {
             updateLabel(gui, label);
             return label;
         }
+        
         private void updateLabel(ExtraGui gui, UIComponent<?> label) {
-
             ((UIContainer) label).removeAll();
-
-            String stateStr = block.getState().toString();
-            String name;
-            String props;
-            if (!stateStr.contains("[")) {
-                name = stateStr;
-                props = "[]";
-            } else {
-                String[] statesplit = stateStr.split("\\[");
-                name = statesplit[0];
-                props = "[" + statesplit[1];
-            }
-
-
-            UIComponent<?> l1 = label(gui, name);
-            UIComponent<?> l2 = label(gui, props);
+            UIComponent<?> l1 = label(gui, block.getBlockName());
+            UIComponent<?> l2 = label(gui, block.getBlockProperties());
             ((UIContainer<?>) label).add(l1, l2);
             label.setSize(label.getWidth(), l1.getHeight() + l2.getHeight());
         }

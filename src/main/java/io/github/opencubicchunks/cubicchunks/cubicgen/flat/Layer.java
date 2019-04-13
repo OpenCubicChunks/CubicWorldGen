@@ -44,4 +44,9 @@ public class Layer implements Comparable<Layer> {
     public int compareTo(Layer other) {
         return this.fromY - other.fromY;
     }
+    
+    @Override
+    public String toString() {
+        return "Layer[" + fromY + " to " + toY + ",biome:" + biome + ",blockState:" + blockState.toString() + "]";
+    }
 }

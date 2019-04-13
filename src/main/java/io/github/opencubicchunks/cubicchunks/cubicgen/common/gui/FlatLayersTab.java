@@ -94,16 +94,16 @@ public class FlatLayersTab implements Comparator<UIFlatTerrainLayer> {
     public void writeToConf(FlatGeneratorSettings conf) {
         conf.layers.clear();
         for (UIFlatTerrainLayer uiLayer : uiLayersList) {
-            Layer layer = uiLayer.layer;
-            layer.fromY = uiLayer.getLevelValueFromY();
-            layer.toY = uiLayer.getLevelValueToY();
+            Layer layer = uiLayer.toLayer();
             conf.layers.put(layer.fromY, layer);
         }
     }
 
     @Override
     public int compare(UIFlatTerrainLayer o1, UIFlatTerrainLayer o2) {
-        return o2.getLevelValueFromY() - o1.getLevelValueFromY();
+        Layer l1 = o1.toLayer();
+        Layer l2 = o2.toLayer();
+        return l2.fromY - l1.fromY;
     }
 
     public void setInPanel(UIContainer<?> layersPanelIn) {
