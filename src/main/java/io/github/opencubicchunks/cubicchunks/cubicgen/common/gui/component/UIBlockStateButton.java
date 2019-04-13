@@ -27,15 +27,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.DummyWorld;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.RenderHelper;
 import org.lwjgl.opengl.GL11;
 
+import com.google.common.collect.UnmodifiableIterator;
+
 import net.malisis.core.client.gui.GuiRenderer;
 import net.malisis.core.client.gui.MalisisGui;
 import net.malisis.core.client.gui.component.UIComponent;
+import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -140,5 +144,15 @@ public class UIBlockStateButton<T extends UIBlockStateButton<T>> extends UICompo
 
     @Override
     public void drawBackground(GuiRenderer renderer, int mouseX, int mouseY, float partialTick) {
+    }
+    
+    public String getBlockName() {
+        return Block.REGISTRY.getNameForObject(this.iBlockState.getBlock()).toString(); 
+    }
+    
+    public String getBlockProperties() {
+        return iBlockState.getProperties().entrySet().stream()
+                .map(e -> e.getKey().getName() + "=" + e.getValue())
+                .collect(Collectors.joining(",", "[", "]"));
     }
 }

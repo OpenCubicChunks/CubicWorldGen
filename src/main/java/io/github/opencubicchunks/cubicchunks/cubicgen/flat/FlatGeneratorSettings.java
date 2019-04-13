@@ -23,6 +23,7 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.flat;
 
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import com.google.gson.Gson;
@@ -75,5 +76,19 @@ public class FlatGeneratorSettings {
 
     public static FlatGeneratorSettings defaults() {
         return new FlatGeneratorSettings();
+    }
+    
+    @Override
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+        sb.append("FlatGeneratorSettings[");
+        sb.append("version:");
+        sb.append(version);
+        for(Entry<Integer, Layer> layer:layers.entrySet()) {
+            sb.append(",");
+            sb.append(layer.toString());
+        }
+        sb.append("]");
+        return sb.toString();
     }
 }
