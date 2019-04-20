@@ -95,14 +95,14 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
     @Nonnull private CubicFeatureGenerator strongholds;
 
     public CustomTerrainGenerator(World world, final long seed) {
-        this(world, CustomGeneratorSettings.load(world), seed);
+        this(world, world.getBiomeProvider(), CustomGeneratorSettings.load(world), seed);
     }
 
-    public CustomTerrainGenerator(World world, CustomGeneratorSettings settings, final long seed) {
-        this(world, settings, seed, true);
+    public CustomTerrainGenerator(World world, BiomeProvider biomeProvider, CustomGeneratorSettings settings, final long seed) {
+        this(world, biomeProvider, settings, seed, true);
     }
 
-    private CustomTerrainGenerator(World world, CustomGeneratorSettings settings, final long seed, boolean isMainLayer) {
+    private CustomTerrainGenerator(World world, BiomeProvider biomeProvider, CustomGeneratorSettings settings, final long seed, boolean isMainLayer) {
         super(world);
         this.conf = settings;
 
@@ -115,13 +115,12 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         this.ravineGenerator = new CubicRavineGenerator(conf);
 
         this.fillCubeBiomes = !isMainLayer;
-        BiomeProvider biomes = isMainLayer ? world.getBiomeProvider() : CustomCubicWorldType.makeBiomeProvider(world, settings);
-        this.biomeSource = new BiomeSource(world, conf.createBiomeBlockReplacerConfig(), biomes, 2);
+        this.biomeSource = new BiomeSource(world, conf.createBiomeBlockReplacerConfig(), biomeProvider, 2);
         initGenerator(seed);
 
         if (settings.cubeAreas != null) {
             for (CustomGeneratorSettings.IntAABB aabb : settings.cubeAreas.keySet()) {
-                this.areaGenerators.put(aabb, new CustomTerrainGenerator(world, settings.cubeAreas.get(aabb), seed, false));
+                this.areaGenerators.put(aabb, new CustomTerrainGenerator(world, CustomCubicWorldType.makeBiomeProvider(world, settings), settings.cubeAreas.get(aabb), seed, false));
             }
         }
     }
