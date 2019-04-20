@@ -32,7 +32,7 @@ public class FarLands {
     /**
      * @author Barteks2x
      */
-    @Overwrite
+    @Overwrite(remap = false)
     public static double makeInt32Range(double n) {
         return n;
     }

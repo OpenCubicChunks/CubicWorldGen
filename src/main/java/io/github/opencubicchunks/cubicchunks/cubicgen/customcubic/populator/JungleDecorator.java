@@ -27,7 +27,7 @@ import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
-import io.github.opencubicchunks.cubicchunks.core.event.CCEventFactory;
+import io.github.opencubicchunks.cubicchunks.cubicgen.CWGEventFactory;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -52,7 +52,7 @@ public class JungleDecorator implements ICubicPopulator {
             int zOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
             BlockPos blockPos = ((ICubicWorld) world).getSurfaceForCube(pos, xOffset, zOffset, 0, ICubicWorld.SurfaceType.OPAQUE);
             if (blockPos != null) {
-                if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.PUMPKIN)) {
+                if (CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.PUMPKIN)) {
                     (new WorldGenMelon()).generate(world, random, blockPos);
                 }
             }

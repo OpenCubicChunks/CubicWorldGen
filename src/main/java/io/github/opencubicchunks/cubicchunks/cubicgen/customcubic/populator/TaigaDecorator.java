@@ -27,7 +27,7 @@ import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
-import io.github.opencubicchunks.cubicchunks.core.event.CCEventFactory;
+import io.github.opencubicchunks.cubicchunks.cubicgen.CWGEventFactory;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.BlockDoublePlant;
 import net.minecraft.util.math.BlockPos;
@@ -48,7 +48,7 @@ public class TaigaDecorator implements ICubicPopulator {
     @Override public void generate(World world, Random random, CubePos pos, Biome biome) {
         BiomeTaiga taiga = (BiomeTaiga) biome;
         if ((taiga.type == BiomeTaiga.Type.MEGA || taiga.type == BiomeTaiga.Type.MEGA_SPRUCE
-                && CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.ROCK))) {
+                && CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.ROCK))) {
             int count = random.nextInt(3);
 
             for (int i = 0; i < count; ++i) {
@@ -63,7 +63,7 @@ public class TaigaDecorator implements ICubicPopulator {
 
         taiga.DOUBLE_PLANT_GENERATOR.setPlantType(BlockDoublePlant.EnumPlantType.FERN);
 
-        if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.FLOWERS)){
+        if (CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.FLOWERS)){
             for (int i = 0; i < 7; ++i) {
                 if (random.nextInt(7) != 0) {
                     continue;

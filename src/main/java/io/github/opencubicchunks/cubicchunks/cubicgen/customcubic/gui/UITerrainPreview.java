@@ -29,7 +29,6 @@ import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisG
 import com.flowpowered.noise.NoiseQuality;
 import com.flowpowered.noise.Utils;
 import io.github.opencubicchunks.cubicchunks.api.util.MathUtil;
-import io.github.opencubicchunks.cubicchunks.core.CubicChunks;
 import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIShaderComponent;
@@ -172,11 +171,6 @@ public class UITerrainPreview extends UIShaderComponent<UITerrainPreview> implem
 
 
     @Override protected void shaderDraw(GuiRenderer guiRenderer, int mouseX, int mouseY, float partialTicks) {
-        if (CubicChunks.DEBUG_ENABLED && Keyboard.isKeyDown(Keyboard.KEY_R)) {
-            shader.deleteShader();
-            shader = createShader((CustomCubicGui) getGui());
-            super.shader = shader;
-        }
         //previewTransform.m30 = (float) Math.sin((System.currentTimeMillis()%10000)*0.001f)*20;
         this.icon.setUVs(-getWidth() / 2, -getHeight() / 2, getWidth() / 2, getHeight() / 2);
 
