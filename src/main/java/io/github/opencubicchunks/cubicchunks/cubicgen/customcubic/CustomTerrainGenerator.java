@@ -180,7 +180,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
                 .cached(CACHE_SIZE_3D, HASH_3D);
     }
 
-    @Override public CubePrimer generateCube(int cubeX, int cubeY, int cubeZ) {
+    @Override synchronized public CubePrimer generateCube(int cubeX, int cubeY, int cubeZ) {
         if (!areaGenerators.isEmpty()) {
             for (CustomGeneratorSettings.IntAABB aabb : areaGenerators.keySet()) {
                 if (!aabb.contains(cubeX, cubeY, cubeZ)) {
