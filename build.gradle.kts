@@ -336,7 +336,7 @@ fun getModVersion(describe: String, branch: String): String {
     //branches "master" and "MC_something" are not appended to version sreing, everything else is
     //only builds from "master" and "MC_version" branches will actually use the correct versioning
     //but it allows to distinguish between builds from different branches even if version number is the same
-    val branchSuffix = if (branch == "master" || branch.startsWith("MC_")) "" else ("-" + branch.replace("[^a-zA-Z0-9.-]", "_"))
+    val branchSuffix = "" //if (branch == "master" || branch.startsWith("MC_")) "" else ("-" + branch.replace("[^a-zA-Z0-9.-]", "_"))
 
     val baseVersionRegex = "v[0-9]+\\.[0-9]+"
     val unknownVersion = String.format("%s-UNKNOWN_VERSION%s%s", getMcVersion(), versionSuffix, branchSuffix)
@@ -365,8 +365,8 @@ fun getModVersion(describe: String, branch: String): String {
 
     val minorFreeze = if (versionMinorFreeze.isEmpty()) -1 else Integer.parseInt(versionMinorFreeze as String)
 
-    val minor = if (minorFreeze < 0) commitSinceTag else minorFreeze
-    val patch = if (minorFreeze < 0) 0 else (commitSinceTag - minorFreeze)
+    val minor = 39; //if (minorFreeze < 0) commitSinceTag else minorFreeze
+    val patch = 1;//if (minorFreeze < 0) 0 else (commitSinceTag - minorFreeze)
 
     return String.format("%s-%s.%d.%d%s%s", mcVersion, modAndApiVersion, minor, patch, versionSuffix, branchSuffix)
 }

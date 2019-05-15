@@ -26,6 +26,7 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.core.event.CCEventFactory;
+import io.github.opencubicchunks.cubicchunks.cubicgen.CWGEventFactory;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.BlockDoublePlant;
 import net.minecraft.world.World;
@@ -54,7 +55,7 @@ public class PlainsDecorator implements ICubicPopulator {
             dec.grassPerChunk = 10;
             Biome.DOUBLE_PLANT_GENERATOR.setPlantType(BlockDoublePlant.EnumPlantType.GRASS);
 
-            if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.GRASS)) {
+            if (CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.GRASS)) {
                 for (int i = 0; i < 7; ++i) {
                     // see: DefaultDecorator, flower generator
                     if (random.nextInt(7) != 0) {
@@ -65,7 +66,7 @@ public class PlainsDecorator implements ICubicPopulator {
             }
         }
 
-        if (((BiomePlains)biome).sunflowers && CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.FLOWERS)) {
+        if (((BiomePlains)biome).sunflowers && CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.FLOWERS)) {
             Biome.DOUBLE_PLANT_GENERATOR.setPlantType(BlockDoublePlant.EnumPlantType.SUNFLOWER);
 
             for (int i = 0; i < 10; ++i) {
