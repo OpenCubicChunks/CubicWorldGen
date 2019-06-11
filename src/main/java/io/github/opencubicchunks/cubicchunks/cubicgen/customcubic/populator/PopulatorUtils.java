@@ -44,14 +44,15 @@ public class PopulatorUtils {
             int count, double probability, WorldGenerator generator, double minY, double maxY) {
         int minBlockY = Math.round((float) (minY * cfg.expectedHeightVariation + cfg.expectedBaseHeight));
         int maxBlockY = Math.round((float) (maxY * cfg.expectedHeightVariation + cfg.expectedBaseHeight));
-        if (pos.getMinBlockY() > maxBlockY || pos.getMaxBlockY() < minBlockY) {
+        int offset = ICube.SIZE / 2;
+        if (pos.getMinBlockY() + offset > maxBlockY || pos.getMaxBlockY() + offset < minBlockY) {
             return;
         }
         for (int i = 0; i < count; ++i) {
             if (random.nextDouble() > probability) {
                 continue;
             }
-            int yOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
+            int yOffset = random.nextInt(ICube.SIZE) + offset;
             int blockY = pos.getMinBlockY() + yOffset;
             if (blockY > maxBlockY || blockY < minBlockY) {
                 continue;
