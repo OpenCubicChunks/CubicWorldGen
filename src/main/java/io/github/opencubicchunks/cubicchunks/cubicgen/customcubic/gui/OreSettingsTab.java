@@ -23,29 +23,29 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui;
 
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeUISelect;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_PADDING;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.label;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeCheckbox;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeFloatSlider;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeIntSlider;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeOreHeightSlider;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makePositiveExponentialSlider;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeRangeSlider;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeUISelect;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.malisisText;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.vanillaText;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_PADDING;
 
 import com.google.common.eventbus.Subscribe;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UICheckboxNoAutoSize;
-import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
-import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings.PeriodicGaussianOreConfig;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBlockStateButton;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UICheckboxNoAutoSize;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UILayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIList;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIRangeSlider;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout.Type;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIVerticalTableLayout;
+import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
+import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings.PeriodicGaussianOreConfig;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
 import net.malisis.core.client.gui.component.interaction.UIButton;
@@ -53,6 +53,7 @@ import net.malisis.core.client.gui.component.interaction.UICheckBox;
 import net.malisis.core.client.gui.component.interaction.UISelect;
 import net.malisis.core.client.gui.component.interaction.UISlider;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
@@ -61,7 +62,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.function.DoubleSupplier;
+import java.util.function.Function;
 
 class OreSettingsTab {
 
@@ -72,8 +74,12 @@ class OreSettingsTab {
     private final List<UIStandardOreOptions> standardOptions = new ArrayList<>();
 
     private final List<UIPeriodicGaussianOreOptions> periodicGaussianOptions = new ArrayList<>();
+    private final DoubleSupplier baseHeight;
+    private final DoubleSupplier heightVariation;
 
-    <T> OreSettingsTab(ExtraGui gui, CustomGeneratorSettings settings) {
+    <T> OreSettingsTab(ExtraGui gui, CustomGeneratorSettings settings, DoubleSupplier baseHeight, DoubleSupplier heightVariation) {
+        this.baseHeight = baseHeight;
+        this.heightVariation = heightVariation;
         this.componentList = new ArrayList<>();
         UIList<UIComponent<?>, UIComponent<?>> layout = new UIList<>(gui, this.componentList, x -> x);
         layout.setPadding(HORIZONTAL_PADDING, 0);
@@ -185,7 +191,8 @@ class OreSettingsTab {
             this.attempts = makeIntSlider(gui, malisisText("spawn_tries", " %d"), 1, 40, config.spawnTries);
             this.probability = makeFloatSlider(gui, malisisText("spawn_probability", " %.3f"), config.spawnProbability);
             this.selectBiomes = makeCheckbox(gui, malisisText("select_biomes"), config.biomes != null);
-            this.heightRange = makeRangeSlider(gui, vanillaText("spawn_range"), -2.0f, 2.0f, config.minHeight, config.maxHeight);
+            this.heightRange = makeOreHeightSlider(gui, vanillaText("spawn_range"), -2.0f, 2.0f, config.minHeight, config.maxHeight,
+                    baseHeight, heightVariation);
 
             UISplitLayout<?> deleteTypeArea = new UISplitLayout<>(gui, Type.STACKED, delete, type).setSizeOf(UISplitLayout.Pos.SECOND, 10)
                     .setSize(0, 30);
@@ -377,12 +384,13 @@ class OreSettingsTab {
             this.type = makeUISelect(gui, Arrays.asList(OreGenType.values()));
             this.size = makeIntSlider(gui, malisisText("spawn_size", " %d"), 1, 50, config.spawnSize);
             this.attempts = makeIntSlider(gui, malisisText("spawn_tries", " %d"), 1, 40, config.spawnTries);
-            this.mean = makeFloatSlider(gui, malisisText("mean_height", " %.3f"), -4.0f, 4.0f, config.heightMean);
-            this.spacing = makePositiveExponentialSlider(gui, malisisText("spacing_height", " %.3f"), -1f, 6.0f, config.heightSpacing);
-            this.stdDev = makeFloatSlider(gui, malisisText("height_std_dev", " %.3f"), 0f, 1f, config.heightStdDeviation);
+            this.mean = makeFloatSlider(gui, -4.0f, 4.0f, config.heightMean, getTranslation("mean_height"));
+            this.spacing = makePositiveExponentialSlider(gui, -1f, 6.0f, config.heightSpacing, getTranslation("spacing_height"));
+            this.stdDev = makeFloatSlider(gui, 0f, 1f, config.heightStdDeviation, getTranslation("height_std_dev"));
             this.probability = makeFloatSlider(gui, malisisText("spawn_probability", " %.3f"), config.spawnProbability);
             this.selectBiomes = makeCheckbox(gui, malisisText("select_biomes"), config.biomes != null);
-            this.heightRange = makeRangeSlider(gui, vanillaText("spawn_range"), -2.0f, 2.0f, config.minHeight, config.maxHeight);
+            this.heightRange = makeOreHeightSlider(gui, vanillaText("spawn_range"), -2.0f, 2.0f, config.minHeight, config.maxHeight,
+                    baseHeight, heightVariation);
 
             UISplitLayout<?> deleteTypeArea =
                     new UISplitLayout<>(gui, Type.STACKED, delete, type).sizeWeights(1, 1).setSizeOf(UISplitLayout.Pos.SECOND, 10)
@@ -426,6 +434,11 @@ class OreSettingsTab {
             allowSelectBiomes(biomesArea, this.selectBiomes.isChecked());
             setupBiomeArea(config, biomesArea);
             setupThis(gui, deleteTypeArea, mainArea, biomesArea);
+        }
+
+        public Function<Double, String> getTranslation(String mean_height) {
+            return val -> I18n.format(vanillaText(mean_height),
+                    String.format("%.3f", val), String.format("%.1f", val * heightVariation.getAsDouble()));
         }
 
         private PeriodicGaussianOreConfig toConfig() {

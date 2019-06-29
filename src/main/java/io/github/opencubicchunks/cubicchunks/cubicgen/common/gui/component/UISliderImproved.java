@@ -30,19 +30,25 @@ import net.malisis.core.client.gui.MalisisGui;
 import net.malisis.core.client.gui.component.control.IControlComponent;
 import net.malisis.core.client.gui.component.interaction.UISlider;
 import net.malisis.core.util.MouseButton;
-import net.malisis.core.util.Silenced;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.math.MathHelper;
-import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.GL11;
+
+import java.util.function.Function;
 
 public class UISliderImproved<T> extends UISlider<T> {
 
-    public UISliderImproved(MalisisGui gui, int width, Converter<Float, T> converter, String text) {
-        super(gui, width, converter, text);
+    private final Function<T, String> translation;
+
+    public UISliderImproved(MalisisGui gui, int width, Converter<Float, T> converter, Function<T, String> translation) {
+        super(gui, width, converter, "<this text should never be used>");
+        this.translation = translation;
+    }
+
+    public UISliderImproved(MalisisGui gui, int width, Converter<Float, T> converter, String name) {
+        this(gui, width, converter, value -> String.format(name, value));
     }
 
     @Override
@@ -69,7 +75,28 @@ public class UISliderImproved<T> extends UISlider<T> {
 
     @Override
     public void drawForeground(GuiRenderer renderer, int mouseX, int mouseY, float partialTick) {
-        super.drawForeground(renderer, mouseX, mouseY, partialTick);
+
+        zIndex = 0;
+        float factor = getHeight() / 20F;
+        int ox = (int) (offset * (getWidth() - SLIDER_WIDTH * factor));
+        sliderShape.resetState();
+        sliderShape.setSize((int) (8 * factor), getHeight());
+        sliderShape.setPosition(ox, 0);
+
+        rp.iconProvider.set(sliderIcon);
+        renderer.drawShape(sliderShape, rp);
+
+        renderer.next();
+        //zIndex = 1;
+
+        String str = translation.apply(getValue());
+        if (str == null) {
+            str = ChatFormatting.ITALIC + "Format error";
+        }
+        int x = (int) ((getWidth() - font.getStringWidth(str, fontOptions)) / 2);
+        int y = (int) Math.ceil((getHeight() - font.getStringHeight(fontOptions)) / 2);
+
+        renderer.drawText(font, str, x, y, 0, isHovered() ? hoveredFontOptions : fontOptions);
 
         if (!this.isEnabled()) {
             renderer.next();

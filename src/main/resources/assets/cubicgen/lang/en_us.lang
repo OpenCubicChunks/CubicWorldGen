@@ -1,3 +1,4 @@
+#PARSE_ESCAPES
 generator.VanillaCubic=Vanilla Cubic
 generator.FlatCubic=Flat Cubic
 generator.CustomCubic=Custom Cubic
@@ -70,11 +71,11 @@ cubicgen.gui.cubicgen.spawn_size=Spawn Size:
 cubicgen.gui.cubicgen.spawn_tries=Spawn Tries:
 cubicgen.gui.cubicgen.spawn_probability=Probability:
 cubicgen.gui.cubicgen.spawn_maxprobability=Max. Probability:
-cubicgen.gui.cubicgen.spawn_range=Height %.2f%%%% to %.2f%%%%
+cubicgen.gui.cubicgen.spawn_range=Height %s%%%% to %s%%%% (blocks: %s to %s)
 
-cubicgen.gui.cubicgen.mean_height=Center of first Belt:
-cubicgen.gui.cubicgen.height_std_dev=Height Std. Dev. Factor:
-cubicgen.gui.cubicgen.spacing_height=Height Spacing:
+cubicgen.gui.cubicgen.mean_height=Center of first Belt: %s%%%% (blocks: %s)
+cubicgen.gui.cubicgen.height_std_dev=Height Std. Dev. Factor: %s%%%% (blocks: %s)
+cubicgen.gui.cubicgen.spacing_height=Height Spacing: %s%%%% (blocks: %s)
 #################################
 ### advanced terrain settings ###
 #################################

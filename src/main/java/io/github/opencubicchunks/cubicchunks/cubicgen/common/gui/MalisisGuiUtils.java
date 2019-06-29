@@ -57,6 +57,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
@@ -105,7 +106,30 @@ public class MalisisGuiUtils {
             throw new NoSuchMethodError("Expected to find either setFilter or setValidator in UITextField");
         }
     }
+
+
+    public static UISlider<Float> makeFloatSlider(MalisisGui gui, float min, float max, float defVal, Function<Double, String> text) {
+
+        UISlider<Float>[] wrappedSlider = new UISlider[1];
+        BiPredicate<Double, Double> isInRoundRadius = getIsInRoundRadiusPredicate(wrappedSlider);
+
+        float defMult = defVal == 0 ? 1 : defVal;
+
+        Converter<Float, Float> conv = Converters.builder()
+                .linearScale(min, max).rounding().withBase(2, 1).withBase(10, 1).withBase(2, defMult).withBase(10, defMult).withMaxExp(128)
+                .withRoundingRadiusPredicate(isInRoundRadius)
+                .build();
+
+        UISlider<Float> slider = new UISliderImproved<>(gui, 100, conv, value -> text.apply((double) (float) value)).setValue(defVal);
+        wrappedSlider[0] = slider;
+        return slider;
+    }
+
     public static UISlider<Float> makeFloatSlider(MalisisGui gui, String name, float min, float max, float defaultVal) {
+        return makeFloatSlider(gui, min, max, defaultVal, value -> String.format(name, value));
+    }
+
+    public static UISlider<Float> makePositiveExponentialSlider(MalisisGui gui, float minPos, float maxPos, float defaultVal, Function<Double, String> text) {
 
         UISlider<Float>[] wrappedSlider = new UISlider[1];
         BiPredicate<Double, Double> isInRoundRadius = getIsInRoundRadiusPredicate(wrappedSlider);
@@ -113,17 +137,19 @@ public class MalisisGuiUtils {
         float defMult = defaultVal == 0 ? 1 : defaultVal;
 
         Converter<Float, Float> conv = Converters.builder()
-                .linearScale(min, max).rounding().withBase(2, 1).withBase(10, 1).withBase(2, defMult).withBase(10, defMult).withMaxExp(128)
+                .exponential().withBaseValue(2).withPositiveExponentRange(minPos, maxPos)
+                .rounding().withBase(2, 1).withBase(10, 1).withBase(2, defMult).withBase(10, defMult).withMaxExp(128)
                 .withRoundingRadiusPredicate(isInRoundRadius)
+                .withInfinity().positiveAt((float)Math.pow(2, maxPos)).negativeAt(Float.NaN)
                 .build();
 
-        UISlider<Float> slider = new UISliderImproved<>(gui, 100, conv, name).setValue(defaultVal);
+        UISlider<Float> slider = new UISliderImproved<>(gui, 100, conv, value -> text.apply((double) (float) value)).setValue(defaultVal);
         wrappedSlider[0] = slider;
         return slider;
     }
 
-    public static UISlider<Float> makePositiveExponentialSlider(MalisisGui gui, String name, float minPos, float maxPos,
-                                                        float defaultVal) {
+
+    public static UISlider<Float> makePositiveExponentialSlider(MalisisGui gui, String name, float minPos, float maxPos, float defaultVal) {
 
         UISlider<Float>[] wrappedSlider = new UISlider[1];
         BiPredicate<Double, Double> isInRoundRadius = getIsInRoundRadiusPredicate(wrappedSlider);
@@ -139,7 +165,7 @@ public class MalisisGuiUtils {
 
         UISlider<Float> slider = new UISliderImproved<>(gui, 100, conv, name).setValue(defaultVal);
         wrappedSlider[0] = slider;
-        return slider;
+        return makePositiveExponentialSlider(gui, minPos, maxPos, defaultVal, value -> String.format(name, value));
     }
 
     public static UISlider<Float> makeExponentialSlider(MalisisGui gui, String name, float minNeg, float maxNeg, float minPos, float maxPos,
@@ -236,6 +262,21 @@ public class MalisisGuiUtils {
     }
 
     public static UIRangeSlider<Float> makeRangeSlider(ExtraGui gui, String name, float min, float max, float defaultMin, float defaultMax) {
+        return rangeSlider(gui, name, min, max, defaultMin, defaultMax, (a, b) -> I18n.format(name, a * 100, b * 100));
+    }
+
+    public static UIRangeSlider<Float> makeOreHeightSlider(ExtraGui gui, String name, float min, float max, float defaultMin, float defaultMax,
+            DoubleSupplier expectedBaseHeight, DoubleSupplier expectedHeightVariation) {
+        BiFunction<Float, Float, String> i18nFormat = (a, b) -> I18n.format(name,
+                String.format("%.2f", a * 100), String.format("%.2f", b * 100),
+                String.format("%.1f", a * expectedHeightVariation.getAsDouble() + expectedBaseHeight.getAsDouble()),
+                String.format("%.1f", b * expectedHeightVariation.getAsDouble() + expectedBaseHeight.getAsDouble()));
+        return rangeSlider(gui, name, min, max, defaultMin, defaultMax, i18nFormat);
+    }
+
+    private static UIRangeSlider<Float> rangeSlider(ExtraGui gui, String name, float min, float max, float defMin, float defMax,
+            BiFunction<Float, Float, String> i18nFormat) {
+
         UIRangeSlider<Float>[] wrappedSlider = new UIRangeSlider[1];
         BiPredicate<Double, Double> isInRoundRadius = getIsInRoundRadiusPredicate(wrappedSlider);
         float maxExp = MathHelper.ceil(Math.log(Math.max(1, max)) / Math.log(2));
@@ -246,11 +287,7 @@ public class MalisisGuiUtils {
                 .withInfinity().negativeAt(min).positiveAt(max)
                 .build();
 
-        UIRangeSlider<Float> slider = new UIRangeSlider<Float>(
-                gui, 100,
-                conv,
-                (a, b) -> I18n.format(name, a * 100, b * 100))
-                .setRange(defaultMin, defaultMax);
+        UIRangeSlider<Float> slider = new UIRangeSlider<>(gui, 100, conv, i18nFormat).setRange(defMin, defMax);
         wrappedSlider[0] = slider;
         return slider;
     }

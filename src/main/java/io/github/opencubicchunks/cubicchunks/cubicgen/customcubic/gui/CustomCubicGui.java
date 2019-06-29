@@ -96,8 +96,9 @@ public class CustomCubicGui extends ExtraGui {
         clearScreen();
 
         this.basicSettings = new BasicSettingsTab(this, conf);
-        this.oreSettings = new OreSettingsTab(this, conf);
         this.advancedterrainShapeSettings = new AdvancedTerrainShapeTab(this, conf);
+        this.oreSettings = new OreSettingsTab(this, conf,
+                advancedterrainShapeSettings.getExpectedBaseHeight(), advancedterrainShapeSettings.getExpectedHeightVariation());
 
         tabs = makeTabContainer();
         tabs.addTab(inPanel(basicSettings.getContainer()), vanillaText("basic_tab_title"));

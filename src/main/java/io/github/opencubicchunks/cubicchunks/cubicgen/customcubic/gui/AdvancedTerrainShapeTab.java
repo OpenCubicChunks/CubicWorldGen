@@ -24,12 +24,6 @@
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui;
 
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.floatInput;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_INSETS;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_PADDING;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.VERTICAL_INSETS;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.WIDTH_1_COL;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.WIDTH_2_COL;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.WIDTH_3_COL;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.label;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeCheckbox;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeExponentialSlider;
@@ -38,11 +32,17 @@ import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisG
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeInvertedExponentialSlider;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeUISelect;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.malisisText;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_INSETS;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_PADDING;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.VERTICAL_INSETS;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.WIDTH_1_COL;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.WIDTH_2_COL;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.WIDTH_3_COL;
 
 import com.google.common.eventbus.Subscribe;
-import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIVerticalTableLayout;
+import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
 import net.malisis.core.client.gui.component.interaction.UICheckBox;
@@ -54,6 +54,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 import java.util.Arrays;
+import java.util.function.DoubleSupplier;
 
 class AdvancedTerrainShapeTab {
 
@@ -279,7 +280,7 @@ class AdvancedTerrainShapeTab {
         gridY = -1;
         final float biomeCount = ForgeRegistries.BIOMES.getValues().size();
 
-        UIContainer<?> settingsContrainer = new UIVerticalTableLayout(gui, 4)
+        UIContainer<?> settingsContrainer = new UIVerticalTableLayout<>(gui, 4)
                 .setInsets(1, 1, 0, 0)
                 .add(keepPreviewVisible = makeCheckbox(gui, malisisText("keep_preview_visible"), true),
                         new UIVerticalTableLayout.GridLocation(0, ++gridY, 4))
@@ -308,7 +309,7 @@ class AdvancedTerrainShapeTab {
                 UISplitLayout.Pos.FIRST);
         previewSplitView.add(settingsContrainer, UISplitLayout.Pos.SECOND);
 
-        UISplitLayout<?> rootSplit = new UISplitLayout(gui, UISplitLayout.Type.STACKED, previewSplitView, table);
+        UISplitLayout<?> rootSplit = new UISplitLayout<>(gui, UISplitLayout.Type.STACKED, previewSplitView, table);
         rootSplit.setSize(UIComponent.INHERITED, UIComponent.INHERITED).setMinimumUserComponentSize(UISplitLayout.Pos.SECOND, 64);
 
         heightFactor.register(new Object() {
@@ -460,6 +461,25 @@ class AdvancedTerrainShapeTab {
         return container;
     }
 
+    DoubleSupplier getExpectedBaseHeight() {
+        return () -> tryParseFloatOrDefault(expectedBaseHeight.getText(), Float.NaN);
+    }
+
+    DoubleSupplier getExpectedHeightVariation() {
+        return () -> tryParseFloatOrDefault(expectedHeightVariation.getText(), Float.NaN);
+    }
+
+    private static float tryParseFloatOrDefault(String val, float def) {
+        try {
+            return Float.parseFloat(val);
+        } catch (NumberFormatException ignored) {
+        }
+        try {
+            return (float) Double.parseDouble(val);
+        } catch (NumberFormatException ignored) {
+        }
+        return def;
+    }
     void writeConfig(CustomGeneratorSettings conf) {
         /* 
          * Possible NumberFormatException errors in TextFields. 
