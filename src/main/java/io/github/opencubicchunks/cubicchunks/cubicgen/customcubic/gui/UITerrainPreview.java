@@ -445,7 +445,7 @@ public class UITerrainPreview extends UIShaderComponent<UITerrainPreview> implem
     }
 
     private static DynamicTexture generateNoiseTexture() {
-        DynamicTexture img = new DynamicTexture(perlinTexture, GL11.GL_LINEAR);
+        DynamicTexture img = new DynamicTexture(perlinTexture);
         img.loadTexture(null);
         return img;
     }
@@ -480,7 +480,7 @@ public class UITerrainPreview extends UIShaderComponent<UITerrainPreview> implem
             data.setRGB(x, 0, MathUtil.packColorARGB(r, g, b, a));
         }
 
-        DynamicTexture obj = new DynamicTexture(data, GL11.GL_NEAREST);
+        DynamicTexture obj = new DynamicTexture(data);
         obj.loadTexture(null);
         return obj;
     }
