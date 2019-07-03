@@ -223,14 +223,14 @@ public interface IBuilder {
                 for (int sectionY = minY; sectionY < maxY; ++sectionY) {
                     int y = sectionY * yScale;
 
-                    final double v000 = this.get(x + xScale * 0, y + yScale * 0, z + zScale * 0);
-                    final double v001 = this.get(x + xScale * 0, y + yScale * 0, z + zScale * 1);
-                    final double v010 = this.get(x + xScale * 0, y + yScale * 1, z + zScale * 0);
-                    final double v011 = this.get(x + xScale * 0, y + yScale * 1, z + zScale * 1);
-                    final double v100 = this.get(x + xScale * 1, y + yScale * 0, z + zScale * 0);
-                    final double v101 = this.get(x + xScale * 1, y + yScale * 0, z + zScale * 1);
-                    final double v110 = this.get(x + xScale * 1, y + yScale * 1, z + zScale * 0);
-                    final double v111 = this.get(x + xScale * 1, y + yScale * 1, z + zScale * 1);
+                    final double v000 = this.get(x, y, z);
+                    final double v001 = this.get(x, y, z + zScale);
+                    final double v010 = this.get(x, y + yScale, z);
+                    final double v011 = this.get(x, y + yScale, z + zScale);
+                    final double v100 = this.get(x + xScale, y, z);
+                    final double v101 = this.get(x + xScale, y, z + zScale);
+                    final double v110 = this.get(x + xScale, y + yScale, z);
+                    final double v111 = this.get(x + xScale, y + yScale, z + zScale);
 
                     double v0y0 = v000;
                     double v0y1 = v001;

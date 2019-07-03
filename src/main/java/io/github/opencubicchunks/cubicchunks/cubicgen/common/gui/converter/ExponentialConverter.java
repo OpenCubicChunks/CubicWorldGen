@@ -219,7 +219,7 @@ public class ExponentialConverter extends Converter<Float, Float> {
     }
 
     private double doBackwardDouble(double value) {
-        if (value != value) {
+        if (Double.isNaN(value)) {
             return value;
         }
         // linear part for positive

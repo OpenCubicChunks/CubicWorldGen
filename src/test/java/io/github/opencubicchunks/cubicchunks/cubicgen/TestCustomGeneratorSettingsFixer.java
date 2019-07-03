@@ -63,12 +63,13 @@ public class TestCustomGeneratorSettingsFixer {
     }
 
     private String getTestCaseString(String url) throws IOException {
-        InputStream stream = TestCustomGeneratorSettingsFixer.class.getResourceAsStream(url);
-        InputStreamReader isr = new InputStreamReader(stream);
-        CharBuffer cb = CharBuffer.allocate((int) stream.available());
-        isr.read(cb);
-        cb.flip();
-        return cb.toString();
+        try (InputStream stream = TestCustomGeneratorSettingsFixer.class.getResourceAsStream(url)) {
+            InputStreamReader isr = new InputStreamReader(stream);
+            CharBuffer cb = CharBuffer.allocate(stream.available());
+            isr.read(cb);
+            cb.flip();
+            return cb.toString();
+        }
     }
 
     private void runTest(String exampleURL, String resultURL) throws IOException {

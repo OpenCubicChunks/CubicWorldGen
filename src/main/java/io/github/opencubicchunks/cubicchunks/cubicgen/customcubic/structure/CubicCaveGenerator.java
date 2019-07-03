@@ -101,37 +101,37 @@ public class CubicCaveGenerator extends CubicStructureGenerator {
     /**
      * After each step the Y direction component will be multiplied by this value, unless steeper cave is allowed
      */
-    private static final double FLATTEN_FACTOR = 0.7;
+    private static final float FLATTEN_FACTOR = 0.7f;
 
     /**
      * If steeper cave is allowed - this value will be used instead of FLATTEN_FACTOR
      */
-    private static final double STEEPER_FLATTEN_FACTOR = 0.92;
+    private static final float STEEPER_FLATTEN_FACTOR = 0.92f;
 
     /**
      * Each step cave direction angles will be changed by this fraction of values that specify how direction changes
      */
-    private static final double DIRECTION_CHANGE_FACTOR = 0.1;
+    private static final float DIRECTION_CHANGE_FACTOR = 0.1f;
 
     /**
      * This fraction of the previous value that controls horizontal direction changes will be used in next step
      */
-    private static final double PREV_HORIZ_DIRECTION_CHANGE_WEIGHT = 0.75;
+    private static final float PREV_HORIZ_DIRECTION_CHANGE_WEIGHT = 0.75f;
 
     /**
      * This fraction of the previous value that controls vertical direction changes will be used in next step
      */
-    private static final double PREV_VERT_DIRECTION_CHANGE_WEIGHT = 0.9;
+    private static final float PREV_VERT_DIRECTION_CHANGE_WEIGHT = 0.9f;
 
     /**
      * Maximum value by which horizontal cave direction randomly changes each step, lower values are much more likely.
      */
-    private static final double MAX_ADD_DIRECTION_CHANGE_HORIZ = 4.0;
+    private static final float MAX_ADD_DIRECTION_CHANGE_HORIZ = 4.0f;
 
     /**
      * Maximum value by which vertical cave direction randomly changes each step, lower values are much more likely.
      */
-    private static final double MAX_ADD_DIRECTION_CHANGE_VERT = 2.0;
+    private static final float MAX_ADD_DIRECTION_CHANGE_VERT = 2.0f;
 
     /**
      * 1 in this amount of steps will actually carve any blocks,
