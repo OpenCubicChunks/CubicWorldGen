@@ -70,10 +70,6 @@ class OreSettingsTab {
     private final ArrayList<UIComponent<?>> componentList;
 
     private final UIContainer<?> container;
-
-    private final List<UIStandardOreOptions> standardOptions = new ArrayList<>();
-
-    private final List<UIPeriodicGaussianOreOptions> periodicGaussianOptions = new ArrayList<>();
     private final DoubleSupplier baseHeight;
     private final DoubleSupplier heightVariation;
 
@@ -409,7 +405,6 @@ class OreSettingsTab {
             this.delete.register(new Object() {
                 @Subscribe
                 public void onClick(UIButton.ClickEvent evt) {
-                    standardOptions.remove(UIPeriodicGaussianOreOptions.this);
                     container.remove(UIPeriodicGaussianOreOptions.this);
                 }
             });
