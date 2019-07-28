@@ -26,10 +26,10 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.fea
 import static io.github.opencubicchunks.cubicchunks.api.util.Coords.cubeToCenterBlock;
 
 import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.CubicStructureGenerator;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.api.util.XYZMap;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
-import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.CubicStructureGenerator;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;

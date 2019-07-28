@@ -32,6 +32,7 @@ import static net.minecraft.util.math.MathHelper.floor;
 import static net.minecraft.util.math.MathHelper.sin;
 
 import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.CubicStructureGenerator;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.StructureGenUtil;

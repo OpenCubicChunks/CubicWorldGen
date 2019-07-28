@@ -27,6 +27,8 @@ import static io.github.opencubicchunks.cubicchunks.api.util.Coords.blockToLocal
 
 import io.github.opencubicchunks.cubicchunks.api.worldgen.CubeGeneratorsRegistry;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.CubicStructureGenerator;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.event.InitCubicStructuteGeneratorEvent;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.event.DecorateCubeBiomeEvent;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.event.PopulateCubeEvent;
 import io.github.opencubicchunks.cubicchunks.cubicgen.BasicCubeGenerator;
@@ -43,7 +45,6 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.IBuild
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.NoiseSource;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.CubicCaveGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.CubicRavineGenerator;
-import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.CubicStructureGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.feature.CubicFeatureGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.feature.CubicStrongholdGenerator;
 import mcp.MethodsReturnNonnullByDefault;
@@ -56,6 +57,7 @@ import net.minecraft.world.biome.BiomeProvider;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.terraingen.InitMapGenEvent.EventType;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.lwjgl.input.Keyboard;
 
@@ -90,7 +92,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
     private boolean fillCubeBiomes;
 
     //TODO: Implement more structures
-    @Nonnull private CubicCaveGenerator caveGenerator = new CubicCaveGenerator();
+    @Nonnull private CubicCaveGenerator caveGenerator;
     @Nonnull private CubicStructureGenerator ravineGenerator;
     @Nonnull private CubicFeatureGenerator strongholds;
 
@@ -111,8 +113,17 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
             populators.put(biome, cubicBiome.getDecorator(conf));
         }
 
-        this.strongholds = new CubicStrongholdGenerator(conf);
-        this.ravineGenerator = new CubicRavineGenerator(conf);
+        InitCubicStructuteGeneratorEvent caveEvent = new InitCubicStructuteGeneratorEvent(EventType.CAVE, new CubicCaveGenerator());
+        InitCubicStructuteGeneratorEvent strongholdsEvent = new InitCubicStructuteGeneratorEvent(EventType.STRONGHOLD, new CubicStrongholdGenerator(conf));
+        InitCubicStructuteGeneratorEvent ravineEvent = new InitCubicStructuteGeneratorEvent(EventType.RAVINE, new CubicRavineGenerator(conf));
+
+        MinecraftForge.TERRAIN_GEN_BUS.post(caveEvent);
+        MinecraftForge.TERRAIN_GEN_BUS.post(strongholdsEvent);
+        MinecraftForge.TERRAIN_GEN_BUS.post(ravineEvent);
+        
+        this.caveGenerator = (CubicCaveGenerator) caveEvent.getNewGen();
+        this.strongholds = (CubicFeatureGenerator) strongholdsEvent.getNewGen();
+        this.ravineGenerator = ravineEvent.getNewGen();
 
         this.fillCubeBiomes = !isMainLayer;
         this.biomeSource = new BiomeSource(world, conf.createBiomeBlockReplacerConfig(), biomeProvider, 2);
