@@ -31,6 +31,7 @@ import io.github.opencubicchunks.cubicchunks.api.worldgen.CubicStructureGenerato
 import io.github.opencubicchunks.cubicchunks.api.worldgen.event.InitCubicStructuteGeneratorEvent;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.event.DecorateCubeBiomeEvent;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.event.PopulateCubeEvent;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.feature.CubicFeatureGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.BasicCubeGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
@@ -45,7 +46,6 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.IBuild
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.NoiseSource;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.CubicCaveGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.CubicRavineGenerator;
-import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.feature.CubicFeatureGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.feature.CubicStrongholdGenerator;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.state.IBlockState;
@@ -92,7 +92,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
     private boolean fillCubeBiomes;
 
     //TODO: Implement more structures
-    @Nonnull private CubicCaveGenerator caveGenerator;
+    @Nonnull private CubicStructureGenerator caveGenerator;
     @Nonnull private CubicStructureGenerator ravineGenerator;
     @Nonnull private CubicFeatureGenerator strongholds;
 
@@ -121,7 +121,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         MinecraftForge.TERRAIN_GEN_BUS.post(strongholdsEvent);
         MinecraftForge.TERRAIN_GEN_BUS.post(ravineEvent);
         
-        this.caveGenerator = (CubicCaveGenerator) caveEvent.getNewGen();
+        this.caveGenerator = caveEvent.getNewGen();
         this.strongholds = (CubicFeatureGenerator) strongholdsEvent.getNewGen();
         this.ravineGenerator = ravineEvent.getNewGen();
 
@@ -256,7 +256,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
     @Nullable @Override
     public BlockPos getClosestStructure(String name, BlockPos pos, boolean findUnexplored) {
         if ("Stronghold".equals(name)) {
-            return strongholds.getClosestStrongholdPos((World) world, pos, true);
+            return strongholds.getNearestStructurePos((World) world, pos, true);
         }
         return null;
     }

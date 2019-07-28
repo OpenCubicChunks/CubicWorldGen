@@ -32,6 +32,8 @@ import static java.lang.Math.sin;
 
 import com.google.common.collect.Lists;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.feature.CubicFeatureGenerator;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.feature.ICubicStructureStart;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -98,7 +100,7 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
         return "Stronghold";
     }
 
-    @Nullable @Override public BlockPos getClosestStrongholdPos(World worldIn, BlockPos pos, boolean findUnexplored) {
+    @Nullable @Override public BlockPos getNearestStructurePos(World worldIn, BlockPos pos, boolean findUnexplored) {
         checkPositionsGenerated();
 
         BlockPos.MutableBlockPos currentBlock = new BlockPos.MutableBlockPos(0, 0, 0);
@@ -132,7 +134,7 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
         StructureStart start;
         do {
             start = new MapGenStronghold.Start((World) this.world, this.rand, chunkX, chunkZ);
-            ((ICubicStructureStart) start).initCubic((World) world, conf, chunkY);
+            ((ICubicStructureStart) start).initCubic((World) world, (int) conf.expectedBaseHeight, chunkY);
         } while (start.getComponents().isEmpty() || ((StructureStrongholdPieces.Stairs2) start.getComponents().get(0)).strongholdPortalRoom == null);
         return start;
     }

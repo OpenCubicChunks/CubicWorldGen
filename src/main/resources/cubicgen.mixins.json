@@ -8,7 +8,6 @@
     "mixins": [
         "common.MixinSaveHandler",
         "common.MixinWorldInfo",
-        "common.structuregen.MixinStructureStart",
         "common.extras.FarLands"
     ],
     "client": [
