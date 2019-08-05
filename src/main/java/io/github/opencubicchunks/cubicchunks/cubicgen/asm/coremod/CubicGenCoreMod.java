@@ -21,7 +21,7 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package io.github.opencubicchunks.cubicchunks.cubicgen.asm;
+package io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod;
 
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraftforge.common.ForgeVersion;
@@ -39,7 +39,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 // the mcVersion value is inlined at compile time, so this MC version check may still fail
 @IFMLLoadingPlugin.MCVersion(value = ForgeVersion.mcVersion)
 @IFMLLoadingPlugin.SortingIndex(value = 5000)
-@IFMLLoadingPlugin.TransformerExclusions(value = "io.github.opencubicchunks.cubicchunks.cubicgen.asm.")
 public class CubicGenCoreMod implements IFMLLoadingPlugin {
 
     public CubicGenCoreMod() {

@@ -26,6 +26,8 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CWGEventFactory;
+import io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common.accessor.IBiome;
+import io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common.accessor.IBiomePlains;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.BlockDoublePlant;
 import net.minecraft.world.World;
@@ -43,7 +45,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class PlainsDecorator implements ICubicPopulator {
 
     @Override public void generate(World world, Random random, CubePos pos, Biome biome) {
-        double randomValue = Biome.GRASS_COLOR_NOISE.getValue((double) (pos.getX() + 8) / 200.0D, (double) (pos.getZ() + 8) / 200.0D);
+        double randomValue = IBiome.getGrassColorNoise().getValue((double) (pos.getX() + 8) / 200.0D, (double) (pos.getZ() + 8) / 200.0D);
 
         BiomeDecorator dec = biome.decorator;
         if (randomValue < -0.8D) {
@@ -52,7 +54,7 @@ public class PlainsDecorator implements ICubicPopulator {
         } else {
             dec.flowersPerChunk = 4;
             dec.grassPerChunk = 10;
-            Biome.DOUBLE_PLANT_GENERATOR.setPlantType(BlockDoublePlant.EnumPlantType.GRASS);
+            IBiome.getDoublePlantGenerator().setPlantType(BlockDoublePlant.EnumPlantType.GRASS);
 
             if (CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.GRASS)) {
                 for (int i = 0; i < 7; ++i) {
@@ -60,19 +62,19 @@ public class PlainsDecorator implements ICubicPopulator {
                     if (random.nextInt(7) != 0) {
                         continue;
                     }
-                    Biome.DOUBLE_PLANT_GENERATOR.generate(world, random, pos.randomPopulationPos(random));
+                    IBiome.getDoublePlantGenerator().generate(world, random, pos.randomPopulationPos(random));
                 }
             }
         }
 
-        if (((BiomePlains)biome).sunflowers && CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.FLOWERS)) {
-            Biome.DOUBLE_PLANT_GENERATOR.setPlantType(BlockDoublePlant.EnumPlantType.SUNFLOWER);
+        if (((IBiomePlains) biome).isSunflowers() && CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.FLOWERS)) {
+            IBiome.getDoublePlantGenerator().setPlantType(BlockDoublePlant.EnumPlantType.SUNFLOWER);
 
             for (int i = 0; i < 10; ++i) {
                 if (random.nextInt(7) != 0) {
                     continue;
                 }
-                Biome.DOUBLE_PLANT_GENERATOR.generate(world, random, pos.randomPopulationPos(random));
+                IBiome.getDoublePlantGenerator().generate(world, random, pos.randomPopulationPos(random));
             }
         }
     }

@@ -24,6 +24,7 @@
 package io.github.opencubicchunks.cubicchunks.cubicgen;
 
 import com.flowpowered.noise.Utils;
+import io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common.accessor.INoiseGeneratorImproved;
 import net.minecraft.world.gen.NoiseGeneratorImproved;
 
 import java.util.Random;
@@ -72,11 +73,13 @@ public class ConversionUtils {
 
     public static void initFlowNoiseHack() {
         Random random = new Random(123456789);
+        // reference class before using mixin accessor: https://github.com/SpongePowered/Mixin/issues/342
+        NoiseGeneratorImproved.class.getName();
         for (int i = 0; i < Utils.RANDOM_VECTORS.length / 4; i++) {
-            int j = random.nextInt(NoiseGeneratorImproved.GRAD_X.length);
-            Utils.RANDOM_VECTORS[i * 4] = NoiseGeneratorImproved.GRAD_X[j] / 2;
-            Utils.RANDOM_VECTORS[i * 4 + 1] = NoiseGeneratorImproved.GRAD_Y[j] / 2;
-            Utils.RANDOM_VECTORS[i * 4 + 2] = NoiseGeneratorImproved.GRAD_Z[j] / 2;
+            int j = random.nextInt(INoiseGeneratorImproved.getGradX().length);
+            Utils.RANDOM_VECTORS[i * 4] = INoiseGeneratorImproved.getGradX()[j] / 2;
+            Utils.RANDOM_VECTORS[i * 4 + 1] = INoiseGeneratorImproved.getGradY()[j] / 2;
+            Utils.RANDOM_VECTORS[i * 4 + 2] = INoiseGeneratorImproved.getGradZ()[j] / 2;
         }
     }
 }

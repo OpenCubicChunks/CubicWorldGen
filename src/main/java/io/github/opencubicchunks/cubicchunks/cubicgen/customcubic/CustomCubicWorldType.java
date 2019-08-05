@@ -26,6 +26,7 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.ICubeGenerator;
 import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorldType;
 import io.github.opencubicchunks.cubicchunks.api.util.IntRange;
+import io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common.accessor.IBiomeProvider;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
@@ -60,6 +61,10 @@ public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
         return new CustomCubicWorldType();
     }
 
+    private IBiomeProvider self() {
+        return (IBiomeProvider) this;
+    }
+
     @Override public IntRange calculateGenerationHeightRange(WorldServer world) {
         CustomGeneratorSettings opts = CustomGeneratorSettings.load(world);
         // TODO: better handling of min height
@@ -73,8 +78,8 @@ public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
     public BiomeProvider getBiomeProvider(World world) {
         if ("true".equalsIgnoreCase(System.getProperty("cubicchunks.debug.biomes"))) {
             return new BiomeProvider() {{
-                this.genBiomes = new GenLayerDebug(4);
-                this.biomeIndexLayer = new GenLayerDebug(4 + 2);
+                self().setGenBiomes(new GenLayerDebug(4));
+                self().setBiomeIndexLayer(new GenLayerDebug(4 + 2));
             }};
         } else {
             if (world.isRemote)
@@ -129,7 +134,7 @@ public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
         private final ArrayList<Biome> biomes;
         private int scaleBits;
 
-        public GenLayerDebug(int scaleBits) {
+        GenLayerDebug(int scaleBits) {
             super(0);
             this.scaleBits = scaleBits;
 

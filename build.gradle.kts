@@ -1,5 +1,8 @@
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import io.github.opencubicchunks.gradle.MixinAutoGen
+import io.github.opencubicchunks.gradle.Remapper
+import io.github.opencubicchunks.gradle.fgfix.ForgePluginFixed
 import net.minecraftforge.gradle.user.IReobfuscator
 import net.minecraftforge.gradle.user.ReobfMappingType
 import net.minecraftforge.gradle.user.ReobfTaskFactory
@@ -44,7 +47,9 @@ plugins {
 }
 
 apply {
-    plugin<ForgePlugin>()
+    plugin<MixinAutoGen>()
+    plugin<ForgePluginFixed>()
+    plugin<Remapper>()
     plugin<ShadowPlugin>()
     plugin<MixinGradlePlugin>()
     plugin<LicensePlugin>()
@@ -82,7 +87,6 @@ minecraft {
     version = theForgeVersion
     runDir = "run"
     mappings = theMappingsVersion
-    isUseDepAts = true
 
     replace("@@MALISIS_VERSION@@", malisisCoreMinVersion)
     replaceIn("io/github/opencubicchunks/cubicchunks/cubicgen/CustomCubicMod.java")
@@ -107,6 +111,21 @@ mixin {
     add(sourceSets["main"], "cubicgen.refmap.json")
 }
 
+mixinGen {
+    filePattern = "%s.mixins.json"
+    defaultRefmap = "cubicgen.refmap.json"
+    defaultCompatibilityLevel = "JAVA_8"
+    defaultMinVersion = "0.7.10"
+
+    config("cubicgen") {
+        required = true
+        packageName = "io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin"
+        conformVisibility = true
+        injectorsDefaultRequire = 1
+        configurationPlugin = "io.github.opencubicchunks.cubicchunks.cubicgen.asm.CubicGenMixinConfig"
+    }
+}
+
 repositories {
     mavenCentral()
     maven { setUrl("https://oss.sonatype.org/content/repositories/public/") }
@@ -114,6 +133,7 @@ repositories {
     // but sponge has older one, and we need the newer one from sonatype
     // currently gradle seems to resolve dependencies from repositories in the order they are defined here
     maven { setUrl("http://repo.spongepowered.org/maven") }
+    maven { setUrl("https://minecraft.curseforge.com/api/maven/") }
 }
 
 val deobfCompile by configurations
@@ -129,18 +149,19 @@ testCompile.extendsFrom(forgeGradleGradleStart)
 testCompile.extendsFrom(forgeGradleMcDeps)
 
 dependencies {
-    deobfCompile("net.malisis:malisiscore:$malisisCoreVersion") {
-        isTransitive = false
-    }
-
-    shade("com.flowpowered:flow-noise:1.0.1-SNAPSHOT")
-    deobfCompile("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0-SNAPSHOT")
 
     //deobfCompile("io.github.opencubicchunks:cubicchunks:1.12.2-0.0-SNAPSHOT")
     // provided by cubicchunks implementation
     shade("org.spongepowered:mixin:0.7.10-SNAPSHOT") {
         isTransitive = false
     }
+
+    deobfCompile("malisiscore:malisiscore:1.12.2:$malisisCoreVersion") {
+        isTransitive = false
+    }
+
+    shade("com.flowpowered:flow-noise:1.0.1-SNAPSHOT")
+    deobfCompile("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0-SNAPSHOT")
 
     testCompile("junit:junit:4.11")
     testCompile("org.hamcrest:hamcrest-junit:2.0.0.0")
@@ -152,7 +173,6 @@ dependencies {
 
 fun Jar.setupManifest() {
     manifest {
-        attributes["FMLAT"] = "cubicchunks_cubicgen_at.cfg"
         attributes["FMLCorePluginContainsFMLMod"] = "true"
         attributes["FMLCorePlugin"] = "io.github.opencubicchunks.cubicchunks.cubicgen.asm.CubicGenCoreMod"
         attributes["TweakClass"] = "org.spongepowered.asm.launch.MixinTweaker"
