@@ -33,10 +33,8 @@ import static java.lang.Math.sin;
 import com.google.common.collect.Lists;
 import io.github.opencubicchunks.cubicchunks.api.util.Bits;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
-import io.github.opencubicchunks.cubicchunks.api.util.MathUtil;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.feature.CubicFeatureGenerator;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.feature.ICubicFeatureStart;
-import io.github.opencubicchunks.cubicchunks.core.util.ReflectionUtil;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.util.math.BlockPos;
@@ -145,7 +143,7 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
         StructureStart start;
         do {
             start = new MapGenStronghold.Start(world, rand, chunkX, chunkZ);
-            CubicStart cubic = ReflectionUtil.cast(start);
+            @SuppressWarnings("ConstantConditions") CubicStart cubic = (CubicStart) start;
             cubic.initCubicStronghold(world, chunkY, MathHelper.floor(conf.expectedBaseHeight) + 10);
         } while (start.getComponents().isEmpty() || ((StructureStrongholdPieces.Stairs2) start.getComponents().get(0)).strongholdPortalRoom == null);
         return start;
