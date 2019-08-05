@@ -33,6 +33,7 @@ import io.github.opencubicchunks.cubicchunks.api.util.Coords;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.ICubicStructureGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.StructureGenUtil;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import mcp.MethodsReturnNonnullByDefault;
@@ -49,7 +50,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class CubicRavineGenerator extends CubicStructureGenerator {
+public class CubicRavineGenerator implements ICubicStructureGenerator {
 
     /**
      * Vanilla value: 50
@@ -138,13 +139,18 @@ public class CubicRavineGenerator extends CubicStructureGenerator {
      */
     @Nonnull private float[] widthDecreaseFactors = new float[1024];
 
+    private final int range = 8;
+
     public CubicRavineGenerator(CustomGeneratorSettings cfg) {
-        super(2);
         this.maxCubeY = Coords.blockToCube(cfg.expectedBaseHeight);
     }
 
-    @Override
-    protected void generate(World world, CubePrimer cube, int structureX, int structureY, int structureZ,
+
+    @Override public void generate(World world, CubePrimer cube, CubePos cubePos) {
+        this.generate(world, cube, cubePos, this::generate, range, range, 1, 1);
+    }
+
+    protected void generate(World world, Random rand, CubePrimer cube, int structureX, int structureY, int structureZ,
             CubePos generatedCubePos) {
         if (rand.nextInt(RAVINE_RARITY) != 0 || structureY > maxCubeY) {
             return;

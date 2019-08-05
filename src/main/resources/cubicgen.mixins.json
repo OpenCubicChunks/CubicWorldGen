@@ -22,8 +22,8 @@
         "common.accessor.INoiseGeneratorImproved",
         "common.extras.FarLands",
         "common.MixinSaveHandler",
-        "common.MixinWorldInfo",
-        "common.structuregen.MixinStructureStart"
+        "common.MixinStringholdStart",
+        "common.MixinWorldInfo"
     ],
     "client": [],
     "server": []
