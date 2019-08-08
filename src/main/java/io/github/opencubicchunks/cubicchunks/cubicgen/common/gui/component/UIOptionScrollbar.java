@@ -24,7 +24,9 @@
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 
 import com.google.common.eventbus.Subscribe;
+import io.github.opencubicchunks.cubicchunks.api.util.MathUtil;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CooldownTimer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicConfig;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import net.malisis.core.client.gui.Anchor;
 import net.malisis.core.client.gui.GuiRenderer;
@@ -38,6 +40,7 @@ import net.malisis.core.renderer.animation.Animation;
 import net.malisis.core.renderer.animation.transformation.AlphaTransform;
 import net.malisis.core.util.MouseButton;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.util.math.MathHelper;
 import org.lwjgl.input.Mouse;
 
 import java.util.concurrent.TimeUnit;
@@ -58,6 +61,13 @@ public class UIOptionScrollbar extends UIScrollBar implements IDragTickable {
     protected SimpleGuiShape scrollShapeInner;
     private int lastHeight = Integer.MIN_VALUE;
     private int lastWidth = Integer.MIN_VALUE;
+
+    private float startScrollPosition;
+    private float targetScrollPosition;
+    private float currentScrollPosition;
+    private boolean scrollDone = true;
+    private long scrollAnimationEnd = System.nanoTime();
+    private long lastFrameTime = System.nanoTime();
 
     public <T extends UIComponent<T> & IScrollable> UIOptionScrollbar(ExtraGui gui, T parent, Type type) {
         super(gui, parent, type);
@@ -146,6 +156,40 @@ public class UIOptionScrollbar extends UIScrollBar implements IDragTickable {
             int scrollbarHeight = Math.round(visibleFraction * visibleHeight);
             this.setScrollSize(scrollThickness, scrollbarHeight);
         }
+
+        if (!scrollDone) {
+            float clampedTarget = MathHelper.clamp(targetScrollPosition, 0, 1);
+            if (Math.abs(clampedTarget - currentScrollPosition) < 1e-8) {
+                this.scrollToDirect(targetScrollPosition);
+                this.startScrollPosition = this.targetScrollPosition;
+                this.targetScrollPosition = clampedTarget;
+                this.scrollDone = true;
+            } else {
+
+                final double durationNanos = TimeUnit.MILLISECONDS.toNanos(CustomCubicConfig.guiScrollAnimationTime);
+                double dtNs = (System.nanoTime() - lastFrameTime);
+
+                double currentScrollProgress = MathUtil.unlerp(currentScrollPosition, startScrollPosition, targetScrollPosition);
+
+                // we are at specified progress, we know end time, duration, and current progress
+                // find what time we "should" be at
+                double currentExpectedTimeNanos = MathUtil.lerp(currentScrollProgress, scrollAnimationEnd - durationNanos, scrollAnimationEnd);
+
+                double expectedNextTimeNanos = currentExpectedTimeNanos + dtNs;
+                double newProgress = MathUtil.unlerp(expectedNextTimeNanos, scrollAnimationEnd - durationNanos, scrollAnimationEnd);
+                double newPosition = MathUtil.lerp(MathHelper.clamp(newProgress, 0, 1), startScrollPosition, targetScrollPosition);
+
+                this.scrollToDirect((float) newPosition);
+
+                if (newProgress >= 1.0) {
+                    this.startScrollPosition = this.targetScrollPosition;
+                    this.targetScrollPosition = clampedTarget;
+                    this.scrollDone = true;
+                }
+            }
+        }
+        this.lastFrameTime = System.nanoTime();
+
         super.draw(renderer, mouseX, mouseY, partialTick);
     }
 
@@ -271,6 +315,43 @@ public class UIOptionScrollbar extends UIScrollBar implements IDragTickable {
     @Override public void onDragTick(int mouseX, int mouseY, float partialTick) {
         if (isFocused() && !isOnScroll()) {
             timer.tryDo(() -> scrollByStepClick(mouseX, mouseY));
+        }
+    }
+
+    @Override public void scrollBy(float amount) {
+        this.scrollTo(targetScrollPosition + amount);
+    }
+
+    @Override public void scrollTo(float offset) {
+        if (this.isEnabled()) {
+            this.targetScrollPosition = offset;
+            if (this.scrollDone) {
+                this.lastFrameTime = System.nanoTime();
+            }
+            this.scrollDone = false;
+            this.scrollAnimationEnd = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(CustomCubicConfig.guiScrollAnimationTime);
+        }
+    }
+
+    // used by smooth scrolling
+    private void scrollToDirect(float offset) {
+        if (this.isEnabled()) {
+            if (offset < 0.0F) {
+                offset = 0.0F;
+            }
+
+            if (offset > 1.0F) {
+                offset = 1.0F;
+            }
+
+            this.currentScrollPosition = offset;
+
+            int delta = this.hasVisibleOtherScrollbar() ? this.scrollThickness : 0;
+            if (this.isHorizontal()) {
+                this.getScrollable().setOffsetX(offset, delta);
+            } else {
+                this.getScrollable().setOffsetY(offset, delta);
+            }
         }
     }
 

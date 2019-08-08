@@ -23,14 +23,11 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import io.github.opencubicchunks.cubicchunks.api.util.MathUtil;
+import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicConfig;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
-import net.malisis.core.client.gui.Anchor;
 import net.malisis.core.client.gui.ClipArea;
 import net.malisis.core.client.gui.GuiRenderer;
-import net.malisis.core.client.gui.component.IClipable;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
 import net.malisis.core.client.gui.component.control.UIScrollBar;
@@ -181,7 +178,7 @@ public abstract class UILayout<T extends UILayout<T>> extends UIContainer<T> {
     @Override
     public float getScrollStep() {
         float contentSize = getContentHeight() - getHeight();
-        float scrollStep = super.getScrollStep() * 1000;
+        float scrollStep = super.getScrollStep() * CustomCubicConfig.guiScrollStep;
         float scrollFraction = scrollStep / contentSize;
         if (Float.isFinite(scrollFraction) && scrollFraction > 0) {
             return scrollFraction;

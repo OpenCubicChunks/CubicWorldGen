@@ -43,6 +43,14 @@ public class CustomCubicConfig {
             + "Any mobs and animals will be spawned according regular respawn rules.")
     public static boolean worldgenMobSpawn = true;
 
+    @Config.LangKey("cubicgen.config.gui_scroll_step")
+    @Config.Comment("GUI scroll step factor. Lower values = slower scrolling.")
+    public static float guiScrollStep = 200;
+
+    @Config.LangKey("cubicgen.config.gui_scroll_anim_time")
+    @Config.Comment("GUI scroll animation time (not in any specific unit, more = slower)")
+    public static int guiScrollAnimationTime = 300;
+
     @SubscribeEvent
     public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
         if (event.getModID().equals(CustomCubicMod.MODID)) {
