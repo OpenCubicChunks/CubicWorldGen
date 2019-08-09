@@ -1,8 +1,8 @@
 {
     "blend": {
         "func": "add",
-        "srcrgb": "one",
-        "dstrgb": "zero"
+        "srcrgb": "src_alpha",
+        "dstrgb": "one_minus_src_alpha"
     },
     "vertex": "cubicgen:custom-cubic-preview",
     "fragment": "cubicgen:custom-cubic-preview",
