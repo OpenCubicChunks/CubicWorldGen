@@ -21,21 +21,22 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package io.github.opencubicchunks.cubicchunks.cubicgen.flat;
+package io.github.opencubicchunks.cubicchunks.cubicgen.preset;
 
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import blue.endless.jankson.Jankson;
 
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.BlockStateSerializer;
+import blue.endless.jankson.api.SyntaxError;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.FlatGeneratorSettingsFixer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 
 public class FlatGeneratorSettings {
 
-    public TreeMap<Integer, Layer> layers = new TreeMap<Integer, Layer>();
+    public TreeMap<Integer, FlatLayer> layers = new TreeMap<Integer, FlatLayer>();
     public int version = 1;
 
     public FlatGeneratorSettings() {
@@ -50,12 +51,12 @@ public class FlatGeneratorSettings {
         if (layers.floorEntry(toY) != null) {
             fromY = layers.floorEntry(toY).getValue().toY;
         }
-        layers.put(fromY, new Layer(fromY, toY, block));
+        layers.put(fromY, new FlatLayer(fromY, toY, new BlockStateDesc(block)));
     }
 
     public String toJson() {
-        Gson gson = gson();
-        return gson.toJson(this);
+        Jankson gson = jankson();
+        return gson.toJson(this).toJson();
     }
 
     public static FlatGeneratorSettings fromJson(String json) {
@@ -66,12 +67,17 @@ public class FlatGeneratorSettings {
         if (isOutdated) {
             json = FlatGeneratorSettingsFixer.fixGeneratorOptions(json);
         }
-        Gson gson = gson();
-        return gson.fromJson(json, FlatGeneratorSettings.class);
+        Jankson gson = jankson();
+        try {
+            return gson.fromJson(json, FlatGeneratorSettings.class);
+        } catch (SyntaxError syntaxError) {
+            String message = syntaxError.getMessage() + "\n" + syntaxError.getLineMessage();
+            throw new RuntimeException(message, syntaxError);
+        }
     }
 
-    public static Gson gson() {
-        return new GsonBuilder().registerTypeHierarchyAdapter(IBlockState.class, BlockStateSerializer.INSTANCE).create();
+    public static Jankson jankson() {
+        return CustomGenSettingsSerialization.jankson();
     }
 
     public static FlatGeneratorSettings defaults() {
@@ -84,7 +90,7 @@ public class FlatGeneratorSettings {
         sb.append("FlatGeneratorSettings[");
         sb.append("version:");
         sb.append(version);
-        for(Entry<Integer, Layer> layer:layers.entrySet()) {
+        for(Entry<Integer, FlatLayer> layer:layers.entrySet()) {
             sb.append(",");
             sb.append(layer.toString());
         }

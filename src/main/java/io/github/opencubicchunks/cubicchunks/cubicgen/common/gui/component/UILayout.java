@@ -40,7 +40,7 @@ import java.util.function.IntSupplier;
 import javax.annotation.Nullable;
 
 public abstract class UILayout<T extends UILayout<T>> extends UIContainer<T> {
-    private UIOptionScrollbar scrollbar;
+    private final UIOptionScrollbar scrollbar;
 
     private boolean needsLayoutUpdate = false;
     private int lastSizeX, lastSizeY;
@@ -54,6 +54,11 @@ public abstract class UILayout<T extends UILayout<T>> extends UIContainer<T> {
         this.scrollbar = new UIOptionScrollbar((ExtraGui) getGui(), (T) this, UIScrollBar.Type.VERTICAL);
         this.scrollbar.setVisible(true);
         this.scrollbar.setPosition(6, 0);
+    }
+
+    public T setScrollbarOffset(int offset) {
+        this.scrollbar.setPosition(offset, 0);
+        return self();
     }
 
     @Override public T setRightPadding(int padding) {
@@ -111,6 +116,22 @@ public abstract class UILayout<T extends UILayout<T>> extends UIContainer<T> {
         }
 
         return w;
+    }
+
+    @Override
+    public void calculateContentSize() {
+        int contentWidth = 0;
+        int contentHeight = 0;
+
+        for (UIComponent<?> c : this.components) {
+            if (c.isVisible()) {
+                contentWidth = Math.max(contentWidth, c.getX() + c.getWidth());
+                contentHeight = Math.max(contentHeight, c.getY() + c.getHeight());
+            }
+        }
+
+        this.contentHeight = contentHeight + this.getBottomPadding();
+        this.contentWidth = contentWidth + this.getRightPadding();
     }
 
     public int getAvailableWidth() {
@@ -177,7 +198,7 @@ public abstract class UILayout<T extends UILayout<T>> extends UIContainer<T> {
 
     @Override
     public float getScrollStep() {
-        float contentSize = getContentHeight() - getHeight();
+        float contentSize = scrollbar.isHorizontal() ? getContentWidth() - getWidth() : (getContentHeight() - getHeight());
         float scrollStep = super.getScrollStep() * CustomCubicConfig.guiScrollStep;
         float scrollFraction = scrollStep / contentSize;
         if (Float.isFinite(scrollFraction) && scrollFraction > 0) {

@@ -25,6 +25,7 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common;
 
 import javax.annotation.Nullable;
 
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.PresetLoadError;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -34,7 +35,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.world.storage.IWorldInfoAccess;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomCubicWorldType;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
-import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettingsFixer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.CustomGeneratorSettingsFixer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.storage.ISaveHandler;
 import net.minecraft.world.storage.SaveHandler;
@@ -44,27 +45,29 @@ import net.minecraft.world.storage.WorldInfo;
 public class MixinSaveHandler {
 
     @Inject(method = "loadWorldInfo", at = @At("RETURN"))
-    public void onLoadWorldInfo(CallbackInfoReturnable<WorldInfo> cir) {
+    private void onLoadWorldInfo(CallbackInfoReturnable<WorldInfo> cir) {
         if (cir.getReturnValue() == null || !(cir.getReturnValue().getTerrainType() instanceof CustomCubicWorldType))
             return;
-        String generatorOptions = CustomGeneratorSettings.loadJsonStringFromSaveFolder((ISaveHandler) (Object) this);
+        String generatorOptions = CustomGeneratorSettings.loadJsonStringFromSaveFolder((ISaveHandler) this);
         if (generatorOptions == null)
             return;
-        boolean isOutdated = !CustomGeneratorSettingsFixer.isUpToDate(generatorOptions);
-        if (isOutdated) {
-            generatorOptions = CustomGeneratorSettingsFixer.fixGeneratorOptions(generatorOptions, null);
-            CustomGeneratorSettings.saveToFile((ISaveHandler) (Object) this, generatorOptions);
+        try {
+            generatorOptions = CustomGeneratorSettingsFixer.INSTANCE.fixJsonString(generatorOptions);
+            CustomGeneratorSettings.saveToFile((ISaveHandler) this, generatorOptions);
+        } catch (PresetLoadError presetLoadError) {
+            throw new RuntimeException(presetLoadError);
         }
         IWorldInfoAccess worldInfo = (IWorldInfoAccess) cir.getReturnValue();
         worldInfo.setGeneratorOptions(generatorOptions);
     }
 
     @Inject(method = "saveWorldInfoWithPlayer", at = @At("RETURN"))
-    public void onSavingWorldInfoWithPlayer(WorldInfo worldInformation, @Nullable NBTTagCompound tagCompound,
+    private void onSavingWorldInfoWithPlayer(WorldInfo worldInformation, @Nullable NBTTagCompound tagCompound,
             CallbackInfo ci) {
         if (!(worldInformation.getTerrainType() instanceof CustomCubicWorldType))
             return;
-        if (!CustomGeneratorSettings.getPresetFile((ISaveHandler) (Object) this).exists())
-            CustomGeneratorSettings.saveToFile((ISaveHandler) (Object) this, worldInformation.getGeneratorOptions());
+        if (!CustomGeneratorSettings.getPresetFile((ISaveHandler) this).exists()) {
+            CustomGeneratorSettings.saveToFile((ISaveHandler) this, worldInformation.getGeneratorOptions());
+        }
     }
 }

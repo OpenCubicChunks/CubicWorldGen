@@ -28,7 +28,6 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UILay
 import net.malisis.core.client.gui.MalisisGui;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
-import net.malisis.core.client.gui.component.interaction.UISelect;
 import net.malisis.core.util.MouseButton;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -37,7 +36,6 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,7 +44,7 @@ import java.util.WeakHashMap;
 public abstract class ExtraGui extends MalisisGui {
 
     private Map<IDragTickable, DragTickableWrapper> set = new WeakHashMap<>();
-    protected Set<UIComponent<?>> addedComponents = new HashSet<>();
+    private Set<UIComponent<?>> addedComponents = new HashSet<>();
 
     private final Field componentsField;
 
@@ -75,7 +73,8 @@ public abstract class ExtraGui extends MalisisGui {
         });
     }
 
-    public <T> void delayedAdd(UISelect.OptionsContainer toAdd) {
+    // a workaround to make UISelect have correct Z order
+    public <T> void delayedAdd(UIComponent<?> toAdd) {
         this.toAddLater.add(toAdd);
     }
 
@@ -94,6 +93,15 @@ public abstract class ExtraGui extends MalisisGui {
         super.removeFromScreen(component);
     }
 
+    @Override public void close() {
+        // do proper cleanup, because there are static variables (and weak hash maps) that keep track of everything
+        draggedComponent = null;
+        tooltipComponent = null;
+        this.clearScreen();
+
+        super.close();
+    }
+
     @Override public void clearScreen() {
         addedComponents.clear();
         set.clear();
@@ -102,12 +110,10 @@ public abstract class ExtraGui extends MalisisGui {
 
     @Override
     public void update(int mouseX, int mouseY, float partialTick) {
-        for (Iterator<DragTickableWrapper> iterator = set.values().iterator(); iterator.hasNext(); ) {
-            DragTickableWrapper wrapper = iterator.next();
-            if (!wrapper.tick(mouseX, mouseY, partialTick)) {
-                iterator.remove();
-            }
-        }
+        set.values().removeIf(wrapper -> !wrapper.tick(mouseX, mouseY, partialTick));
+
+        toAddLater.forEach(this::addToScreen);
+        toAddLater.clear();
 
         if (!debug) {
             addedComponents.forEach(this::layout);

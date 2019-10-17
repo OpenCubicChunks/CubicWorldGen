@@ -38,6 +38,7 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.IBuilder;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.NoiseSource;
 import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockColored;
 import net.minecraft.block.BlockDirt;
 import net.minecraft.block.state.IBlockState;

@@ -88,10 +88,10 @@ public class UITabbedContainer extends UIContainer<UITabbedContainer> {
         }
         if (previousTab != -1) {
             // remove the previous tab
-            remove(tabs.get(previousTab).getComponent());
+            tabs.get(previousTab).getComponent().setVisible(false);
         }
         if (currentTab != -1) {
-            add(tabs.get(currentTab).getComponent());
+            tabs.get(currentTab).getComponent().setVisible(true);
             onTitleUpdate.accept(tabs.get(currentTab).getTitle());
         }
 
@@ -99,6 +99,8 @@ public class UITabbedContainer extends UIContainer<UITabbedContainer> {
 
     public void addTab(UIComponent<?> tab, String title) {
         tabs.add(new Tab(tab, title));
+        tab.setVisible(false);
+        this.add(tab);
         updateTab(currentTab == -1 ? 0 : currentTab);
     }
 

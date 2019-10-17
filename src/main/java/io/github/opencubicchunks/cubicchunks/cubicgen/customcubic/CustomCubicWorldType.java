@@ -23,11 +23,13 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic;
 
+import blue.endless.jankson.JsonGrammar;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.ICubeGenerator;
 import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorldType;
 import io.github.opencubicchunks.cubicchunks.api.util.IntRange;
 import io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common.accessor.IBiomeProvider;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.CustomGeneratorSettingsFixer;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
@@ -66,7 +68,7 @@ public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
     }
 
     @Override public IntRange calculateGenerationHeightRange(WorldServer world) {
-        CustomGeneratorSettings opts = CustomGeneratorSettings.load(world);
+        CustomGeneratorSettings opts = CustomGeneratorSettings.getFromWorld(world);
         // TODO: better handling of min height
         return new IntRange(0, (int) opts.actualHeight);
     }
@@ -84,7 +86,7 @@ public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
         } else {
             if (world.isRemote)
                 return new BiomeProviderSingle(Biomes.PLAINS);
-            CustomGeneratorSettings conf = CustomGeneratorSettings.load(world);
+            CustomGeneratorSettings conf = CustomGeneratorSettings.getFromWorld(world);
             return makeBiomeProvider(world, conf);
         }
     }
@@ -116,8 +118,7 @@ public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
             new CustomCubicGui(guiCreateWorld).display();
         } else {
             mc.displayGuiScreen(new MinimalCustomizeWorldGui(guiCreateWorld,
-                    CustomGeneratorSettings.fromJson(guiCreateWorld.chunkProviderSettingsJson)
-                            .toJson().replace("\n", "").replaceAll(" ", ""),
+                    CustomGeneratorSettingsFixer.INSTANCE.fixJson(guiCreateWorld.chunkProviderSettingsJson).toJson(JsonGrammar.COMPACT),
                     preset -> {
                         try {
                             CustomGeneratorSettings.fromJson(preset);

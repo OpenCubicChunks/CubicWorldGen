@@ -30,6 +30,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.DummyWorld;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.RenderHelper;
 import org.lwjgl.opengl.GL11;
@@ -60,10 +61,10 @@ import net.minecraft.util.math.BlockPos;
 public class UIBlockStateButton<T extends UIBlockStateButton<T>> extends UIComponent<T> {
 
     public static final int SIZE = 24;
-    private IBlockState iBlockState;
+    private BlockStateDesc iBlockState;
     private final List<Consumer<? super UIBlockStateButton<?>>> onClick;
 
-    public UIBlockStateButton(MalisisGui gui, IBlockState iBlockState1) {
+    public UIBlockStateButton(MalisisGui gui, BlockStateDesc iBlockState1) {
         super(gui);
         iBlockState = iBlockState1;
         onClick = new ArrayList<>();
@@ -76,23 +77,23 @@ public class UIBlockStateButton<T extends UIBlockStateButton<T>> extends UICompo
         return self();
     }
 
-    public static String generateTooltip(IBlockState blockState) {
+    public static String generateTooltip(BlockStateDesc blockState) {
         StringBuffer sb = new StringBuffer(128);
-        sb.append(blockState.getBlock().getLocalizedName());
-        for (Entry<IProperty<?>, Comparable<?>> entry : blockState.getProperties().entrySet()) {
+        sb.append(blockState.getBlockId());
+        for (Entry<String, String> entry : blockState.getProperties().entrySet()) {
             sb.append(" \n ");
-            sb.append(entry.getKey().getName());
+            sb.append(entry.getKey());
             sb.append(" = ");
-            sb.append(entry.getValue().toString());
+            sb.append(entry.getValue());
         }
         return sb.toString();
     }
 
-    public IBlockState getState() {
+    public BlockStateDesc getState() {
         return iBlockState;
     }
 
-    public void setBlockState(IBlockState iBlockState1) {
+    public void setBlockState(BlockStateDesc iBlockState1) {
         iBlockState = iBlockState1;
         setTooltip(generateTooltip(iBlockState));
     }
@@ -106,8 +107,10 @@ public class UIBlockStateButton<T extends UIBlockStateButton<T>> extends UICompo
 
     @Override
     public void drawForeground(GuiRenderer renderer, int mouseX, int mouseY, float partialTick) {
-        if (iBlockState != null) {
+        if (iBlockState != null && iBlockState.getBlockState() != null) {
+            IBlockState blockstate = iBlockState.getBlockState();
             RenderHelper.disableStandardItemLighting();
+            GlStateManager.enableDepth();
             GlStateManager.enableRescaleNormal();
 
             BufferBuilder vertexbuffer = Tessellator.getInstance().getBuffer();
@@ -121,16 +124,16 @@ public class UIBlockStateButton<T extends UIBlockStateButton<T>> extends UICompo
             GlStateManager.rotate(210.0F, 1.0F, 0.0F, 0.0F);
             GlStateManager.rotate(45.0F, 0.0F, 1.0F, 0.0F);
             vertexbuffer.begin(GL11.GL_QUADS, format);
-            Minecraft.getMinecraft().getBlockRendererDispatcher().renderBlock(iBlockState, BlockPos.ORIGIN,
-                    DummyWorld.getInstanceWithBlockState(iBlockState), vertexbuffer);
+            Minecraft.getMinecraft().getBlockRendererDispatcher().renderBlock(blockstate, BlockPos.ORIGIN,
+                    DummyWorld.getInstanceWithBlockState(blockstate), vertexbuffer);
             Tessellator.getInstance().draw();
-            if (iBlockState.getBlock().hasTileEntity(iBlockState)) {
-                TileEntity te = iBlockState.getBlock().createTileEntity(null, iBlockState);
+            if (blockstate.getBlock().hasTileEntity(blockstate)) {
+                TileEntity te = blockstate.getBlock().createTileEntity(null, blockstate);
                 if (te != null) {
                     TileEntitySpecialRenderer<TileEntity> tileentityspecialrenderer =
                             TileEntityRendererDispatcher.instance.<TileEntity>getRenderer(te);
                     if (tileentityspecialrenderer != null) {
-                        TileEntityItemStackRenderer.instance.renderByItem(new ItemStack(iBlockState.getBlock()));
+                        TileEntityItemStackRenderer.instance.renderByItem(new ItemStack(blockstate.getBlock()));
                     }
                 }
             }
@@ -139,6 +142,7 @@ public class UIBlockStateButton<T extends UIBlockStateButton<T>> extends UICompo
 
             GlStateManager.disableRescaleNormal();
         }
+        GlStateManager.enableDepth();
         GlStateManager.enableLighting();
     }
 
@@ -147,12 +151,12 @@ public class UIBlockStateButton<T extends UIBlockStateButton<T>> extends UICompo
     }
     
     public String getBlockName() {
-        return Block.REGISTRY.getNameForObject(this.iBlockState.getBlock()).toString(); 
+        return this.iBlockState.getBlockId();
     }
     
     public String getBlockProperties() {
         return iBlockState.getProperties().entrySet().stream()
-                .map(e -> e.getKey().getName() + "=" + e.getValue())
+                .map(e -> e.getKey() + "=" + e.getValue())
                 .collect(Collectors.joining(",", "[", "]"));
     }
 }

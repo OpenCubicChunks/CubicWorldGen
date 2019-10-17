@@ -97,7 +97,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
     @Nonnull private ICubicFeatureGenerator strongholds;
 
     public CustomTerrainGenerator(World world, final long seed) {
-        this(world, world.getBiomeProvider(), CustomGeneratorSettings.load(world), seed);
+        this(world, world.getBiomeProvider(), CustomGeneratorSettings.getFromWorld(world), seed);
     }
 
     public CustomTerrainGenerator(World world, BiomeProvider biomeProvider, CustomGeneratorSettings settings, final long seed) {
@@ -130,8 +130,9 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         initGenerator(seed);
 
         if (settings.cubeAreas != null) {
-            for (CustomGeneratorSettings.IntAABB aabb : settings.cubeAreas.keySet()) {
-                this.areaGenerators.put(aabb, new CustomTerrainGenerator(world, CustomCubicWorldType.makeBiomeProvider(world, settings), settings.cubeAreas.get(aabb), seed, false));
+            for (Map.Entry<CustomGeneratorSettings.IntAABB, CustomGeneratorSettings> entry : settings.cubeAreas.map) {
+                this.areaGenerators.put(entry.getKey(), new CustomTerrainGenerator(world, CustomCubicWorldType.makeBiomeProvider(world,
+                        entry.getValue()), entry.getValue(), seed, false));
             }
         }
     }

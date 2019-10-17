@@ -26,21 +26,20 @@ package io.github.opencubicchunks.cubicchunks.cubicgen;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
 import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld;
 import io.github.opencubicchunks.cubicchunks.api.util.Coords;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
 import io.github.opencubicchunks.cubicchunks.cubicgen.testutil.MinecraftEnvironment;
 import net.minecraft.world.World;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.github.opencubicchunks.cubicchunks.cubicgen.flat.FlatGeneratorSettings;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.FlatGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.flat.FlatTerrainProcessor;
-import io.github.opencubicchunks.cubicchunks.cubicgen.flat.Layer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.FlatLayer;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -51,7 +50,7 @@ import org.mockito.Mockito;
 @MethodsReturnNonnullByDefault
 public class TestFlatTerrainProcessor {
 
-    static IBlockState nw;
+    private static IBlockState nw;
     @Before
     public void setUp() {
         MinecraftEnvironment.init();
@@ -77,7 +76,7 @@ public class TestFlatTerrainProcessor {
         fgs.layers.clear();
         when(worldInfo.getGeneratorOptions()).thenReturn(fgs.toJson());
         ftp = new FlatTerrainProcessor(world);
-        CubePrimer primer = null;
+        CubePrimer primer;
         for (int i = checkFromY; i <= checkToY; i++) {
             primer = ftp.generateCube(0, i, 0);
             assertEquals(CubePrimer.DEFAULT_STATE, primer.getBlockState(8, 8, 8));
@@ -85,7 +84,8 @@ public class TestFlatTerrainProcessor {
         
         // Single layer in a middle of every cube
         for (int i = checkFromY; i <= checkToY; i++)
-            fgs.layers.put(8 + Coords.cubeToMinBlock(i), new Layer(8 + Coords.cubeToMinBlock(i), 9 + Coords.cubeToMinBlock(i), nw));
+            fgs.layers.put(8 + Coords.cubeToMinBlock(i), new FlatLayer(8 + Coords.cubeToMinBlock(i), 9 + Coords.cubeToMinBlock(i),
+                    new BlockStateDesc(nw)));
         when(worldInfo.getGeneratorOptions()).thenReturn(fgs.toJson());
         ftp = new FlatTerrainProcessor(world);
         for (int i = checkFromY; i <= checkToY; i++) {
@@ -95,7 +95,8 @@ public class TestFlatTerrainProcessor {
         
         // Two layers with a gap in-between
         for (int i = checkFromY; i <= checkToY; i++)
-            fgs.layers.put(12 + Coords.cubeToMinBlock(i), new Layer(12 + Coords.cubeToMinBlock(i), 13 + Coords.cubeToMinBlock(i), nw));
+            fgs.layers.put(12 + Coords.cubeToMinBlock(i), new FlatLayer(12 + Coords.cubeToMinBlock(i), 13 + Coords.cubeToMinBlock(i),
+                    new BlockStateDesc(nw)));
         when(worldInfo.getGeneratorOptions()).thenReturn(fgs.toJson());
         ftp = new FlatTerrainProcessor(world);
         for (int i = checkFromY; i <= checkToY; i++) {

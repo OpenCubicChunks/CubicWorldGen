@@ -27,8 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
-import io.github.opencubicchunks.cubicchunks.cubicgen.flat.FlatGeneratorSettings;
-import io.github.opencubicchunks.cubicchunks.cubicgen.flat.Layer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.FlatGeneratorSettings;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.FlatLayer;
 import java.util.Comparator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIFlatTerrainLayer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIVerticalTableLayout;
@@ -52,7 +52,7 @@ public class FlatLayersTab implements Comparator<UIFlatTerrainLayer> {
         this.gui = guiFor;
         int i = settings.layers.entrySet().size();
         uiLayersList = new ArrayList<UIFlatTerrainLayer>(i);
-        for (Entry<Integer, Layer> entry : settings.layers.entrySet()) {
+        for (Entry<Integer, FlatLayer> entry : settings.layers.entrySet()) {
             UIFlatTerrainLayer uiLayer = new UIFlatTerrainLayer(gui, this, entry.getValue());
             uiLayersList.add(uiLayer);
         }
@@ -85,7 +85,7 @@ public class FlatLayersTab implements Comparator<UIFlatTerrainLayer> {
         regenerateLayout();
     }
 
-    public void add(UIFlatTerrainLayer oldUIFlatTerrainLayer, Layer newLayer) {
+    public void add(UIFlatTerrainLayer oldUIFlatTerrainLayer, FlatLayer newLayer) {
         int oldIndex = uiLayersList.indexOf(oldUIFlatTerrainLayer);
         uiLayersList.add(oldIndex, new UIFlatTerrainLayer(gui, this, newLayer));
         regenerateLayout();
@@ -94,15 +94,15 @@ public class FlatLayersTab implements Comparator<UIFlatTerrainLayer> {
     public void writeToConf(FlatGeneratorSettings conf) {
         conf.layers.clear();
         for (UIFlatTerrainLayer uiLayer : uiLayersList) {
-            Layer layer = uiLayer.toLayer();
+            FlatLayer layer = uiLayer.toLayer();
             conf.layers.put(layer.fromY, layer);
         }
     }
 
     @Override
     public int compare(UIFlatTerrainLayer o1, UIFlatTerrainLayer o2) {
-        Layer l1 = o1.toLayer();
-        Layer l2 = o2.toLayer();
+        FlatLayer l1 = o1.toLayer();
+        FlatLayer l2 = o2.toLayer();
         return l2.fromY - l1.fromY;
     }
 

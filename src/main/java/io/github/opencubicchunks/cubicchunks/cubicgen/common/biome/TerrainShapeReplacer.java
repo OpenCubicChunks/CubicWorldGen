@@ -62,7 +62,7 @@ public class TerrainShapeReplacer implements IBiomeBlockReplacer {
 
             @Override
             public IBiomeBlockReplacer create(World world, CubicBiome cubicBiome, BiomeBlockReplacerConfig conf) {
-                IBlockState terrainFill = conf.getBlockstate(TERRAIN_FILL_BLOCK);
+                IBlockState terrainFill = conf.getBlockstate(TERRAIN_FILL_BLOCK, Blocks.STONE.getDefaultState());
                 return new TerrainShapeReplacer(terrainFill);
             }
 

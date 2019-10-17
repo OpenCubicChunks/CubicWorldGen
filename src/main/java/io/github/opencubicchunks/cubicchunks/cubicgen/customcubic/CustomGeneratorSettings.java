@@ -25,54 +25,50 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic;
 
 import static io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod.MODID;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
-import com.google.gson.JsonSyntaxException;
+import blue.endless.jankson.JsonObject;
+import blue.endless.jankson.api.DeserializationException;
+import blue.endless.jankson.api.SyntaxError;
+import io.github.opencubicchunks.cubicchunks.api.util.MathUtil;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.BlockStateSerializer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.BiomeBlockReplacerConfig;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.world.storage.IWorldInfoAccess;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.CustomGenSettingsSerialization;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.CustomGeneratorSettingsFixer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.PresetLoadError;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BiomeDesc;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockDesc;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockSilverfish;
 import net.minecraft.block.BlockStone;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Biomes;
 import net.minecraft.init.Blocks;
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTException;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTUtil;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.storage.ISaveHandler;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Type;
-import java.nio.CharBuffer;
+import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.SeekableByteChannel;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -103,13 +99,9 @@ public class CustomGeneratorSettings {
     public boolean dungeons = true;
 
     public int dungeonCount = 7;
-    public boolean waterLakes = true;
 
-    public int waterLakeRarity = 4;
-    public boolean lavaLakes = true;
+    public List<LakeConfig> lakes = new ArrayList<>();
 
-    public int lavaLakeRarity = 8;
-    public int aboveSeaLavaLakeRarity = 13; // approximately 10 * 4/3, all that end up above the surface are at the surface in vanilla
     public boolean lavaOceans = false;
 
     public int biome = -1;
@@ -124,16 +116,14 @@ public class CustomGeneratorSettings {
 
     // probability: (vanillaChunkHeight/oreGenRangeSize) / amountOfICube.InVanillaChunk
 
-    public List<StandardOreConfig> standardOres = new ArrayList<>();
+    public StandardOreList standardOres = new StandardOreList();
 
-    public List<PeriodicGaussianOreConfig> periodicGaussianOres = new ArrayList<>();
+    public PeriodicOreList periodicGaussianOres = new PeriodicOreList();
 
     /**
      * Terrain shape
      */
 
-    // TODO: needed until I make data fixers work correctly
-    //public boolean useExpectedHeights = true;
     public float expectedBaseHeight = 64;
     public float expectedHeightVariation = 64;
     public float actualHeight = 256;
@@ -172,11 +162,11 @@ public class CustomGeneratorSettings {
     public int highNoiseOctaves = 16;
 
     // note: the AABB uses cube coords to simplify the generator
-    public Map<IntAABB, CustomGeneratorSettings> cubeAreas = new HashMap<>();
+    public CubeAreas cubeAreas = new CubeAreas(new ArrayList<>());
     public BiomeBlockReplacerConfig replacerConfig = BiomeBlockReplacerConfig.defaults();
 
     // TODO: public boolean negativeHeightVariationInvertsTerrain = true;
-    public int version = CustomGeneratorSettingsFixer.VERSION;
+    public int version = CustomGeneratorSettingsFixer.LATEST;
 
     public CustomGeneratorSettings() {
     }
@@ -188,38 +178,52 @@ public class CustomGeneratorSettings {
         return replacerConfig;
     }
 
-    public String toJson() {
-        Gson gson = gson();
-        return gson.toJson(this);
+    public JsonObject toJsonObject() {
+        return (JsonObject) CustomGenSettingsSerialization.jankson().toJson(this);
     }
-    
+
+    // TODO: clean up all the conversions between CustomGeneratorSettings, JsonObject and String
+
+    public static JsonObject asJsonObject(String jsonString) {
+        try {
+            return CustomGeneratorSettingsFixer.INSTANCE.fixJson(jsonString);
+        } catch (PresetLoadError err) {
+            throw new RuntimeException(err);
+        }// catch (SyntaxError err) {
+        //  String message = err.getMessage() + "\n" + err.getLineMessage();
+        //  throw new RuntimeException(message, err);
+        // }
+    }
+
+    @Deprecated // the only remaining use is to validate json string.
+    // This needs special validation code to catch other types of issues too
     public static CustomGeneratorSettings fromJson(String jsonString) {
-        if (jsonString.isEmpty())
-            return defaults();
-        boolean isOutdated = !CustomGeneratorSettingsFixer.isUpToDate(jsonString);
-        if (isOutdated) {
-            jsonString = CustomGeneratorSettingsFixer.fixGeneratorOptions(jsonString, null);
-        }
-        return gson().fromJson(jsonString, CustomGeneratorSettings.class);
+        try {
+            return CustomGeneratorSettingsFixer.INSTANCE.fixPreset(jsonString);
+        } catch (PresetLoadError | DeserializationException err) {
+            throw new RuntimeException(err);
+        }// catch (SyntaxError err) {
+        //  String message = err.getMessage() + "\n" + err.getLineMessage();
+        //  throw new RuntimeException(message, err);
+        // }
     }
     
     @Nullable
     public static String loadJsonStringFromSaveFolder(ISaveHandler saveHandler) {
         File externalGeneratorPresetFile = getPresetFile(saveHandler);
         if (externalGeneratorPresetFile.exists()) {
-            try (FileReader reader = new FileReader(externalGeneratorPresetFile)){
-                CharBuffer sb = CharBuffer.allocate((int) externalGeneratorPresetFile.length());
-                reader.read(sb);
-                sb.flip();
-                return sb.toString();
+            try (SeekableByteChannel channel = Files.newByteChannel(externalGeneratorPresetFile.toPath())) {
+                ByteBuffer buf = ByteBuffer.allocate((int) channel.size());
+                channel.read(buf);
+                return new String(buf.array(), StandardCharsets.UTF_8);
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new UncheckedIOException(e);
             }
         }
         return null;
     }
-    
-    public static File getPresetFolder(ISaveHandler saveHandler) {
+
+    private static File getPresetFolder(ISaveHandler saveHandler) {
         return new File(saveHandler.getWorldDirectory(),
                 "/data/" + CustomCubicMod.MODID + "/");
     }
@@ -228,29 +232,21 @@ public class CustomGeneratorSettings {
         return new File(getPresetFolder(saveHandler),
                 "custom_generator_settings.json");
     }
-    
-    public static CustomGeneratorSettings load(World world) {
-        String jsonString = world.getWorldInfo().getGeneratorOptions();
-        CustomGeneratorSettings settings;
-        if (jsonString.isEmpty()) {
-            settings = defaults();
-            IWorldInfoAccess wia = (IWorldInfoAccess) world.getWorldInfo();
-            wia.setGeneratorOptions(settings.toJson());
-            return settings;
-        }
-        boolean isOutdated = !CustomGeneratorSettingsFixer.isUpToDate(jsonString);
-        if (isOutdated) {
-            jsonString = CustomGeneratorSettingsFixer.fixGeneratorOptions(jsonString, null);
+
+    public static CustomGeneratorSettings getFromWorld(World world) {
+        try {
+            String jsonString = world.getWorldInfo().getGeneratorOptions();
+            jsonString = CustomGeneratorSettingsFixer.INSTANCE.fixJsonString(jsonString);
             IWorldInfoAccess wia = (IWorldInfoAccess) world.getWorldInfo();
             wia.setGeneratorOptions(jsonString);
+
+            return CustomGenSettingsSerialization.jankson().fromJsonCarefully(jsonString, CustomGeneratorSettings.class);
+        } catch (PresetLoadError | DeserializationException err) {
+            throw new RuntimeException(err);
+        } catch (SyntaxError err) {
+            String message = err.getMessage() + "\n" + err.getLineMessage();
+            throw new RuntimeException(message, err);
         }
-        Gson gson = gson();
-        settings = gson.fromJson(jsonString, CustomGeneratorSettings.class);
-        return settings;
-    }
-    
-    public void save(World world) {
-        saveToFile(world.getSaveHandler(), toJson());
     }
 
     public static void saveToFile(ISaveHandler saveHandler, String json) {
@@ -270,7 +266,7 @@ public class CustomGeneratorSettings {
     public static CustomGeneratorSettings defaults() {
         CustomGeneratorSettings settings = new CustomGeneratorSettings();
         {
-            settings.standardOres.addAll(Arrays.asList(
+            settings.standardOres.list.addAll(Arrays.asList(
                     StandardOreConfig.builder()
                             .block(Blocks.DIRT.getDefaultState())
                             .size(33).attempts(10).probability(1f / (256f / ICube.SIZE)).create(),
@@ -334,7 +330,7 @@ public class CustomGeneratorSettings {
         }
 
         {
-            settings.periodicGaussianOres.addAll(Arrays.asList(
+            settings.periodicGaussianOres.list.addAll(Arrays.asList(
                     PeriodicGaussianOreConfig.builder()
                             .block(Blocks.LAPIS_ORE.getDefaultState())
                             .size(7).attempts(1).probability(0.933307775f) //resulted by approximating triangular behaviour with bell curve
@@ -343,38 +339,254 @@ public class CustomGeneratorSettings {
                             .maxHeight(-0.5f).create()
             ));
         }
+        {
+            settings.lakes.addAll(Arrays.asList(
+                    LakeConfig.builder().setBlock(Blocks.LAVA)
+                            .setBiomes(LakeConfig.BiomeSelectionMode.EXCLUDE, new BiomeDesc[0])
+                            .setMainProbability(UserFunction.builder()
+                                    // same as vanilla for y0-127, probabilities near y=256 are very low, so don't use them
+                                    .point(0, 4 / 263f)
+                                    .point(7, 4 / 263f)
+                                    .point(8, 247 / 16306f)
+                                    .point(62, 193 / 16306f)
+                                    .point(63, 48 / 40765f)
+                                    .point(127, 32 / 40765f)
+                                    .point(128, 32 / 40765f)
+                                    .build())
+                            .setSurfaceProbability(UserFunction.builder()
+                                    // sample vanilla probabilities at y=0, 31, 63, 95, 127
+                                    .point(-1, 19921 / 326120f)
+                                    .point(0, 19921 / 326120f)
+                                    .point(31, 1332 / 40765f)
+                                    .point(63, 579 / 81530f)
+                                    .point(95, 161 / 32612f)
+                                    .point(127, 129 / 40765f)
+                                    .point(128, 129 / 40765f)
+                                    .build())
+                            .build(),
+                    LakeConfig.builder().setBlock(Blocks.WATER)
+                            .setBiomes(LakeConfig.BiomeSelectionMode.EXCLUDE, Biomes.DESERT, Biomes.DESERT_HILLS)
+                            .setMainProbability(UserFunction.builder()
+                                    // same as vanilla
+                                    .point(0, 1 / 64f)
+                                    .build())
+                            .setSurfaceProbability(UserFunction.builder()
+                                    // same as vanilla for y=0-128, probabilities get too low at 2xx heights so dont use them
+                                    .point(-1, 0.25f)
+                                    .point(0, 0.25f)
+                                    .point(128, 0.125f)
+                                    .point(129, 0.125f)
+                                    .build())
+                            .build()
+            ));
+        }
         return settings;
     }
 
-    public static Gson gson() {
-        return gsonBuilder().create();
+    public static class CubeAreas {
+
+        public final List<Map.Entry<IntAABB, CustomGeneratorSettings>> map;
+
+        public CubeAreas(List<Map.Entry<IntAABB, CustomGeneratorSettings>> map) {
+            this.map = map;
+        }
     }
 
-    public static GsonBuilder gsonBuilder() {
-        GsonBuilder builder = new GsonBuilder();
-        builder.setPrettyPrinting();
-        builder.serializeSpecialFloatingPointValues();
-        builder.enableComplexMapKeySerialization();
-        builder.registerTypeAdapter(CustomGeneratorSettings.class, new Serializer());
-        builder.registerTypeHierarchyAdapter(IBlockState.class, BlockStateSerializer.INSTANCE);
-        builder.registerTypeHierarchyAdapter(Biome.class, new BiomeSerializer());
-        builder.registerTypeAdapter(BiomeBlockReplacerConfig.class, new BiomeBlockReplacerConfigSerializer());
-        return builder;
+    public static class LakeConfig {
+
+        public BlockDesc block;
+        public Set<BiomeDesc> biomes = new HashSet<>();
+        public BiomeSelectionMode biomeSelect = BiomeSelectionMode.EXCLUDE;
+
+        public UserFunction surfaceProbability;
+        public UserFunction mainProbability;
+
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        public enum BiomeSelectionMode {
+            INCLUDE, EXCLUDE;
+
+            public boolean isAllowed(Set<BiomeDesc> biomes, Biome biome) {
+                return (this == INCLUDE) == biomes.contains(new BiomeDesc(biome));
+            }
+        }
+
+        public static class Builder {
+
+            private LakeConfig config = new LakeConfig();
+
+            public Builder setBlock(BlockDesc block) {
+                config.block = block;
+                return this;
+            }
+
+            public Builder setBlock(Block block) {
+                config.block = new BlockDesc(block);
+                return this;
+            }
+
+            public Builder setBiomes(BiomeSelectionMode mode, BiomeDesc... biomes) {
+                config.biomes = new HashSet<>(Arrays.asList(biomes));
+                config.biomeSelect = mode;
+                return this;
+            }
+
+            public Builder setBiomes(BiomeSelectionMode mode, Biome... biomes) {
+                config.biomes = Arrays.stream(biomes).map(BiomeDesc::new).collect(Collectors.toSet());
+                config.biomeSelect = mode;
+                return this;
+            }
+
+            public Builder setSurfaceProbability(UserFunction surfaceProbability) {
+                config.surfaceProbability = surfaceProbability;
+                return this;
+            }
+
+            public Builder setMainProbability(UserFunction mainProbability) {
+                config.mainProbability = mainProbability;
+                return this;
+            }
+
+            public LakeConfig build() {
+                return config;
+            }
+
+        }
+    }
+
+    public static class UserFunction {
+
+        // TODO: flatten to float array for performance?
+        public Entry[] values;
+
+        public UserFunction() {
+            values = new Entry[0];
+        }
+
+        public UserFunction(Map<Float, Float> funcMap) {
+            values = funcMap.entrySet().stream()
+                    .sorted(Comparator.comparing(Map.Entry::getKey))
+                    .map(e -> new Entry(e.getKey(), e.getValue()))
+                    .toArray(Entry[]::new);
+        }
+
+        public UserFunction(Entry[] entries) {
+            this.values = entries.clone();
+        }
+
+        public float getValue(float y) {
+            if (values.length == 0) {
+                return 0;
+            }
+            if (values.length == 1) {
+                return values[0].v;
+            }
+            Entry e1 = values[0];
+            Entry e2 = values[1];
+            // TODO: binary search? do we want to support functions complex enough for it to be needed? Will it improve performance?
+            for (int i = 2; i < values.length; i++) {
+                if (values[i - 1].y < y) {
+                    e1 = e2;
+                    e2 = values[i];
+                }
+            }
+            float yFract = MathUtil.unlerp(y, e1.y, e2.y);
+            return MathUtil.lerp(yFract, e1.v, e2.v);
+        }
+
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        public static class Builder {
+
+            private Map<Float, Float> map = new HashMap<>();
+
+            public Builder point(float y, float v) {
+                this.map.put(y, v);
+                return this;
+            }
+
+            public UserFunction build() {
+                return new UserFunction(this.map);
+            }
+        }
+
+        public static class Entry {
+
+            public float y;
+            public float v;
+
+            public Entry() {
+            }
+
+            public Entry(float key, float value) {
+                this.y = key;
+                this.v = value;
+            }
+
+            @Override public boolean equals(Object o) {
+                if (this == o) {
+                    return true;
+                }
+                if (o == null || getClass() != o.getClass()) {
+                    return false;
+                }
+                Entry entry = (Entry) o;
+                return Float.compare(entry.y, y) == 0;
+            }
+
+            @Override public int hashCode() {
+                return Objects.hash(y);
+            }
+
+            @Override public String toString() {
+                return "Entry{" +
+                        "y=" + y +
+                        ", v=" + v +
+                        '}';
+            }
+        }
+    }
+
+    // workaround because jankson doesn't support deserializing to generic lists and maps
+
+    public static class StandardOreList implements Iterable<StandardOreConfig> {
+
+        public final List<StandardOreConfig> list = new ArrayList<>();
+
+        @Override public Iterator<StandardOreConfig> iterator() {
+            return list.iterator();
+        }
+    }
+
+    public static class PeriodicOreList implements Iterable<PeriodicGaussianOreConfig> {
+
+        public final List<PeriodicGaussianOreConfig> list = new ArrayList<>();
+
+        @Override public Iterator<PeriodicGaussianOreConfig> iterator() {
+            return list.iterator();
+        }
     }
 
     public static class StandardOreConfig {
 
-        public IBlockState blockstate;
+        public BlockStateDesc blockstate;
         // null == no biome restrictions
-        public Set<Biome> biomes;
-        public Set<IBlockState> genInBlockstates;
+        public Set<BiomeDesc> biomes;
+        public Set<BlockStateDesc> genInBlockstates;
         public int spawnSize;
         public int spawnTries;
         public float spawnProbability = 1.0f;
         public float minHeight = Float.NEGATIVE_INFINITY;
         public float maxHeight = Float.POSITIVE_INFINITY;
 
-        private StandardOreConfig(IBlockState state, Set<Biome> biomes, Set<IBlockState> genInBlockstates, int spawnSize, int spawnTries,
+        public StandardOreConfig() {
+        }
+
+        private StandardOreConfig(BlockStateDesc state, Set<BiomeDesc> biomes, Set<BlockStateDesc> genInBlockstates, int spawnSize, int spawnTries,
                 float spawnProbability, float minHeight, float maxHeight) {
             this.blockstate = state;
             this.biomes = biomes;
@@ -392,9 +604,9 @@ public class CustomGeneratorSettings {
 
         public static class Builder {
 
-            private IBlockState blockstate;
-            private Set<Biome> biomes = null;
-            private Set<IBlockState> genInBlockstates;
+            private BlockStateDesc blockstate;
+            private Set<BiomeDesc> biomes = null;
+            private Set<BlockStateDesc> genInBlockstates;
             private int spawnSize;
             private int spawnTries;
             private float spawnProbability;
@@ -402,6 +614,11 @@ public class CustomGeneratorSettings {
             private float maxHeight = Float.POSITIVE_INFINITY;
 
             public Builder block(IBlockState blockstate) {
+                this.blockstate = new BlockStateDesc(blockstate);
+                return this;
+            }
+
+            public Builder block(BlockStateDesc blockstate) {
                 this.blockstate = blockstate;
                 return this;
             }
@@ -442,11 +659,27 @@ public class CustomGeneratorSettings {
                 if (this.biomes == null) {
                     this.biomes = new HashSet<>();
                 }
-                this.biomes.addAll(Arrays.asList(biomes));
+                for (Biome biome : biomes) {
+                    this.biomes.add(new BiomeDesc(biome));
+                }
                 return this;
             }
 
             public Builder genInBlockstates(IBlockState... states) {
+                if (states == null) {
+                    this.genInBlockstates = null;
+                    return this;
+                }
+                if (this.genInBlockstates == null) {
+                    this.genInBlockstates = new HashSet<>();
+                }
+                for (IBlockState state : states) {
+                    this.genInBlockstates.add(new BlockStateDesc(state));
+                }
+                return this;
+            }
+
+            public Builder genInBlockstates(BlockStateDesc... states) {
                 if (states == null) {
                     this.genInBlockstates = null;
                     return this;
@@ -465,9 +698,10 @@ public class CustomGeneratorSettings {
                         .probability(config.spawnProbability)
                         .size(config.spawnSize)
                         .attempts(config.spawnTries)
-                        .block(config.blockstate)
-                        .biomes(config.biomes == null ? null : config.biomes.toArray(new Biome[0]))
-                        .genInBlockstates(config.genInBlockstates == null ? null : config.genInBlockstates.toArray(new IBlockState[0]));
+                        .block(config.blockstate.getBlockState())
+                        .biomes(config.biomes == null ? null : config.biomes.stream().map(BiomeDesc::getBiome).toArray(Biome[]::new))
+                        .genInBlockstates(config.genInBlockstates == null ? null :
+                                config.genInBlockstates.stream().map(BlockStateDesc::getBlockState).toArray(IBlockState[]::new));
             }
             public StandardOreConfig create() {
                 return new StandardOreConfig(blockstate, biomes, genInBlockstates, spawnSize, spawnTries, spawnProbability, minHeight, maxHeight);
@@ -477,9 +711,9 @@ public class CustomGeneratorSettings {
 
     public static class PeriodicGaussianOreConfig {
 
-        public IBlockState blockstate;
-        public Set<Biome> biomes = null;
-        public Set<IBlockState> genInBlockstates; // unspecified = vanilla defaults
+        public BlockStateDesc blockstate;
+        public Set<BiomeDesc> biomes = null;
+        public Set<BlockStateDesc> genInBlockstates; // unspecified = vanilla defaults
         public int spawnSize;
         public int spawnTries;
         public float spawnProbability;
@@ -489,7 +723,11 @@ public class CustomGeneratorSettings {
         public float minHeight;
         public float maxHeight;
 
-        private PeriodicGaussianOreConfig(IBlockState blockstate, Set<Biome> biomes, Set<IBlockState> genInBlockstates, int spawnSize, int spawnTries,
+        public PeriodicGaussianOreConfig() {
+        }
+
+        private PeriodicGaussianOreConfig(BlockStateDesc blockstate, Set<BiomeDesc> biomes, Set<BlockStateDesc> genInBlockstates, int spawnSize,
+                int spawnTries,
                 float spawnProbability, float heightMean, float heightStdDeviation, float heightSpacing, float minHeight, float maxHeight) {
             this.blockstate = blockstate;
             this.biomes = biomes;
@@ -510,9 +748,9 @@ public class CustomGeneratorSettings {
 
         public static class Builder {
 
-            private IBlockState blockstate;
-            private Set<Biome> biomes = null;
-            private Set<IBlockState> genInBlockstates = null;
+            private BlockStateDesc blockstate;
+            private Set<BiomeDesc> biomes = null;
+            private Set<BlockStateDesc> genInBlockstates = null;
             private int spawnSize;
             private int spawnTries;
             private float spawnProbability;
@@ -523,6 +761,11 @@ public class CustomGeneratorSettings {
             private float maxHeight = Float.POSITIVE_INFINITY;
 
             public Builder block(IBlockState blockstate) {
+                this.blockstate = new BlockStateDesc(blockstate);
+                return this;
+            }
+
+            public Builder block(BlockStateDesc blockstate) {
                 this.blockstate = blockstate;
                 return this;
             }
@@ -575,11 +818,27 @@ public class CustomGeneratorSettings {
                 if (this.biomes == null) {
                     this.biomes = new HashSet<>();
                 }
-                this.biomes.addAll(Arrays.asList(biomes));
+                for (Biome biome : biomes) {
+                    this.biomes.add(new BiomeDesc(biome));
+                }
                 return this;
             }
 
             public Builder genInBlockstates(IBlockState... states) {
+                if (states == null) {
+                    this.genInBlockstates = null;
+                    return this;
+                }
+                if (this.genInBlockstates == null) {
+                    this.genInBlockstates = new HashSet<>();
+                }
+                for (IBlockState state : states) {
+                    this.genInBlockstates.add(new BlockStateDesc(state));
+                }
+                return this;
+            }
+
+            public Builder genInBlockstates(BlockStateDesc... states) {
                 if (states == null) {
                     this.genInBlockstates = null;
                     return this;
@@ -597,9 +856,10 @@ public class CustomGeneratorSettings {
                         .probability(config.spawnProbability)
                         .size(config.spawnSize)
                         .attempts(config.spawnTries)
-                        .block(config.blockstate)
-                        .biomes(config.biomes == null ? null : config.biomes.toArray(new Biome[0]))
-                        .genInBlockstates(config.genInBlockstates == null ? null : config.genInBlockstates.toArray(new IBlockState[0]))
+                        .block(config.blockstate.getBlockState())
+                        .biomes(config.biomes == null ? null : config.biomes.stream().map(BiomeDesc::getBiome).toArray(Biome[]::new))
+                        .genInBlockstates(config.genInBlockstates == null ? null :
+                                config.genInBlockstates.stream().map(BlockStateDesc::getBlockState).toArray(IBlockState[]::new))
                         .heightMean(0)
                         .heightStdDeviation(1)
                         .heightSpacing(2);
@@ -610,172 +870,6 @@ public class CustomGeneratorSettings {
                         heightStdDeviation, heightSpacing, minHeight, maxHeight);
             }
 
-        }
-    }
-
-
-    private static class Serializer implements JsonDeserializer<CustomGeneratorSettings>, JsonSerializer<CustomGeneratorSettings> {
-
-        private static final Field[] fields = CustomGeneratorSettings.class.getFields();
-
-        static {
-            for (Field f : fields) {
-                f.setAccessible(true);
-            }
-        }
-
-        private static final CustomGeneratorSettings defaults = CustomGeneratorSettings.defaults();
-
-        @Override public CustomGeneratorSettings deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-                throws JsonParseException {
-            return deserializeWithDefault(json, defaults, context);
-        }
-
-        private CustomGeneratorSettings deserializeWithDefault(JsonElement element, CustomGeneratorSettings def, JsonDeserializationContext ctx) {
-            try {
-                JsonObject root = element.getAsJsonObject();
-                CustomGeneratorSettings ret = new CustomGeneratorSettings();
-
-                for (Field field : fields) {
-                    if (!field.getName().equals("cubeAreas")) {
-                        if (root.has(field.getName())) {
-                            JsonElement e = root.get(field.getName());
-                            field.set(ret, ctx.deserialize(e, field.getGenericType()));
-                        } else {
-                            field.set(ret, field.get(def));
-                        }
-                    }
-                }
-
-                Map<IntAABB, CustomGeneratorSettings> map = new HashMap<>();
-                // do cubeAreas once everything else is done so we have all the defaults
-                if (root.has("cubeAreas") && root.get("cubeAreas").isJsonArray()) {
-                    JsonArray array = root.get("cubeAreas").getAsJsonArray();
-                    for (JsonElement entry : array) {
-                        JsonArray mapEntry = entry.getAsJsonArray();
-                        JsonElement key = mapEntry.get(0);
-                        JsonElement value = mapEntry.get(1);
-                        IntAABB keyValue = ctx.deserialize(key, IntAABB.class);
-                        CustomGeneratorSettings valueValue = deserializeWithDefault(value, ret, ctx);
-                        map.put(keyValue, valueValue);
-                    }
-                }
-                ret.cubeAreas = map;
-                return ret;
-            } catch (IllegalAccessException e) {
-                // everything should be made accessible in static initializer
-                throw new Error(e);
-            } catch (RuntimeException e) {
-                throw new JsonParseException(e);
-            }
-        }
-
-        @Override public JsonElement serialize(CustomGeneratorSettings src, Type typeOfSrc, JsonSerializationContext context) {
-            return serializeWithDefault(src, defaults, context);
-        }
-
-        private JsonElement serializeWithDefault(CustomGeneratorSettings src, CustomGeneratorSettings def, JsonSerializationContext ctx) {
-            try {
-                JsonObject root = new JsonObject();
-                for (Field field : fields) {
-                    Object value = field.get(src);
-                    if (field.getName().equals("cubeAreas")) {
-                        JsonArray cubeAreas = new JsonArray();
-                        for (Map.Entry<IntAABB, CustomGeneratorSettings> entry : src.cubeAreas.entrySet()) {
-                            JsonArray arrEntry = new JsonArray();
-                            arrEntry.add(ctx.serialize(entry.getKey()));
-                            // use current src as default
-                            arrEntry.add(serializeWithDefault(entry.getValue(), src, ctx));
-                            cubeAreas.add(arrEntry);
-                        }
-                        root.add("cubeAreas", cubeAreas);
-                    } else {
-                        root.add(field.getName(), ctx.serialize(value));
-                    }
-                }
-                return root;
-            } catch (IllegalAccessException e) {
-                // everything should be made accessible in static initializer
-                throw new Error(e);
-            }
-        }
-    }
-
-    private static class BiomeBlockReplacerConfigSerializer
-            implements JsonDeserializer<BiomeBlockReplacerConfig>, JsonSerializer<BiomeBlockReplacerConfig> {
-
-        @Override public BiomeBlockReplacerConfig deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-                throws JsonParseException {
-
-            JsonObject defaults = json.getAsJsonObject().get("defaults").getAsJsonObject();
-            JsonObject overrides = json.getAsJsonObject().get("overrides").getAsJsonObject();
-
-            BiomeBlockReplacerConfig conf = BiomeBlockReplacerConfig.defaults();
-            for (Map.Entry<String, JsonElement> e : defaults.entrySet()) {
-                ResourceLocation key = new ResourceLocation(e.getKey());
-                Object value = getObject(context, e);
-                conf.setDefault(key, value);
-            }
-            for (Map.Entry<String, JsonElement> e : overrides.entrySet()) {
-                ResourceLocation key = new ResourceLocation(e.getKey());
-                Object value = getObject(context, e);
-                conf.set(key, value);
-            }
-            return conf;
-        }
-
-        private Object getObject(JsonDeserializationContext context, Map.Entry<String, JsonElement> e) {
-            Object value;
-            if (e.getValue().isJsonPrimitive()) {
-                value = e.getValue().getAsJsonPrimitive().getAsDouble();
-            } else {
-                // currently the only object suppoorted is blockstate
-                value = BlockStateSerializer.INSTANCE.deserialize(e.getValue(), IBlockState.class, context);
-            }
-            return value;
-        }
-
-        @Override public JsonElement serialize(BiomeBlockReplacerConfig src, Type typeOfSrc, JsonSerializationContext context) {
-            JsonObject root = new JsonObject();
-
-            JsonObject defaults = new JsonObject();
-            JsonObject overrides = new JsonObject();
-
-            for (Map.Entry<ResourceLocation, Object> e : src.getDefaults().entrySet()) {
-                defaults.add(e.getKey().toString(), getJsonElement(context, e));
-            }
-            for (Map.Entry<ResourceLocation, Object> e : src.getOverrides().entrySet()) {
-                overrides.add(e.getKey().toString(), getJsonElement(context, e));
-            }
-            root.add("defaults", defaults);
-            root.add("overrides", overrides);
-            return root;
-        }
-
-        private JsonElement getJsonElement(JsonSerializationContext context, Map.Entry<ResourceLocation, Object> e) {
-            JsonElement v;
-            if (e.getValue() == null) {
-                throw new NullPointerException("Null config entries cannot be serialized");
-            }
-            if (e.getValue() instanceof Number) {
-                v = new JsonPrimitive((Number) e.getValue());
-            } else if (e.getValue() instanceof IBlockState) {
-                v = BlockStateSerializer.INSTANCE.serialize((IBlockState) e.getValue(), IBlockState.class, context);
-            } else {
-                throw new UnsupportedOperationException(e.getValue() + " of type " + e.getValue().getClass() + " is not supported");
-            }
-            return v;
-        }
-    }
-
-    private static class BiomeSerializer implements JsonDeserializer<Biome>, JsonSerializer<Biome> {
-
-        @Override public Biome deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            return ForgeRegistries.BIOMES.getValue(new ResourceLocation(json.getAsString()));
-        }
-
-        @Override public JsonElement serialize(Biome src, Type typeOfSrc, JsonSerializationContext context) {
-            return new JsonPrimitive(src.getRegistryName().toString());
         }
     }
 

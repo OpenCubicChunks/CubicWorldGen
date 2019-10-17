@@ -23,15 +23,13 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator;
 
-import io.github.opencubicchunks.cubicchunks.api.world.ICube;
-import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
+import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.event.DecorateCubeBiomeEvent;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CWGEventFactory;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.init.Biomes;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
@@ -55,23 +53,26 @@ public class PrePopulator implements ICubicPopulator {
     }
 
     @Override public void generate(World world, Random random, CubePos pos, Biome biome) {
-        if (biome != Biomes.DESERT && biome != Biomes.DESERT_HILLS
-                && cfg.waterLakes && random.nextInt(cfg.waterLakeRarity) == 0
-                && CWGEventFactory.populate(world, random, pos, false, PopulateChunkEvent.Populate.EventType.LAKE)) {
-            (new WorldGenLakes(Blocks.WATER)).generate(world, random, pos.randomPopulationPos(random));
-        }
 
-        if (random.nextInt(cfg.lavaLakeRarity) == 0 && cfg.lavaLakes) {
-            int yOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
-            int blockY = pos.getMinBlockY() + yOffset;
-            if (random.nextDouble() <= lavaLakeProbability(cfg, blockY)
-                && CWGEventFactory.populate(world, random, pos, false, PopulateChunkEvent.Populate.EventType.LAVA)) {
-                int xOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
-                int zOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
-
-                if (blockY < cfg.waterLevel || random.nextInt(cfg.aboveSeaLavaLakeRarity) == 0) {
-                    BlockPos blockPos = pos.getMinBlockPos().add(xOffset, yOffset, zOffset);
-                    (new WorldGenLakes(Blocks.LAVA)).generate(world, random, blockPos);
+        for (CustomGeneratorSettings.LakeConfig lake : cfg.lakes) {
+            if (lake.block.getBlock() == null) {
+                continue;
+            }
+            if (!lake.biomeSelect.isAllowed(lake.biomes, biome)) {
+                continue;
+            }
+            BlockPos populationPos = pos.randomPopulationPos(random);
+            BlockPos surface = ((ICubicWorld) world).getSurfaceForCube(pos, populationPos.getX(), populationPos.getZ(), 0,
+                    (p, s) -> !s.getBlock().isAir(s, world, p));
+            if (surface != null) {
+                float prob = lake.surfaceProbability.getValue(surface.getY());
+                if (random.nextFloat() < prob) {
+                    new WorldGenLakes(lake.block.getBlock()).generate(world, random, surface);
+                }
+            } else  {
+                float prob = lake.mainProbability.getValue(populationPos.getY());
+                if (random.nextFloat() < prob) {
+                    new WorldGenLakes(lake.block.getBlock()).generate(world, random, populationPos);
                 }
             }
         }
@@ -82,16 +83,5 @@ public class PrePopulator implements ICubicPopulator {
             }
         }
         MinecraftForge.EVENT_BUS.post(new DecorateCubeBiomeEvent.Pre(world, random, pos));
-    }
-
-    private double lavaLakeProbability(CustomGeneratorSettings cfg, int y) {
-        // same as DefaultDecorator.waterSourceProbabilityForY
-        final double yScale = -0.0242676003062542;
-        final double yOffset = 0.723583275161355;
-        final double valueScale = 0.00599930877922822;
-
-        double normalizedY = (y - cfg.expectedBaseHeight) / cfg.expectedHeightVariation;
-        double vanillaY = normalizedY * 64 + 64;
-        return (Math.atan(vanillaY * yScale + yOffset) + Math.PI / 2) * valueScale;
     }
 }

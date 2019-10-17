@@ -24,21 +24,25 @@
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui;
 
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.DummyWorld;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.GuiOverlay;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBlockStateButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIOptionScrollbar;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
 import net.malisis.core.client.gui.ClipArea;
 import net.malisis.core.client.gui.GuiRenderer;
+import net.malisis.core.client.gui.MalisisGui;
 import net.malisis.core.client.gui.component.IClipable;
 import net.malisis.core.client.gui.component.container.UIContainer;
 import net.malisis.core.client.gui.component.control.IScrollable;
 import net.malisis.core.client.gui.component.control.UIScrollBar;
 import net.malisis.core.client.gui.component.decoration.UITooltip;
-import net.malisis.core.client.gui.component.interaction.UITextField;
 import net.minecraft.block.Block;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
@@ -57,9 +61,8 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIContainer<T> {
 
@@ -68,6 +71,7 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
     static {
         MethodHandle handle;
         try {
+            //noinspection JavaLangInvokeHandleSignature old malisiscore version
             handle = MethodHandles.lookup().findConstructor(
                 ClipArea.class,
                 MethodType.methodType(
@@ -105,11 +109,16 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
 
     private Consumer<IBlockState> onSelect;
 
+    private final List<IBlockState> blockstates;
+
     private static final List<IBlockState> allStates;
+    private static final List<IBlockState> allDefaultStates;
 
     static {
         List<IBlockState> states = new ArrayList<>();
+        List<IBlockState> defaultStates = new ArrayList<>();
         for (Block block : ForgeRegistries.BLOCKS) {
+            defaultStates.add(block.getDefaultState());
             for (IBlockState state : block.getBlockState().getValidStates()) {
                 try {
                     if (state != block.getStateFromMeta(block.getMetaFromState(state))) {
@@ -133,12 +142,15 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
         }
 
         allStates = states;
+        allDefaultStates = defaultStates;
     }
 
-    public UIBlockStateSelect(ExtraGui gui) {
+    private UIBlockStateSelect(ExtraGui gui, Consumer<IBlockState> onSelect, List<IBlockState> blockstates) {
         super(gui);
+        this.onSelect = onSelect;
+        this.blockstates = blockstates;
 
-        UIScrollBar scrollbar = new UIOptionScrollbar((ExtraGui) getGui(), (T) this, UIScrollBar.Type.VERTICAL);
+        UIScrollBar scrollbar = new UIOptionScrollbar(gui, (T) this, UIScrollBar.Type.VERTICAL);
         scrollbar.setVisible(true);
         scrollbar.setPosition(4, 0);
         this.clipContent = true;
@@ -165,32 +177,37 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
 
     @Override public boolean onMouseMove(int lastX, int lastY, int x, int y) {
         int idx = getSelectedIdx(x, y);
-        if (idx < 0 || idx >= allStates.size()) {
+        if (idx < 0 || idx >= blockstates.size()) {
             tooltip = null;
         } else {
             if (tooltip == null) {
                 tooltip = new UITooltip(getGui());
             }
-            tooltip.setText(UIBlockStateButton.generateTooltip(allStates.get(idx)));
+            tooltip.setText(generateTooltip(blockstates.get(idx)));
         }
         return true;
+    }
+
+    private static String generateTooltip(IBlockState blockState) {
+        StringBuffer sb = new StringBuffer(128);
+        sb.append(ForgeRegistries.BLOCKS.getKey(blockState.getBlock()));
+        for (Map.Entry<IProperty<?>, Comparable<?>> entry : blockState.getProperties().entrySet()) {
+            sb.append(" \n ");
+            sb.append(entry.getKey().getName());
+            sb.append(" = ");
+            sb.append(entry.getValue());
+        }
+        return sb.toString();
     }
 
     @Override public boolean onClick(int x, int y) {
         int idx = getSelectedIdx(x, y);
-        if (idx < 0 || idx >= allStates.size()) {
+        if (idx < 0 || idx >= blockstates.size()) {
             return false;
         }
-        onSelect.accept(allStates.get(idx));
-        getGui().removeFromScreen(this);
+        onSelect.accept(blockstates.get(idx));
+        getGui().close();
         return true;
-    }
-
-    public void display(Consumer<IBlockState> onSelect) {
-        this.onSelect = onSelect;
-
-        this.setZIndex(1);
-        getGui().addToScreen(this);
     }
 
     @Override public void drawBackground(GuiRenderer renderer, int mouseX, int mouseY, float partialTick) {
@@ -207,8 +224,8 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
         shape.setSize(getWidth(), getHeight());
         renderer.drawShape(shape, rp);
 
-        rp.alpha.set(100);
-        rp.colorMultiplier.set(0xFFFFFF);
+        rp.alpha.set(200);
+        rp.colorMultiplier.set(0xB0B0B0);
 
         shape.resetState();
         shape.setSize((int) getAvailableWidth(), (int) getAvailableHeight());
@@ -236,7 +253,7 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
 
         GlStateManager.bindTexture(0);
         int idx = getSelectedIdx(mouseX, mouseY);
-        if (idx >= 0 && idx < allStates.size()) {
+        if (idx >= 0 && idx < blockstates.size()) {
             int line = idx / getLineStates();
             int num = idx % getLineStates();
 
@@ -255,9 +272,10 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
 
         Tessellator.getInstance().draw();
         ITextureObject blockTexture = Minecraft.getMinecraft().getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+        GlStateManager.enableDepth();
 
         for (int i = itemStart; i < itemEnd; i++) {
-            if (i >= allStates.size() || i < 0) {
+            if (i >= blockstates.size() || i < 0) {
                 continue;
             }
             int line = i / getLineStates();
@@ -268,7 +286,7 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
             Minecraft.getMinecraft().entityRenderer.enableLightmap();
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, blockTexture.getGlTextureId());
 
-            drawState(allStates.get(i), num * UIBlockStateButton.SIZE + PADDING_HORIZ + addPadding,
+            drawState(blockstates.get(i), num * UIBlockStateButton.SIZE + PADDING_HORIZ + addPadding,
                     (int) (line * UIBlockStateButton.SIZE - pixelsOffset + PADDING_VERT));
         }
 
@@ -277,6 +295,8 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
 
         GlStateManager.disableRescaleNormal();
         RenderHelper.disableStandardItemLighting();
+        GlStateManager.disableDepth();
+
     }
 
     private void drawState(IBlockState state, int x, int y) {
@@ -337,7 +357,7 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
     }
 
     private int getLineCount() {
-        return MathHelper.ceil(allStates.size() / (double) getLineStates());
+        return MathHelper.ceil(blockstates.size() / (double) getLineStates());
     }
 
     @Override
@@ -348,5 +368,13 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
     @Override
     public int getContentHeight() {
         return getLineCount() * UIBlockStateButton.SIZE;
+    }
+
+    public static MalisisGui makeOverlay(GuiScreen parent, Consumer<IBlockState> onSelect) {
+        return new GuiOverlay(parent, gui -> new UIBlockStateSelect<>(gui, onSelect, allStates));
+    }
+
+    public static MalisisGui makeDefaultStatesOverlay(GuiScreen parent, Consumer<IBlockState> onSelect) {
+        return new GuiOverlay(parent, gui -> new UIBlockStateSelect<>(gui, onSelect, allDefaultStates));
     }
 }

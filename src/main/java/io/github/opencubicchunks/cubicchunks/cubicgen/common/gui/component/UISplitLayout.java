@@ -81,6 +81,11 @@ public class UISplitLayout<T extends UISplitLayout<T>> extends UIStandardLayout<
 
     // Note: setSizeMode doesn't exist on purpose because there is no reasonable way to use it without also setting new weights of sizes
 
+    public T forceAutoFit() {
+        this.sizeMode = SizeMode.FORCE_AUTO_SIZE;
+        return self();
+    }
+
     /**
      * Sets weights of the components, and switches to specifying sizes component sizes by weight.
      * A component will take fraction of space specified by {@code componentWeight/sumOfAllWeights}.
@@ -207,14 +212,16 @@ public class UISplitLayout<T extends UISplitLayout<T>> extends UIStandardLayout<
     }
 
     @Override protected boolean canAutoSizeX() {
-        return this.splitType == Type.STACKED;
+        return this.splitType == Type.STACKED || this.sizeMode == SizeMode.FORCE_AUTO_SIZE;
     }
 
     @Override protected boolean canAutoSizeY() {
-        return this.splitType == Type.SIDE_BY_SIDE;
+        return this.splitType == Type.SIDE_BY_SIDE || this.sizeMode == SizeMode.FORCE_AUTO_SIZE;
     }
 
     @Override protected void layout() {
+        this.calculateContentSize();
+
         boolean shouldResize = getFirst() != null && getFirst().isVisible() && getSecond() != null && getSecond().isVisible();
 
         int sizeFirst = getSizeFirst();
@@ -323,6 +330,10 @@ public class UISplitLayout<T extends UISplitLayout<T>> extends UIStandardLayout<
     }
 
     private int getRawSizeFirst() {
+        if (sizeMode == SizeMode.FORCE_AUTO_SIZE) {
+            return getFirst() == null ? 0 :
+                    (splitType == Type.SIDE_BY_SIDE ? getFirst().getWidth() : getFirst().getHeight());
+        }
         if (sizeMode == SizeMode.WEIGHT) {
             // x = (totalWidth*ratio)/(ratio+1)
             return Math.round(getTotalAvailableSize() * sizeData / (sizeData + 1));
@@ -347,6 +358,10 @@ public class UISplitLayout<T extends UISplitLayout<T>> extends UIStandardLayout<
     }
 
     private int getRawSizeSecond() {
+        if (sizeMode == SizeMode.FORCE_AUTO_SIZE) {
+            return getSecond() == null ? 0 :
+                    (splitType == Type.SIDE_BY_SIDE ? getSecond().getWidth() : getSecond().getHeight());
+        }
         if (sizeMode == SizeMode.WEIGHT || sizeMode == SizeMode.SIZE_FIRST) {
             return getTotalAvailableSize() - getRawSizeFirst();
         } else {
@@ -434,7 +449,7 @@ public class UISplitLayout<T extends UISplitLayout<T>> extends UIStandardLayout<
     }
 
     public enum SizeMode {
-        WEIGHT, SIZE_FIRST, SIZE_SECOND;
+        WEIGHT, SIZE_FIRST, SIZE_SECOND, FORCE_AUTO_SIZE;
 
         public static SizeMode byPos(Pos pos) {
             switch (pos) {

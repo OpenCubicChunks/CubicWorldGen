@@ -65,7 +65,7 @@ public class OceanWaterReplacer implements IBiomeBlockReplacer {
             private final ResourceLocation OCEAN_LEVEL = CustomCubicMod.location("water_level");
 
             @Override public IBiomeBlockReplacer create(World world, CubicBiome biome, BiomeBlockReplacerConfig conf) {
-                IBlockState oceanBlock = conf.getBlockstate(OCEAN_BLOCK);
+                IBlockState oceanBlock = conf.getBlockstate(OCEAN_BLOCK, Blocks.WATER.getDefaultState());
                 int oceanHeight = (int) Math.round(conf.getDouble(OCEAN_LEVEL));
                 return new OceanWaterReplacer(oceanBlock, oceanHeight);
             }

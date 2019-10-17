@@ -21,27 +21,28 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package io.github.opencubicchunks.cubicchunks.cubicgen.flat;
+package io.github.opencubicchunks.cubicchunks.cubicgen.preset;
 
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
 import net.minecraft.block.state.IBlockState;
 
-public class Layer implements Comparable<Layer> {
+public class FlatLayer implements Comparable<FlatLayer> {
 
     public int fromY;
     public int toY;
     public int biome = -1;
-    public IBlockState blockState;
+    public BlockStateDesc blockState;
 
-    public Layer() { }
+    public FlatLayer() { }
 
-    public Layer(int fromY1, int toY1, IBlockState block1) {
+    public FlatLayer(int fromY1, int toY1, BlockStateDesc block1) {
         fromY = fromY1;
         toY = toY1;
         blockState = block1;
     }
 
     @Override
-    public int compareTo(Layer other) {
+    public int compareTo(FlatLayer other) {
         return this.fromY - other.fromY;
     }
     

@@ -27,7 +27,7 @@ import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisG
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.vanillaText;
 
 import com.google.common.eventbus.Subscribe;
-import io.github.opencubicchunks.cubicchunks.cubicgen.flat.FlatGeneratorSettings;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.FlatGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBorderLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIColoredPanel;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIMultilineLabel;

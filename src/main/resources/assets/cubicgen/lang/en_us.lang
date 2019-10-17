@@ -12,9 +12,10 @@ cubicgen.gui.cubicgen.next_page=Next
 cubicgen.gui.cubicgen.done=Done
 cubicgen.gui.cubicgen.presets=Presets
 
-cubicgen.gui.cubicgen.basic_tab_title=Customize World Settings%nPage 1 of 3%nBasic Settings
-cubicgen.gui.cubicgen.ores_tab_title=Customize World Settings%nPage 2 of 3%nOre Settings
-cubicgen.gui.cubicgen.advanced_tab_title=Customize World Settings%nPage 3 of 3%nAdvanced Settings
+cubicgen.gui.cubicgen.basic_tab_title=Customize World Settings%nPage 1 of 4%nBasic Settings
+cubicgen.gui.cubicgen.ores_tab_title=Customize World Settings%nPage 2 of 4%nOre Settings
+cubicgen.gui.cubicgen.lake_tab_title=Customize World Settings%nPage 3 of 4%nLake Settings
+cubicgen.gui.cubicgen.advanced_tab_title=Customize World Settings%nPage 3 of 4%nAdvanced Settings
 
 cubicgen.gui.cubicgen.layers_title=Customize World Settings%nPage 1 of 1%nLayers
 

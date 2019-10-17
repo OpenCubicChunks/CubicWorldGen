@@ -21,20 +21,20 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package io.github.opencubicchunks.cubicchunks.cubicgen.flat;
+package io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer;
 
-import java.io.StringReader;
 import java.util.Map.Entry;
 
+import blue.endless.jankson.Jankson;
+import blue.endless.jankson.JsonArray;
+import blue.endless.jankson.JsonElement;
+import blue.endless.jankson.JsonObject;
+import blue.endless.jankson.JsonPrimitive;
+import blue.endless.jankson.api.SyntaxError;
 import com.google.common.base.Optional;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.stream.JsonReader;
 
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.CustomGenSettingsSerialization;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.FlatGeneratorSettings;
 import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
@@ -44,7 +44,7 @@ import net.minecraft.nbt.NBTUtil;
 public class FlatGeneratorSettingsFixer {
 
     private static boolean isVersionUpToDate(JsonObject root) {
-        return root.has("version") && root.get("version").getAsInt() >= 1;
+        return root.containsKey("version") && root.get(int.class, "version") >= 1;
     }
 
     public static boolean isUpToDate(String json) {
@@ -56,54 +56,64 @@ public class FlatGeneratorSettingsFixer {
             // avoid JsonNull
             jsonString = "{}";
         }
-        JsonReader reader = new JsonReader(new StringReader(jsonString));
-        return new JsonParser().parse(reader).getAsJsonObject();
+        try {
+            return CustomGenSettingsSerialization.jankson().load(jsonString);
+        } catch (SyntaxError err) {
+            String message = err.getMessage() + "\n" + err.getLineMessage();
+            throw new RuntimeException(message, err);
+        }
     }
 
     public static String fixGeneratorOptions(String json) {
-        Gson gson = FlatGeneratorSettings.gson();
+        Jankson gson = FlatGeneratorSettings.jankson();
         JsonObject oldRoot = stringToJson(json);
         JsonObject newRoot = stringToJson("{}");
-        newRoot.add("version", new JsonPrimitive(1));
-        newRoot.add("layers", getLayers(oldRoot));
-        return gson.toJson(newRoot);
+        newRoot.put("version", new JsonPrimitive(1));
+        try {
+            newRoot.put("layers", getLayers(oldRoot));
+        } catch (SyntaxError err) {
+            String message = err.getMessage() + "\n" + err.getLineMessage();
+            throw new RuntimeException(message, err);
+        }
+        return newRoot.toJson();
     }
     
     @SuppressWarnings("unchecked")
-    private static JsonElement getLayers(JsonObject json) {
+    private static JsonElement getLayers(JsonObject json) throws SyntaxError {
+        Jankson jankson = CustomGenSettingsSerialization.jankson();
         JsonArray layers = new JsonArray();
-        if (json.has("layers")) {
-            JsonObject oldLayersMap = json.get("layers").getAsJsonObject();
+        if (json.containsKey("layers")) {
+            JsonObject oldLayersMap = (JsonObject) json.get("layers");
             JsonObject newLayersMap = new JsonObject();
             for (Entry<String, JsonElement> entry : oldLayersMap.entrySet()) {
                 String key = entry.getKey();
-                JsonObject oldLayer = entry.getValue().getAsJsonObject();
+                JsonObject oldLayer = (JsonObject) entry.getValue();
                 JsonObject newLayer = new JsonObject();
-                newLayer.add("fromY", oldLayer.get("fromY"));
-                newLayer.add("toY", oldLayer.get("toY"));
-                if (oldLayer.has("biome")) {
-                    newLayer.add("biome", oldLayer.get("biome"));
+                newLayer.put("fromY", oldLayer.get("fromY"));
+                newLayer.put("toY", oldLayer.get("toY"));
+                if (oldLayer.containsKey("biome")) {
+                    newLayer.put("biome", oldLayer.get("biome"));
                 } else {
-                    newLayer.add("biome", new JsonPrimitive(-1));
+                    newLayer.put("biome", new JsonPrimitive(-1));
                 }
-                if (oldLayer.has("blockState")) {
-                    newLayer.add("blockState", oldLayer.get("blockState"));
+                if (oldLayer.containsKey("blockState")) {
+                    newLayer.put("blockState", oldLayer.get("blockState"));
                 } else {
-                    Block block = Block.getBlockFromName(oldLayer.get("blockRegistryName").getAsString());
+                    Block block = Block.getBlockFromName(oldLayer.get(String.class, "blockRegistryName"));
                     IBlockState blockState = block.getBlockState().getBaseState();
                     for (@SuppressWarnings("rawtypes")
                     IProperty property : block.getBlockState().getProperties()) {
-                        if (oldLayer.has(property.getName())) {
+                        if (oldLayer.containsKey(property.getName())) {
                             blockState = blockState.withProperty(property,
-                                    findPropertyValueByName(property, oldLayer.get(property.getName()).getAsString()));
+                                    findPropertyValueByName(property, oldLayer.get(String.class, property.getName())));
                         }
                     }
                     NBTTagCompound tag = new NBTTagCompound();
                     NBTUtil.writeBlockState(tag, blockState);
                     String tagString = tag.toString();
-                    newLayer.add("blockState", new JsonParser().parse(tagString));
+                    newLayer.put("blockState", jankson.load(tagString));
                 }
-                newLayersMap.add(key, newLayer);
+                newLayersMap.put(key, newLayer);
             }
         }
         return layers;

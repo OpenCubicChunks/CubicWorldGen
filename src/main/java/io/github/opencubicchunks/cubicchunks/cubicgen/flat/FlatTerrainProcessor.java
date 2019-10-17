@@ -30,8 +30,11 @@ import io.github.opencubicchunks.cubicchunks.api.util.Box;
 import io.github.opencubicchunks.cubicchunks.api.util.Coords;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.BasicCubeGenerator;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.FlatGeneratorSettings;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.FlatLayer;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
@@ -69,19 +72,19 @@ public class FlatTerrainProcessor extends BasicCubeGenerator {
         Integer ceilingKey = conf.layers.ceilingKey(topY);
         if (ceilingKey != null)
             topKeyI = ceilingKey;
-        NavigableMap<Integer, Layer> cubeLayerSubMap = conf.layers.subMap(floorKeyI, true, topKeyI, true);
-        for (Entry<Integer, Layer> entry : cubeLayerSubMap.entrySet()) {
-            Layer layer = entry.getValue();
+        NavigableMap<Integer, FlatLayer> cubeLayerSubMap = conf.layers.subMap(floorKeyI, true, topKeyI, true);
+        for (Entry<Integer, FlatLayer> entry : cubeLayerSubMap.entrySet()) {
+            FlatLayer layer = entry.getValue();
             int fromY = layer.fromY - floorY;
             int toY = layer.toY - floorY;
-            IBlockState iBlockState = layer.blockState;
-            for (int y = fromY > 0 ? fromY : 0; y < (toY < ICube.SIZE ? toY : ICube.SIZE); y++) {
+            IBlockState iBlockState = layer.blockState.getOrDefault(Blocks.STONE.getDefaultState());
+            int maxY = Math.min(toY, ICube.SIZE);
+            for (int y = Math.max(fromY, 0); y < maxY; y++)
                 for (int x = 0; x < ICube.SIZE; x++) {
                     for (int z = 0; z < ICube.SIZE; z++) {
                         primer.setBlockState(x, y, z, iBlockState);
                     }
                 }
-            }
         }
         return primer;
     }

@@ -34,6 +34,8 @@ import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.event.CubicO
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.event.DecorateCubeBiomeEvent;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CWGEventFactory;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BiomeDesc;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.BlockFlower;
 import net.minecraft.block.material.Material;
@@ -51,11 +53,10 @@ import net.minecraft.world.gen.feature.WorldGenPumpkin;
 import net.minecraft.world.gen.feature.WorldGenerator;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
-import net.minecraftforge.event.terraingen.TerrainGen;
 
 import java.util.Random;
 import java.util.Set;
-import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -82,27 +83,40 @@ public final class DefaultDecorator implements ICubicPopulator {
 
             // TODO: allow interleaved order
             for (CustomGeneratorSettings.StandardOreConfig c : cfg.standardOres) {
-                if (c.biomes != null && !c.biomes.contains(biome)) {
+                if (c.blockstate.getBlockState() == null) {
+                    continue;
+                }
+                if (c.biomes != null && !c.biomes.contains(new BiomeDesc(biome))) {
                     continue;
                 }
 
-                Set<IBlockState> states = c.genInBlockstates;
+
+                Set<IBlockState> states = c.genInBlockstates == null ? null :
+                        c.genInBlockstates.stream().filter(b -> b.getBlockState() != null)
+                        .map(BlockStateDesc::getBlockState)
+                        .collect(Collectors.toSet());
                 WorldGenMinable gen = states == null ?
-                        new WorldGenMinable(c.blockstate, c.spawnSize) :
-                        new WorldGenMinable(c.blockstate, c.spawnSize, states::contains);
-                if (CWGEventFactory.generateOre(world, random, gen, pos, c.blockstate)) {
+                        new WorldGenMinable(c.blockstate.getBlockState(), c.spawnSize) :
+                        new WorldGenMinable(c.blockstate.getBlockState(), c.spawnSize, states::contains);
+                if (CWGEventFactory.generateOre(world, random, gen, pos, c.blockstate.getBlockState())) {
                     genOreUniform(world, cfg, random, pos, c.spawnTries, c.spawnProbability, gen, c.minHeight, c.maxHeight);
                 }
             }
             for (CustomGeneratorSettings.PeriodicGaussianOreConfig c : cfg.periodicGaussianOres) {
-                if (c.biomes != null && !c.biomes.contains(biome)) {
+                if (c.blockstate.getBlockState() == null) {
                     continue;
                 }
-                Set<IBlockState> states = c.genInBlockstates;
+                if (c.biomes != null && !c.biomes.contains(new BiomeDesc(biome))) {
+                    continue;
+                }
+                Set<IBlockState> states = c.genInBlockstates == null ? null :
+                        c.genInBlockstates.stream().filter(b -> b.getBlockState() != null)
+                                .map(BlockStateDesc::getBlockState)
+                                .collect(Collectors.toSet());
                 WorldGenMinable gen = states == null ?
-                        new WorldGenMinable(c.blockstate, c.spawnSize) :
-                        new WorldGenMinable(c.blockstate, c.spawnSize, states::contains);
-                if (CWGEventFactory.generateOre(world, random, gen, pos, c.blockstate)) {
+                        new WorldGenMinable(c.blockstate.getBlockState(), c.spawnSize) :
+                        new WorldGenMinable(c.blockstate.getBlockState(), c.spawnSize, states::contains);
+                if (CWGEventFactory.generateOre(world, random, gen, pos, c.blockstate.getBlockState())) {
                     genOreBellCurve(world, cfg, random, pos, c.spawnTries, c.spawnProbability, gen, c.heightMean, c.heightStdDeviation,
                             c.heightSpacing, c.minHeight, c.maxHeight);
                 }

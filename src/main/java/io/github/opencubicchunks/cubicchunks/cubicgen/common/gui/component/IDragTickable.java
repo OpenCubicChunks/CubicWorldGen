@@ -26,6 +26,4 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 public interface IDragTickable {
 
     void onDragTick(int mouseX, int mouseY, float partialTick);
-
-    ;
 }

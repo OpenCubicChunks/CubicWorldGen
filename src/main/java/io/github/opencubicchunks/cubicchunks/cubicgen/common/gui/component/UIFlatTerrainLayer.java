@@ -23,13 +23,13 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
 import net.malisis.core.client.gui.Anchor;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
 import net.malisis.core.client.gui.component.decoration.UILabel;
 import net.malisis.core.client.gui.component.decoration.UISeparator;
 import net.malisis.core.client.gui.component.interaction.UIButton;
-import net.malisis.core.client.gui.component.interaction.UITextField;
 import net.malisis.core.renderer.font.FontOptions;
 import net.minecraft.init.Blocks;
 
@@ -37,7 +37,7 @@ import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisG
 
 import com.google.common.eventbus.Subscribe;
 
-import io.github.opencubicchunks.cubicchunks.cubicgen.flat.Layer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.FlatLayer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.FlatCubicGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.FlatLayersTab;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.UIBlockStateSelect;
@@ -48,7 +48,7 @@ public class UIFlatTerrainLayer extends UIContainer<UIFlatTerrainLayer> {
     private final FlatLayersTab flatLayersTab;
     private final UIButton addLayer;
     private final UIButton removeLayer;
-    private final UIBlockStateButton block;
+    private final UIBlockStateButton<?> block;
     private final UILabel blockName;
     private final UILabel blockProperties;
     private final UILabel from;
@@ -60,7 +60,7 @@ public class UIFlatTerrainLayer extends UIContainer<UIFlatTerrainLayer> {
 
     private final FlatCubicGui gui;
 
-    public UIFlatTerrainLayer(FlatCubicGui guiFor, FlatLayersTab flatLayersTabFor, Layer layer) {
+    public UIFlatTerrainLayer(FlatCubicGui guiFor, FlatLayersTab flatLayersTabFor, FlatLayer layer) {
         super(guiFor);
         this.setSize(UIComponent.INHERITED, 60);
         this.flatLayersTab = flatLayersTabFor;
@@ -69,10 +69,10 @@ public class UIFlatTerrainLayer extends UIContainer<UIFlatTerrainLayer> {
         this.block = new UIBlockStateButton(gui, layer.blockState);
         this.blockName = new UILabel(gui).setPosition(30, 0).setFontOptions(whiteFontWithShadow);
         this.blockProperties = new UILabel(gui).setPosition(30, 10).setFontOptions(whiteFontWithShadow);
-        this.block.onClick(btn -> new UIBlockStateSelect<>(gui).display(state -> {
-            block.setBlockState(state);
+        this.block.onClick(btn -> UIBlockStateSelect.makeOverlay(gui, state -> {
+            block.setBlockState(new BlockStateDesc(state));
             updateLabels();
-        }));
+        }).display());
         add(block);
         updateLabels();
         add(blockName);
@@ -133,11 +133,11 @@ public class UIFlatTerrainLayer extends UIContainer<UIFlatTerrainLayer> {
 
     protected void addLayer() {
         int to = this.toField.getValue();
-        Layer newLayer = new Layer(to, to + 1, Blocks.SANDSTONE.getDefaultState());
+        FlatLayer newLayer = new FlatLayer(to, to + 1, new BlockStateDesc(Blocks.SANDSTONE.getDefaultState()));
         this.flatLayersTab.add(this, newLayer);
     }
 
-    public Layer toLayer() {
-        return new Layer(fromField.getValue(), toField.getValue(), block.getState());
+    public FlatLayer toLayer() {
+        return new FlatLayer(fromField.getValue(), toField.getValue(), block.getState());
     }
 }

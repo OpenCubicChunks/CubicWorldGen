@@ -21,8 +21,10 @@
         "common.accessor.IBiomeTaiga",
         "common.accessor.INoiseGeneratorImproved",
         "common.extras.FarLands",
+        "common.IUIContainer",
         "common.MixinSaveHandler",
         "common.MixinStringholdStart",
+        "common.MixinUIComponent",
         "common.MixinWorldInfo"
     ],
     "client": [],

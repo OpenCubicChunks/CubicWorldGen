@@ -35,8 +35,8 @@ import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisG
 
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.BiomeOption;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
-import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIVerticalTableLayout;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.JsonObjectView;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.interaction.UICheckBox;
 import net.malisis.core.client.gui.component.interaction.UISelect;
@@ -56,23 +56,18 @@ class BasicSettingsTab {
     private final UICheckBox oceanMonuments;
     private final UICheckBox woodlandMansions;
     private final UICheckBox dungeons;
-    private final UICheckBox waterLakes;
-    private final UICheckBox lavaLakes;
     private final UICheckBox lavaOceans;
 
     private final UISelect<BiomeOption> biome;
 
     private final UISlider<Integer> dungeonCount;
 
-    private final UISlider<Integer> waterLakeRarity;
-    private final UISlider<Integer> lavaLakeRarity;
-
     private final UISlider<Integer> biomeSize;
     private final UISlider<Integer> riverSize;
 
     private final UISlider<Float> waterLevel;
 
-    BasicSettingsTab(ExtraGui gui, CustomGeneratorSettings settings) {
+    BasicSettingsTab(ExtraGui gui, JsonObjectView conf) {
 
         UIVerticalTableLayout<?> layout = new UIVerticalTableLayout<>(gui, 6)
                 .setPadding(HORIZONTAL_PADDING, 0)
@@ -80,57 +75,48 @@ class BasicSettingsTab {
                 .setInsets(VERTICAL_INSETS, VERTICAL_INSETS, HORIZONTAL_INSETS, HORIZONTAL_INSETS)
                 .setRightPadding(HORIZONTAL_PADDING + 6)
 
-                .add(this.caves = makeCheckbox(gui, malisisText("caves"), settings.caves),
+                .add(this.caves = makeCheckbox(gui, malisisText("caves"), conf.getBool("caves")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 0, WIDTH_2_COL))
-                .add(this.strongholds = makeCheckbox(gui, malisisText("strongholds"), settings.strongholds),
+                .add(this.strongholds = makeCheckbox(gui, malisisText("strongholds"), conf.getBool("strongholds")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 0, WIDTH_2_COL))
 
-                .add(this.villages = makeCheckbox(gui, malisisText("villages"), settings.villages),
+                .add(this.villages = makeCheckbox(gui, malisisText("villages"), conf.getBool("villages")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 1, WIDTH_2_COL))
-                .add(this.mineshafts = makeCheckbox(gui, malisisText("mineshafts"), settings.mineshafts),
+                .add(this.mineshafts = makeCheckbox(gui, malisisText("mineshafts"), conf.getBool("mineshafts")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 1, WIDTH_2_COL))
 
-                .add(this.temples = makeCheckbox(gui, malisisText("temples"), settings.temples),
+                .add(this.temples = makeCheckbox(gui, malisisText("temples"), conf.getBool("temples")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 2, WIDTH_2_COL))
-                .add(this.ravines = makeCheckbox(gui, malisisText("ravines"), settings.ravines),
+                .add(this.ravines = makeCheckbox(gui, malisisText("ravines"), conf.getBool("ravines")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 2, WIDTH_2_COL))
 
-                .add(this.oceanMonuments = makeCheckbox(gui, malisisText("oceanMonuments"), settings.oceanMonuments),
+                .add(this.oceanMonuments = makeCheckbox(gui, malisisText("oceanMonuments"), conf.getBool("oceanMonuments")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 3, WIDTH_2_COL))
-                .add(this.woodlandMansions = makeCheckbox(gui, malisisText("woodlandMansions"), settings.woodlandMansions),
+                .add(this.woodlandMansions = makeCheckbox(gui, malisisText("woodlandMansions"), conf.getBool("woodlandMansions")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 3, WIDTH_2_COL))
 
 
-                .add(this.dungeons = makeCheckbox(gui, malisisText("dungeons"), settings.dungeons),
+                .add(this.dungeons = makeCheckbox(gui, malisisText("dungeons"), conf.getBool("dungeons")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 4, WIDTH_2_COL))
-                .add(this.waterLakes = makeCheckbox(gui, malisisText("waterLakes"), settings.waterLakes),
-                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 4, WIDTH_2_COL))
 
-                .add(this.lavaLakes = makeCheckbox(gui, malisisText("lavaLakes"), settings.lavaLakes),
-                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 5, WIDTH_2_COL))
-                .add(this.lavaOceans = makeCheckbox(gui, malisisText("lavaOceans"), settings.lavaOceans),
+                .add(this.lavaOceans = makeCheckbox(gui, malisisText("lavaOceans"), conf.getBool("lavaOceans")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 5, WIDTH_2_COL))
 
 
-                .add(this.biome = makeBiomeList(gui, settings.biome),
+                .add(this.biome = makeBiomeList(gui, conf.getInt("biome")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 6, WIDTH_2_COL))
-                .add(this.dungeonCount = makeIntSlider(gui, malisisText("dungeonCount", ": %d"), 1, 100, settings.dungeonCount),
+                .add(this.dungeonCount = makeIntSlider(gui, malisisText("dungeonCount", ": %d"), 1, 100, conf.getInt("dungeonCount")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 6, WIDTH_2_COL))
-
-                .add(this.waterLakeRarity = makeIntSlider(gui, malisisText("waterLakeRarity", ": %d"), 1, 100, settings.waterLakeRarity),
-                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 7, WIDTH_2_COL))
-                .add(this.lavaLakeRarity = makeIntSlider(gui, malisisText("lavaLakeRarity", ": %d"), 1, 100, settings.lavaLakeRarity),
-                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 7, WIDTH_2_COL))
-
-                .add(this.biomeSize = makeIntSlider(gui, malisisText("biomeSize", ": %d"), 1, 8, settings.biomeSize),
+                
+                .add(this.biomeSize = makeIntSlider(gui, malisisText("biomeSize", ": %d"), 1, 8, conf.getInt("biomeSize")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 8, WIDTH_2_COL))
-                .add(this.riverSize = makeIntSlider(gui, malisisText("riverSize", ": %d"), 1, 5, settings.riverSize),
+                .add(this.riverSize = makeIntSlider(gui, malisisText("riverSize", ": %d"), 1, 5, conf.getInt("riverSize")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 8, WIDTH_2_COL))
 
 
                 .add(this.waterLevel = makeExponentialSlider(
                         gui, malisisText("water_level", ": %.2f"),
-                        1, 12, 1, 12, settings.waterLevel),
+                        1, 12, 1, 12, conf.getInt("waterLevel")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 9, WIDTH_2_COL));
 
 
@@ -141,30 +127,27 @@ class BasicSettingsTab {
         return container;
     }
 
-    void writeConfig(CustomGeneratorSettings conf) {
-        conf.caves = caves.isChecked();
-        conf.strongholds = strongholds.isChecked();
-        conf.villages = villages.isChecked();
-        conf.mineshafts = mineshafts.isChecked();
-        conf.temples = temples.isChecked();
-        conf.ravines = ravines.isChecked();
-        conf.oceanMonuments = oceanMonuments.isChecked();
-        conf.woodlandMansions = woodlandMansions.isChecked();
-        conf.dungeons = dungeons.isChecked();
-        conf.waterLakes = waterLakes.isChecked();
-        conf.lavaLakes = lavaLakes.isChecked();
-        conf.lavaOceans = lavaOceans.isChecked();
+    void writeConfig(JsonObjectView conf) {
+        conf.put("caves", caves.isChecked());
+        conf.put("strongholds", strongholds.isChecked());
+        conf.put("villages", villages.isChecked());
+        conf.put("mineshafts", mineshafts.isChecked());
+        conf.put("temples", temples.isChecked());
+        conf.put("ravines", ravines.isChecked());
+        conf.put("oceanMonuments", oceanMonuments.isChecked());
+        conf.put("woodlandMansions", woodlandMansions.isChecked());
+        conf.put("dungeons", dungeons.isChecked());
+        conf.put("lavaOceans", lavaOceans.isChecked());
+        conf.put("biome", biome.getSelectedValue().getBiome() == null ? -1 : Biome.getIdForBiome(biome.getSelectedValue().getBiome()));
+        conf.put("dungeonCount", dungeonCount.getValue());
+        conf.put("biomeSize", biomeSize.getValue());
+        conf.put("riverSize", riverSize.getValue());
+        conf.put("waterLevel", Math.round(waterLevel.getValue()));
 
-        conf.biome = biome.getSelectedValue().getBiome() == null ? -1 : Biome.getIdForBiome(biome.getSelectedValue().getBiome());
+        conf.object("replacerConfig").object("defaults").put("cubicgen:water_level", waterLevel.getValue());
+    }
 
-        conf.dungeonCount = dungeonCount.getValue();
-
-        conf.waterLakeRarity = waterLakeRarity.getValue();
-        conf.lavaLakeRarity = lavaLakeRarity.getValue();
-
-        conf.biomeSize = biomeSize.getValue();
-        conf.riverSize = riverSize.getValue();
-
-        conf.waterLevel = Math.round(waterLevel.getValue());
+    public double getWaterLevel() {
+        return waterLevel.getValue();
     }
 }

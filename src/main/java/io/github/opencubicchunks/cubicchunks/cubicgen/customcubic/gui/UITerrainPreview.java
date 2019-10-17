@@ -50,8 +50,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
@@ -61,6 +59,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Random;
+import java.util.function.DoubleSupplier;
 
 public class UITerrainPreview extends UIShaderComponent<UITerrainPreview> implements ITransformable.Scale, IClipable {
 
@@ -114,9 +113,11 @@ public class UITerrainPreview extends UIShaderComponent<UITerrainPreview> implem
     private Animation<Scale> zoomAnim;
     private float biomeScale = 0.01f, biomeOffset = 0;
     private EnumFacing.Axis shownAxis;
+    private TerrainPreviewDataAccess dataAccess;
 
-    public UITerrainPreview(CustomCubicGui gui) {
+    public UITerrainPreview(CustomCubicGui gui, TerrainPreviewDataAccess dataAccess) {
         super(gui, getShaderAndInitGL(gui));
+        this.dataAccess = dataAccess;
         this.icon.flip(false, true);
         this.previewTransform.m31 = 64; // set y offset
     }
@@ -174,43 +175,49 @@ public class UITerrainPreview extends UIShaderComponent<UITerrainPreview> implem
         //previewTransform.m30 = (float) Math.sin((System.currentTimeMillis()%10000)*0.001f)*20;
         this.icon.setUVs(-getWidth() / 2, -getHeight() / 2, getWidth() / 2, getHeight() / 2);
 
-        CustomGeneratorSettings conf = ((CustomCubicGui) getGui()).getConfig();
-        final float biomeCount = ForgeRegistries.BIOMES.getValues().size();
+        final float biomeCount = ForgeRegistries.BIOMES.getValuesCollection().size();
 
         shader.getShaderUniformOrDefault("previewTransform").set(getZoomOffsetMatrix());
         shader.getShaderUniformOrDefault("biomeCoordScaleAndOffset").set(1 / (biomeCount * biomeScale), biomeOffset / biomeCount);
-        shader.getShaderUniformOrDefault("waterLevel").set(conf.waterLevel);
-        shader.getShaderUniformOrDefault("biomeCount").set(ForgeRegistries.BIOMES.getValues().size());
+        shader.getShaderUniformOrDefault("waterLevel").set((float) dataAccess.waterLevel.getAsDouble());
+        shader.getShaderUniformOrDefault("biomeCount").set(ForgeRegistries.BIOMES.getValuesCollection().size());
 
-        shader.getShaderUniformOrDefault("heightVariationFactor").set(conf.heightVariationFactor);
-        shader.getShaderUniformOrDefault("heightVariationSpecial").set(conf.specialHeightVariationFactorBelowAverageY);
-        shader.getShaderUniformOrDefault("heightVariationOffset").set(conf.heightVariationOffset);
-        shader.getShaderUniformOrDefault("heightFactor").set(conf.heightFactor);
-        shader.getShaderUniformOrDefault("heightOffset").set(conf.heightOffset);
+        shader.getShaderUniformOrDefault("heightVariationFactor").set((float) dataAccess.heightVariationFactor.getAsDouble());
+        shader.getShaderUniformOrDefault("heightVariationSpecial").set((float) dataAccess.specialHeightVariationFactorBelowAverageY.getAsDouble());
+        shader.getShaderUniformOrDefault("heightVariationOffset").set((float) dataAccess.heightVariationOffset.getAsDouble());
+        shader.getShaderUniformOrDefault("heightFactor").set((float) dataAccess.heightFactor.getAsDouble());
+        shader.getShaderUniformOrDefault("heightOffset").set((float) dataAccess.heightOffset.getAsDouble());
 
-        shader.getShaderUniformOrDefault("depthFactor").set(conf.depthNoiseFactor);
-        shader.getShaderUniformOrDefault("depthOffset").set(conf.depthNoiseOffset);
-        shader.getShaderUniformOrDefault("depthFreq").set(shownAxis == EnumFacing.Axis.X ? conf.depthNoiseFrequencyX : conf.depthNoiseFrequencyZ);
+        shader.getShaderUniformOrDefault("depthFactor").set((float) dataAccess.depthNoiseFactor.getAsDouble());
+        shader.getShaderUniformOrDefault("depthOffset").set((float) dataAccess.depthNoiseOffset.getAsDouble());
+        shader.getShaderUniformOrDefault("depthFreq").set(shownAxis == EnumFacing.Axis.X ? (float) dataAccess.depthNoiseFrequencyX.getAsDouble() :
+                (float) dataAccess.depthNoiseFrequencyZ.getAsDouble());
         // this set method should be named setSafeInts
-        shader.getShaderUniformOrDefault("depthOctaves").set(conf.depthNoiseOctaves, 0, 0, 0);
+        shader.getShaderUniformOrDefault("depthOctaves").set((int) dataAccess.depthNoiseOctaves.getAsDouble(), 0, 0, 0);
 
-        shader.getShaderUniformOrDefault("selectorFactor").set(conf.selectorNoiseFactor);
-        shader.getShaderUniformOrDefault("selectorOffset").set(conf.selectorNoiseOffset);
+        shader.getShaderUniformOrDefault("selectorFactor").set((float) dataAccess.selectorNoiseFactor.getAsDouble());
+        shader.getShaderUniformOrDefault("selectorOffset").set((float) dataAccess.selectorNoiseOffset.getAsDouble());
         shader.getShaderUniformOrDefault("selectorFreq").set(
-                shownAxis == EnumFacing.Axis.X ? conf.selectorNoiseFrequencyX : conf.selectorNoiseFrequencyZ, conf.selectorNoiseFrequencyY);
-        shader.getShaderUniformOrDefault("selectorOctaves").set(conf.selectorNoiseOctaves, 0, 0, 0);
+                shownAxis == EnumFacing.Axis.X ? (float) dataAccess.selectorNoiseFrequencyX.getAsDouble() :
+                        (float) dataAccess.selectorNoiseFrequencyZ.getAsDouble(),
+                (float) dataAccess.selectorNoiseFrequencyY.getAsDouble());
+        shader.getShaderUniformOrDefault("selectorOctaves").set((int) dataAccess.selectorNoiseOctaves.getAsDouble(), 0, 0, 0);
 
-        shader.getShaderUniformOrDefault("lowFactor").set(conf.lowNoiseFactor);
-        shader.getShaderUniformOrDefault("lowOffset").set(conf.lowNoiseOffset);
+        shader.getShaderUniformOrDefault("lowFactor").set((float) dataAccess.lowNoiseFactor.getAsDouble());
+        shader.getShaderUniformOrDefault("lowOffset").set((float) dataAccess.lowNoiseOffset.getAsDouble());
         shader.getShaderUniformOrDefault("lowFreq").set(
-                shownAxis == EnumFacing.Axis.X ? conf.lowNoiseFrequencyX : conf.lowNoiseFrequencyZ, conf.lowNoiseFrequencyY);
-        shader.getShaderUniformOrDefault("lowOctaves").set(conf.lowNoiseOctaves, 0, 0, 0);
+                shownAxis == EnumFacing.Axis.X ? (float) dataAccess.lowNoiseFrequencyX.getAsDouble() :
+                        (float) dataAccess.lowNoiseFrequencyZ.getAsDouble(),
+                (float) dataAccess.lowNoiseFrequencyY.getAsDouble());
+        shader.getShaderUniformOrDefault("lowOctaves").set((int) dataAccess.lowNoiseOctaves.getAsDouble(), 0, 0, 0);
 
-        shader.getShaderUniformOrDefault("highFactor").set(conf.highNoiseFactor);
-        shader.getShaderUniformOrDefault("highOffset").set(conf.highNoiseOffset);
+        shader.getShaderUniformOrDefault("highFactor").set((float) dataAccess.highNoiseFactor.getAsDouble());
+        shader.getShaderUniformOrDefault("highOffset").set((float) dataAccess.highNoiseOffset.getAsDouble());
         shader.getShaderUniformOrDefault("highFreq").set(
-                shownAxis == EnumFacing.Axis.X ? conf.highNoiseFrequencyX : conf.highNoiseFrequencyZ, conf.highNoiseFrequencyY);
-        shader.getShaderUniformOrDefault("highOctaves").set(conf.highNoiseOctaves, 0, 0, 0);
+                shownAxis == EnumFacing.Axis.X ? (float) dataAccess.highNoiseFrequencyX.getAsDouble() :
+                        (float) dataAccess.highNoiseFrequencyZ.getAsDouble(),
+                (float) dataAccess.highNoiseFrequencyY.getAsDouble());
+        shader.getShaderUniformOrDefault("highOctaves").set((int) dataAccess.highNoiseOctaves.getAsDouble(), 0, 0, 0);
 
         super.shaderDraw(guiRenderer, mouseX, mouseY, partialTicks);
     }
@@ -568,20 +575,181 @@ public class UITerrainPreview extends UIShaderComponent<UITerrainPreview> implem
         return shownAxis;
     }
 
-    private static class DynamicZoomTransform extends net.malisis.core.renderer.animation.transformation.Scale {
+    public static class TerrainPreviewDataAccess {
 
-        public void setStart(float start) {
-            fromX = fromY = fromZ = start;
+        DoubleSupplier waterLevel;
+        DoubleSupplier heightVariationFactor;
+        DoubleSupplier specialHeightVariationFactorBelowAverageY;
+        DoubleSupplier heightVariationOffset;
+        DoubleSupplier heightFactor;
+        DoubleSupplier heightOffset;
+        DoubleSupplier depthNoiseFactor;
+        DoubleSupplier depthNoiseOffset;
+        DoubleSupplier depthNoiseFrequencyX;
+        DoubleSupplier depthNoiseFrequencyZ;
+        DoubleSupplier depthNoiseOctaves;
+        DoubleSupplier selectorNoiseFactor;
+        DoubleSupplier selectorNoiseOffset;
+        DoubleSupplier selectorNoiseFrequencyX;
+        DoubleSupplier selectorNoiseFrequencyZ;
+        DoubleSupplier selectorNoiseFrequencyY;
+        DoubleSupplier selectorNoiseOctaves;
+        DoubleSupplier lowNoiseFactor;
+        DoubleSupplier lowNoiseOffset;
+        DoubleSupplier lowNoiseFrequencyX;
+        DoubleSupplier lowNoiseFrequencyZ;
+        DoubleSupplier lowNoiseFrequencyY;
+        DoubleSupplier lowNoiseOctaves;
+        DoubleSupplier highNoiseFactor;
+        DoubleSupplier highNoiseOffset;
+        DoubleSupplier highNoiseFrequencyX;
+        DoubleSupplier highNoiseFrequencyZ;
+        DoubleSupplier highNoiseFrequencyY;
+        DoubleSupplier highNoiseOctaves;
+
+        public TerrainPreviewDataAccess setWaterLevel(DoubleSupplier value) {
+            this.waterLevel = value;
+            return this;
         }
 
-        public void setTarget(float start) {
-            toX = toY = toZ = start;
+        public TerrainPreviewDataAccess setHeightVariationFactor(DoubleSupplier value) {
+            this.heightVariationFactor = value;
+            return this;
         }
 
-        public void scaleTarget(float factor) {
-            this.toX *= factor;
-            this.toY *= factor;
-            this.toZ *= factor;
+        public TerrainPreviewDataAccess setSpecialHeightVariationFactorBelowAverageY(DoubleSupplier value) {
+            this.specialHeightVariationFactorBelowAverageY = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setHeightVariationOffset(DoubleSupplier value) {
+            this.heightVariationOffset = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setHeightFactor(DoubleSupplier value) {
+            this.heightFactor = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setHeightOffset(DoubleSupplier value) {
+            this.heightOffset = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setDepthNoiseFactor(DoubleSupplier value) {
+            this.depthNoiseFactor = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setDepthNoiseOffset(DoubleSupplier value) {
+            this.depthNoiseOffset = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setDepthNoiseFrequencyX(DoubleSupplier value) {
+            this.depthNoiseFrequencyX = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setDepthNoiseFrequencyZ(DoubleSupplier value) {
+            this.depthNoiseFrequencyZ = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setDepthNoiseOctaves(DoubleSupplier value) {
+            this.depthNoiseOctaves = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setSelectorNoiseFactor(DoubleSupplier value) {
+            this.selectorNoiseFactor = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setSelectorNoiseOffset(DoubleSupplier value) {
+            this.selectorNoiseOffset = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setSelectorNoiseFrequencyX(DoubleSupplier value) {
+            this.selectorNoiseFrequencyX = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setSelectorNoiseFrequencyZ(DoubleSupplier value) {
+            this.selectorNoiseFrequencyZ = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setSelectorNoiseFrequencyY(DoubleSupplier value) {
+            this.selectorNoiseFrequencyY = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setSelectorNoiseOctaves(DoubleSupplier value) {
+            this.selectorNoiseOctaves = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setLowNoiseFactor(DoubleSupplier value) {
+            this.lowNoiseFactor = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setLowNoiseOffset(DoubleSupplier value) {
+            this.lowNoiseOffset = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setLowNoiseFrequencyX(DoubleSupplier value) {
+            this.lowNoiseFrequencyX = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setLowNoiseFrequencyZ(DoubleSupplier value) {
+            this.lowNoiseFrequencyZ = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setLowNoiseFrequencyY(DoubleSupplier value) {
+            this.lowNoiseFrequencyY = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setLowNoiseOctaves(DoubleSupplier value) {
+            this.lowNoiseOctaves = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setHighNoiseFactor(DoubleSupplier value) {
+            this.highNoiseFactor = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setHighNoiseOffset(DoubleSupplier value) {
+            this.highNoiseOffset = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setHighNoiseFrequencyX(DoubleSupplier value) {
+            this.highNoiseFrequencyX = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setHighNoiseFrequencyZ(DoubleSupplier value) {
+            this.highNoiseFrequencyZ = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setHighNoiseFrequencyY(DoubleSupplier value) {
+            this.highNoiseFrequencyY = value;
+            return this;
+        }
+
+        public TerrainPreviewDataAccess setHighNoiseOctaves(DoubleSupplier value) {
+            this.highNoiseOctaves = value;
+            return this;
         }
     }
 }

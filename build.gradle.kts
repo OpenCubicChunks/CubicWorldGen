@@ -133,6 +133,7 @@ repositories {
     // currently gradle seems to resolve dependencies from repositories in the order they are defined here
     maven { setUrl("http://repo.spongepowered.org/maven") }
     maven { setUrl("https://minecraft.curseforge.com/api/maven/") }
+    maven { setUrl("https://repo.elytradev.com") } // jankson snapshot
 }
 
 val deobfCompile by configurations
@@ -160,6 +161,7 @@ dependencies {
     }
 
     shade("com.flowpowered:flow-noise:1.0.1-SNAPSHOT")
+    shade("blue.endless:jankson:1.2.0-beta.2-61")
     deobfCompile("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0-SNAPSHOT")
 
     testCompile("junit:junit:4.11")
@@ -187,7 +189,7 @@ fun configureShadowJar(task: ShadowJar, classifier: String) {
     task.from(sourceSets["main"].output)
     task.from(sourceSets["api"].output)
     task.exclude("log4j2.xml")
-
+    task.relocate("blue.endless.jankson.", "io.github.opencubicchunks.cubicchunks.cubicgen.blue.endless.jankson.")
     task.classifier = classifier
 
     task.setupManifest()
