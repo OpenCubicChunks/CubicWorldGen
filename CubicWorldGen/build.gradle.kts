@@ -22,7 +22,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath("org.spongepowered:mixingradle:0.5-SNAPSHOT")
+        classpath("org.spongepowered:mixingradle:0.6-SNAPSHOT")
         classpath("com.github.jengelman.gradle.plugins:shadow:2.0.4")
         classpath("gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0")
         classpath("net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT")
