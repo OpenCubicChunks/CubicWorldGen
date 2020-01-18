@@ -34,6 +34,7 @@ plugins {
     java
     maven
     `maven-publish`
+    idea
     id("io.github.opencubicchunks.gradle.fg2fixed")
     id("io.github.opencubicchunks.gradle.mixingen")
     id("io.github.opencubicchunks.gradle.remapper")
@@ -140,6 +141,8 @@ val compile by configurations
 val testCompile by configurations
 val forgeGradleGradleStart by configurations
 val forgeGradleMcDeps by configurations
+val runtime by configurations
+val implementation by configurations
 
 val shade by configurations.creating
 compile.extendsFrom(shade)
@@ -160,7 +163,6 @@ dependencies {
     }
 
     shade("com.flowpowered:flow-noise:1.0.1-SNAPSHOT")
-    deobfCompile("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0-SNAPSHOT")
 
     testCompile("junit:junit:4.11")
     testCompile("org.hamcrest:hamcrest-junit:2.0.0.0")
@@ -168,6 +170,12 @@ dependencies {
     testCompile("org.mockito:mockito-core:2.1.0-RC.2")
     testCompile("org.spongepowered:launchwrappertestsuite:1.0-SNAPSHOT")
 
+    if (gradle.includedBuilds.any { it.name == "CubicChunks" }) {
+        implementation("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0-SNAPSHOT")
+        runtime("io.github.opencubicchunks:cubicchunks:1.12.2-0.0-SNAPSHOT")
+    } else {
+        deobfCompile("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0-SNAPSHOT")
+    }
 }
 
 fun Jar.setupManifest() {

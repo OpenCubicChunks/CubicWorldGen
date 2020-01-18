@@ -25,3 +25,28 @@ pluginManagement {
     }
 }
 enableFeaturePreview('STABLE_PUBLISHING')
+
+// include CC as subproject if it exists
+if (file("../1.12").exists()) {
+    includeBuild("../1.12") {
+        dependencySubstitution {
+            substitute module('io.github.opencubicchunks:cubicchunks') with project(':')
+        }
+    }
+    includeBuild("../1.12/CubicChunksAPI") {
+        dependencySubstitution {
+            substitute module('io.github.opencubicchunks:cubicchunks-api') with project(':')
+        }
+    }
+} else if (file("../CubicChunks").exists()) {
+    includeBuild("../CubicChunks") {
+        dependencySubstitution {
+            substitute module('io.github.opencubicchunks:cubicchunks') with project(':')
+        }
+    }
+    includeBuild("../CubicChunks/CubicChunksAPI") {
+        dependencySubstitution {
+            substitute module('io.github.opencubicchunks:cubicchunks-api') with project(':')
+        }
+    }
+}
