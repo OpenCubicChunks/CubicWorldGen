@@ -90,6 +90,25 @@ minecraft {
 
     replace("@@MALISIS_VERSION@@", malisisCoreMinVersion)
     replaceIn("io/github/opencubicchunks/cubicchunks/cubicgen/CustomCubicMod.java")
+
+    val coremods = if (gradle.includedBuilds.any { it.name == "CubicChunks" })
+        "-Dfml.coreMods.load=io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.CubicGenCoreMod" //the core mod class, needed for mixins
+        else "-Dfml.coreMods.load=io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.CubicGenCoreMod,io.github.opencubicchunks.cubicchunks.core.asm.coremod.CubicChunksCoreMod"
+    val args = listOf(
+            coremods,
+            "-Dmixin.env.compatLevel=JAVA_8", //needed to use java 8 when using mixins
+            "-Dmixin.debug.verbose=true", //verbose mixin output for easier debugging of mixins
+            "-Dmixin.debug.export=true", //export classes from mixin to runDirectory/.mixin.out
+            "-Dcubicchunks.debug=true", //various debug options of cubic chunks mod. Adds items that are not normally there!
+            "-XX:-OmitStackTraceInFastThrow", //without this sometimes you end up with exception with empty stacktrace
+            "-Dmixin.checks.interfaces=true", //check if all interface methods are overriden in mixin
+            "-Dfml.noGrab=false", //change to disable Minecraft taking control over mouse
+            "-ea", //enable assertions
+            "-da:io.netty..." //disable netty assertions because they sometimes fail
+    )
+
+    clientJvmArgs.addAll(args)
+    serverJvmArgs.addAll(args)
 }
 
 license {
