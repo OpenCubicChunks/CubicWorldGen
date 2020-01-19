@@ -23,23 +23,21 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic;
 
-import static io.github.opencubicchunks.cubicchunks.api.util.Coords.blockToLocal;
-
+import io.github.opencubicchunks.cubicchunks.api.util.Coords;
+import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
+import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.CubeGeneratorsRegistry;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
-import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.ICubicStructureGenerator;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.CubePopulatorEvent;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.event.PopulateCubeEvent;
-import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.feature.CubicFeatureGenerator;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.ICubicStructureGenerator;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.event.InitCubicStructureGeneratorEvent;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.feature.CubicFeatureGenerator;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.feature.ICubicFeatureGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.BasicCubeGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
-import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.CubePopulatorEvent;
-import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
-import io.github.opencubicchunks.cubicchunks.api.util.Coords;
-import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
-import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.IBiomeBlockReplacer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.BiomeSource;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.IBuilder;
@@ -52,24 +50,25 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
+import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeProvider;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.terraingen.InitMapGenEvent.EventType;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.lwjgl.input.Keyboard;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.ToIntFunction;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
+import static io.github.opencubicchunks.cubicchunks.api.util.Coords.blockToLocal;
 
 /**
  * A terrain generator that supports infinite(*) worlds
@@ -204,7 +203,24 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         CubePrimer primer = new CubePrimer();
         generate(primer, cubeX, cubeY, cubeZ);
         generateStructures(primer, new CubePos(cubeX, cubeY, cubeZ));
+        if (fillCubeBiomes) {
+            fill3dBiomes(cubeX, cubeY, cubeZ, primer);
+        }
         return primer;
+    }
+
+    private void fill3dBiomes(int cubeX, int cubeY, int cubeZ, CubePrimer primer) {
+        int minX = cubeX * 4;
+        int minY = cubeY * 4;
+        int minZ = cubeZ * 4;
+        for (int dx = 0; dx < 4; dx++) {
+            for (int dy = 0; dy < 4; dy++) {
+                for (int dz = 0; dz < 4; dz++) {
+                    primer.setBiome(dx, dy, dz,
+                            biomeSource.getBiome(minX + dx * 4, minY + dy * 4, minZ + dz * 4).getBiome());
+                }
+            }
+        }
     }
 
     @Override public void populate(ICube cube) {
@@ -217,16 +233,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
                 return;
             }
         }
-        if (fillCubeBiomes) {
-            int minX = cube.getCoords().getMinBlockX();
-            int minZ = cube.getCoords().getMinBlockZ();
-            int y = cube.getCoords().getMinBlockY();
-            for (int dx = 0; dx < 8; dx++) {
-                for (int dz = 0; dz < 8; dz++) {
-                    cube.setBiome(dx, dz, biomeSource.getBiome(minX + dx*2, y, minZ + dz*2).getBiome());
-                }
-            }
-        }
+
         /**
          * If event is not canceled we will use default biome decorators and
          * cube populators from registry.
