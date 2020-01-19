@@ -92,8 +92,8 @@ minecraft {
     replaceIn("io/github/opencubicchunks/cubicchunks/cubicgen/CustomCubicMod.java")
 
     val coremods = if (gradle.includedBuilds.any { it.name == "CubicChunks" })
-        "-Dfml.coreMods.load=io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.CubicGenCoreMod" //the core mod class, needed for mixins
-        else "-Dfml.coreMods.load=io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.CubicGenCoreMod,io.github.opencubicchunks.cubicchunks.core.asm.coremod.CubicChunksCoreMod"
+        "-Dfml.coreMods.load=io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.CubicGenCoreMod,io.github.opencubicchunks.cubicchunks.core.asm.coremod.CubicChunksCoreMod"
+        else "-Dfml.coreMods.load=io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.CubicGenCoreMod" //the core mod class, needed for mixins
     val args = listOf(
             coremods,
             "-Dmixin.env.compatLevel=JAVA_8", //needed to use java 8 when using mixins
