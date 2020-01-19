@@ -206,8 +206,8 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
                 chunkZ = blockToCube(blockPos.getZ());
             }
 
-            int spacingBits = ~Bits.getMask(spacingBitCount);
-            int spacingBitsY = ~Bits.getMask(spacingBitCountY);
+            int spacingBits = spacingBitCountY == 0 ? 0xFFFFFFFF : ~Bits.getMask(spacingBitCount);
+            int spacingBitsY = spacingBitCountY == 0 ? 0xFFFFFFFF : ~Bits.getMask(spacingBitCountY);
 
             chunkX = chunkX & spacingBits;
             chunkY = chunkY & spacingBitsY;
