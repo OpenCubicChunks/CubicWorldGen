@@ -310,7 +310,7 @@ publishing {
     }
 }
 afterEvaluate {
-    tasks["publishModPublicationToMavenRepository"].dependsOn("reobfShadeJar")
+    tasks["publishModPublicationToMavenRepository"].dependsOn("reobfShadowJar")
 }
 artifacts {
     withGroovyBuilder {
