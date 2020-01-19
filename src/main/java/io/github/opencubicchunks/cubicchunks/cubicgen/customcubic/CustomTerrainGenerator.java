@@ -131,7 +131,8 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
 
         if (settings.cubeAreas != null) {
             for (CustomGeneratorSettings.IntAABB aabb : settings.cubeAreas.keySet()) {
-                this.areaGenerators.put(aabb, new CustomTerrainGenerator(world, CustomCubicWorldType.makeBiomeProvider(world, settings), settings.cubeAreas.get(aabb), seed, false));
+                CustomGeneratorSettings layerSettings = settings.cubeAreas.get(aabb);
+                this.areaGenerators.put(aabb, new CustomTerrainGenerator(world, CustomCubicWorldType.makeBiomeProvider(world, layerSettings), layerSettings, seed, false));
             }
         }
     }
