@@ -20,6 +20,7 @@ buildscript {
         maven {
             setUrl("https://plugins.gradle.org/m2/")
         }
+
     }
     dependencies {
         classpath("org.spongepowered:mixingradle:0.6-SNAPSHOT")
@@ -201,7 +202,8 @@ fun Jar.setupManifest() {
     manifest {
         attributes["FMLCorePluginContainsFMLMod"] = "true"
         attributes["FMLCorePlugin"] = "io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.CubicGenCoreMod"
-        attributes["TweakClass"] = "org.spongepowered.asm.launch.MixinTweaker"
+        // workaround for mixin issue - transformers ignore sortingIndex when mixin tweaker is specified
+        //attributes["TweakClass"] = "org.spongepowered.asm.launch.MixinTweaker"
         attributes["TweakOrder"] = "0"
         attributes["ForceLoadAsMod"] = "true"
         attributes["Maven-Version"] = "${project.group}:${project.base.archivesBaseName}:${project.version.toString()}:core"

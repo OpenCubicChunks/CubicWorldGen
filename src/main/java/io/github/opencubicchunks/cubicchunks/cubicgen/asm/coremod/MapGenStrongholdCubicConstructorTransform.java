@@ -71,6 +71,7 @@ public class MapGenStrongholdCubicConstructorTransform implements IClassTransfor
 
         MethodNode createdMethod = null;
         for (MethodNode method : node.methods) {
+            LOGGER.debug("Checking method {}{}", method.name, method.desc);
             if (method.name.equals("<init>") && method.desc.equals("(Lnet/minecraft/world/World;Ljava/util/Random;II)V")) {
                 LOGGER.debug("Found target constructor: {}{}", method.name, method.desc);
                 MethodNode newMethod = new MethodNode(method.access, "reinitCubicStronghold",
