@@ -22,7 +22,7 @@
         "common.accessor.INoiseGeneratorImproved",
         "common.extras.FarLands",
         "common.MixinSaveHandler",
-        "common.MixinStringholdStart",
+        "common.MixinStrongholdStart",
         "common.MixinWorldInfo"
     ],
     "client": [],
