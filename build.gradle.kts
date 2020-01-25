@@ -55,6 +55,11 @@ mcGitVersion {
 // TODO: Reduce duplication of buildscript code between CC projects?
 group = "io.github.opencubicchunks"
 
+if (gradle.includedBuilds.any { it.name == "CubicChunks" }) {
+    tasks["clean"].dependsOn(gradle.includedBuild("CubicChunksAPI").task(":clean"))
+    tasks["clean"].dependsOn(gradle.includedBuild("CubicChunks").task(":clean"))
+}
+
 val theForgeVersion: String by project
 val versionSuffix: String  by project
 val theMappingsVersion: String by project
@@ -174,7 +179,7 @@ dependencies {
 
     //deobfCompile("io.github.opencubicchunks:cubicchunks:1.12.2-0.0-SNAPSHOT")
     // provided by cubicchunks implementation
-    shade("org.spongepowered:mixin:0.7.10-SNAPSHOT") {
+    compile("org.spongepowered:mixin:0.7.10-SNAPSHOT") {
         isTransitive = false
     }
 
@@ -202,9 +207,6 @@ fun Jar.setupManifest() {
     manifest {
         attributes["FMLCorePluginContainsFMLMod"] = "true"
         attributes["FMLCorePlugin"] = "io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.CubicGenCoreMod"
-        // workaround for mixin issue - transformers ignore sortingIndex when mixin tweaker is specified
-        //attributes["TweakClass"] = "org.spongepowered.asm.launch.MixinTweaker"
-        attributes["TweakOrder"] = "0"
         attributes["ForceLoadAsMod"] = "true"
         attributes["Maven-Version"] = "${project.group}:${project.base.archivesBaseName}:${project.version.toString()}:core"
     }
