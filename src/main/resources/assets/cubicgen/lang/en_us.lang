@@ -10,6 +10,7 @@ generator.CustomCubic=Custom Cubic
 cubicgen.gui.cubicgen.previous_page=Previous
 cubicgen.gui.cubicgen.next_page=Next
 cubicgen.gui.cubicgen.done=Done
+cubicgen.gui.cubicgen.cancel=Cancel
 cubicgen.gui.cubicgen.presets=Presets
 
 cubicgen.gui.cubicgen.basic_tab_title=Customize World Settings%nPage 1 of 4%nBasic Settings
@@ -77,6 +78,20 @@ cubicgen.gui.cubicgen.spawn_range=Height %s%%%% to %s%%%% (blocks: %s to %s)
 cubicgen.gui.cubicgen.mean_height=Center of first Belt: %s%%%% (blocks: %s)
 cubicgen.gui.cubicgen.height_std_dev=Height Std. Dev. Factor: %s%%%% (blocks: %s)
 cubicgen.gui.cubicgen.spacing_height=Height Spacing: %s%%%% (blocks: %s)
+
+#################################
+######### lake settings #########
+#################################
+cubicgen.gui.cubicgen.select_all=Select all
+cubicgen.gui.cubicgen.invert_selection=Invert selection
+cubicgen.gui.cubicgen.select_biomes_label=Select biomes
+cubicgen.gui.cubicgen.lakes.main_probability=Lake underground probability
+cubicgen.gui.cubicgen.lakes.surface_probability=Lake surface probability
+cubicgen.gui.cubicgen.add_lake=Add lake
+cubicgen.gui.cubicgen.reset=Reset
+cubicgen.gui.cubicgen.reset_view=Reset view
+cubicgen.gui.cubicgen.make_flat_edges=Make flat edges
+
 #################################
 ### advanced terrain settings ###
 #################################
