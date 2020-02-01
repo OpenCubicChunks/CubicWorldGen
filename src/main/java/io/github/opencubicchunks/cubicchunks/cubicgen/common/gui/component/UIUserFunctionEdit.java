@@ -143,7 +143,6 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
             if (old != null) {
                 old.run();
             }
-            System.out.println(i);
             this.scaleX = (maxArg - minArg) / getWidthFlip();
             this.offsetX = minArg + getWidthFlip() * xScale() / 2.0f;
 
@@ -174,10 +173,8 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
     }
 
     public UIUserFunctionEdit autoYLockWithMinMax(double minMin, double maxMin, double minMax, double maxMax, double margin) {
-       int i = 0;
         this.autoYLockHandler = () -> {
             CustomGeneratorSettings.UserFunction func = toUserFunction(entries);
-            System.out.println(i);
             float min = Float.MAX_VALUE, max = -Float.MAX_VALUE;
 
             for (CustomGeneratorSettings.UserFunction.Entry value : func.values) {
