@@ -40,6 +40,7 @@ import net.minecraft.world.gen.ChunkGeneratorSettings;
 import net.minecraft.world.gen.layer.GenLayer;
 import net.minecraft.world.gen.layer.IntCache;
 import net.minecraft.world.storage.WorldInfo;
+import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -53,7 +54,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
 
-    private CustomCubicWorldType() {
+    protected CustomCubicWorldType() {
         super("CustomCubic");
     }
 
@@ -72,7 +73,17 @@ public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
     }
 
     @Override public boolean hasCubicGeneratorForWorld(World w) {
-        return w.provider.getClass() == WorldProviderSurface.class; // a more general way to check if it's overworld
+        // check if the class of world provider is the same as whatever the Overworld has
+        // checking for WorldProviderSurface.class doesn't work in case a mod replaces the overworld WorldProvider
+        // causing false negatives
+        // and instanceof check fails when a world creates a custom dimension with a WorldProvider that extends WorldProviderSurface
+        // creating false positives
+        // this is still not an ideal solution as a mod may completely replace the overworld world provider with something
+        // completely different where CWG may not even work properly, but this is the best I can come up with that covers
+        // most of the cases
+        // "w.provider.getDimensionType() == DimensionManager.getProviderType(0)" might be equivalent or better,
+        // so it may be changed to that if any more issues are found
+        return w.provider.getClass() == DimensionManager.getProvider(0).getClass();
     }
 
     public BiomeProvider getBiomeProvider(World world) {
