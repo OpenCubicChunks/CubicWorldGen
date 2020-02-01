@@ -16,6 +16,7 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.MalformedJsonException;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import joptsimple.internal.Strings;
+import org.apache.logging.log4j.Level;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -349,7 +350,7 @@ public class V3Preprocessor {
                 return (JsonObject) outJson.toJankson();
             }
         } catch (JsonParseException | MalformedJsonException ex) {
-            CustomCubicMod.LOGGER.catching(ex);
+            CustomCubicMod.LOGGER.log(Level.DEBUG, "Couldn't parse json using gson library, skipping legacy preprocessing (this is expected for new json presets)", ex);
             gsonException = ex;
             // this is probably v4+ that uses jankson-supported quirks. If parsing with jankson fails, consider it invalid
         } catch (IOException e) {
