@@ -1,7 +1,6 @@
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui;
 
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.label;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.malisisText;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.*;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_PADDING;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.preset.CustomGenSettingsSerialization.deserializeUserFunction;
 
@@ -229,7 +228,7 @@ public class LakeSettingsTab {
             UIContainer<?> biomeSelectionLeft = new UIVerticalTableLayout<>(gui, 1)
                     .setInsets(1, 1, 0, 0);
             biomeSelectionLeft.add(
-                    biomeSelectMode = new UISelect<>(gui, 40, Arrays.asList(CustomGeneratorSettings.LakeConfig.BiomeSelectionMode.values())),
+                    biomeSelectMode = makeUISelect(gui, Arrays.asList(CustomGeneratorSettings.LakeConfig.BiomeSelectionMode.values())),
                     selectAllBiomesBtn = new UIButton(gui, malisisText("select_all")).setSize(10, 20),
                     invertBiomeSelection = new UIButton(gui, malisisText("invert_selection")).setSize(10, 20)
             );
