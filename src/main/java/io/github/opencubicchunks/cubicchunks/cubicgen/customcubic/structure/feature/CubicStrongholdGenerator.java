@@ -23,13 +23,6 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.feature;
 
-import static io.github.opencubicchunks.cubicchunks.api.util.Coords.blockCeilToCube;
-import static io.github.opencubicchunks.cubicchunks.api.util.Coords.blockToCube;
-import static io.github.opencubicchunks.cubicchunks.api.util.Coords.cubeToCenterBlock;
-import static java.lang.Math.cos;
-import static java.lang.Math.round;
-import static java.lang.Math.sin;
-
 import com.google.common.collect.Lists;
 import io.github.opencubicchunks.cubicchunks.api.util.Bits;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
@@ -47,13 +40,15 @@ import net.minecraft.world.gen.structure.StructureStrongholdPieces;
 import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
+import static io.github.opencubicchunks.cubicchunks.api.util.Coords.*;
+import static java.lang.Math.*;
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
@@ -206,8 +201,8 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
                 chunkZ = blockToCube(blockPos.getZ());
             }
 
-            int spacingBits = ~Bits.getMask(spacingBitCount);
-            int spacingBitsY = ~Bits.getMask(spacingBitCountY);
+            int spacingBits = spacingBitCount == 0 ? 0xFFFFFFFF : ~Bits.getMask(spacingBitCount);
+            int spacingBitsY = spacingBitCountY == 0 ? 0xFFFFFFFF : ~Bits.getMask(spacingBitCountY);
 
             chunkX = chunkX & spacingBits;
             chunkY = chunkY & spacingBitsY;

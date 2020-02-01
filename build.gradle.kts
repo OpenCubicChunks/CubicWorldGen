@@ -20,9 +20,10 @@ buildscript {
         maven {
             setUrl("https://plugins.gradle.org/m2/")
         }
+
     }
     dependencies {
-        classpath("org.spongepowered:mixingradle:0.5-SNAPSHOT")
+        classpath("org.spongepowered:mixingradle:0.6-SNAPSHOT")
         classpath("com.github.jengelman.gradle.plugins:shadow:2.0.4")
         classpath("gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0")
         classpath("net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT")
@@ -34,6 +35,7 @@ plugins {
     java
     maven
     `maven-publish`
+    idea
     id("io.github.opencubicchunks.gradle.fg2fixed")
     id("io.github.opencubicchunks.gradle.mixingen")
     id("io.github.opencubicchunks.gradle.remapper")
@@ -52,6 +54,11 @@ mcGitVersion {
 
 // TODO: Reduce duplication of buildscript code between CC projects?
 group = "io.github.opencubicchunks"
+
+if (gradle.includedBuilds.any { it.name == "CubicChunks" }) {
+    tasks["clean"].dependsOn(gradle.includedBuild("CubicChunksAPI").task(":clean"))
+    tasks["clean"].dependsOn(gradle.includedBuild("CubicChunks").task(":clean"))
+}
 
 val theForgeVersion: String by project
 val versionSuffix: String  by project
@@ -89,6 +96,25 @@ minecraft {
 
     replace("@@MALISIS_VERSION@@", malisisCoreMinVersion)
     replaceIn("io/github/opencubicchunks/cubicchunks/cubicgen/CustomCubicMod.java")
+
+    val coremods = if (gradle.includedBuilds.any { it.name == "CubicChunks" })
+        "-Dfml.coreMods.load=io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.CubicGenCoreMod,io.github.opencubicchunks.cubicchunks.core.asm.coremod.CubicChunksCoreMod"
+        else "-Dfml.coreMods.load=io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.CubicGenCoreMod" //the core mod class, needed for mixins
+    val args = listOf(
+            coremods,
+            "-Dmixin.env.compatLevel=JAVA_8", //needed to use java 8 when using mixins
+            "-Dmixin.debug.verbose=true", //verbose mixin output for easier debugging of mixins
+            "-Dmixin.debug.export=true", //export classes from mixin to runDirectory/.mixin.out
+            "-Dcubicchunks.debug=true", //various debug options of cubic chunks mod. Adds items that are not normally there!
+            "-XX:-OmitStackTraceInFastThrow", //without this sometimes you end up with exception with empty stacktrace
+            "-Dmixin.checks.interfaces=true", //check if all interface methods are overriden in mixin
+            "-Dfml.noGrab=false", //change to disable Minecraft taking control over mouse
+            "-ea", //enable assertions
+            "-da:io.netty..." //disable netty assertions because they sometimes fail
+    )
+
+    clientJvmArgs.addAll(args)
+    serverJvmArgs.addAll(args)
 }
 
 license {
@@ -141,6 +167,8 @@ val compile by configurations
 val testCompile by configurations
 val forgeGradleGradleStart by configurations
 val forgeGradleMcDeps by configurations
+val runtime by configurations
+val implementation by configurations
 
 val shade by configurations.creating
 compile.extendsFrom(shade)
@@ -152,7 +180,7 @@ dependencies {
 
     //deobfCompile("io.github.opencubicchunks:cubicchunks:1.12.2-0.0-SNAPSHOT")
     // provided by cubicchunks implementation
-    shade("org.spongepowered:mixin:0.7.10-SNAPSHOT") {
+    compile("org.spongepowered:mixin:0.7.10-SNAPSHOT") {
         isTransitive = false
     }
 
@@ -162,7 +190,6 @@ dependencies {
 
     shade("com.flowpowered:flow-noise:1.0.1-SNAPSHOT")
     shade("blue.endless:jankson:1.2.0-beta.2-61")
-    deobfCompile("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0-SNAPSHOT")
 
     testCompile("junit:junit:4.11")
     testCompile("org.hamcrest:hamcrest-junit:2.0.0.0")
@@ -170,14 +197,18 @@ dependencies {
     testCompile("org.mockito:mockito-core:2.1.0-RC.2")
     testCompile("org.spongepowered:launchwrappertestsuite:1.0-SNAPSHOT")
 
+    if (gradle.includedBuilds.any { it.name == "CubicChunks" }) {
+        implementation("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0-SNAPSHOT")
+        runtime("io.github.opencubicchunks:cubicchunks:1.12.2-0.0-SNAPSHOT")
+    } else {
+        deobfCompile("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0-SNAPSHOT")
+    }
 }
 
 fun Jar.setupManifest() {
     manifest {
         attributes["FMLCorePluginContainsFMLMod"] = "true"
         attributes["FMLCorePlugin"] = "io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.CubicGenCoreMod"
-        attributes["TweakClass"] = "org.spongepowered.asm.launch.MixinTweaker"
-        attributes["TweakOrder"] = "0"
         attributes["ForceLoadAsMod"] = "true"
         attributes["Maven-Version"] = "${project.group}:${project.base.archivesBaseName}:${project.version.toString()}:core"
     }
@@ -285,7 +316,7 @@ publishing {
     }
 }
 afterEvaluate {
-    tasks["publishModPublicationToMavenRepository"].dependsOn("reobfShadeJar")
+    tasks["publishModPublicationToMavenRepository"].dependsOn("reobfShadowJar")
 }
 artifacts {
     withGroovyBuilder {

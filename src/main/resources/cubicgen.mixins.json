@@ -23,7 +23,7 @@
         "common.extras.FarLands",
         "common.IUIContainer",
         "common.MixinSaveHandler",
-        "common.MixinStringholdStart",
+        "common.MixinStrongholdStart",
         "common.MixinUIComponent",
         "common.MixinWorldInfo"
     ],

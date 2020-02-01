@@ -23,27 +23,35 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common;
 
-import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.feature.CubicStrongholdGenerator;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.MapGenStronghold;
 import net.minecraft.world.gen.structure.StructureStart;
+import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Random;
-
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Random;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 @Mixin(MapGenStronghold.Start.class)
-public abstract class MixinStringholdStart extends StructureStart implements CubicStrongholdGenerator.CubicStart {
+public abstract class MixinStrongholdStart extends StructureStart implements CubicStrongholdGenerator.CubicStart {
 
     private Random constructorRandom;
+
+    // added by class transformer (MapGenStrongholdCubicConstructorTransform)
+
+    @Dynamic @Shadow(remap = false) private int cubicchunks$baseY;
+
+    @Dynamic @Shadow(remap = false) private void reinitCubicStronghold(World world, Random random, int chunkX, int chunkZ) {
+        throw new AssertionError();
+    }
 
     @Inject(method = "<init>(Lnet/minecraft/world/World;Ljava/util/Random;II)V", at = @At("RETURN"))
     private void cubicChunksConstruct(World worldIn, Random random, int chunkX, int chunkZ, CallbackInfo ci) {
@@ -51,14 +59,9 @@ public abstract class MixinStringholdStart extends StructureStart implements Cub
     }
 
     @Override public void initCubicStronghold(World world, int cubeY, int baseY) {
+        cubicchunks$baseY = baseY;
         this.initCubic(world, cubeY);
+        this.reinitCubicStronghold(world, constructorRandom, getChunkPosX(), getChunkPosZ());
         this.markAvailableHeight(world, constructorRandom, baseY);
-    }
-
-    @Override protected void markAvailableHeight(World worldIn, Random rand, int y) {
-        // prevent it running in super constructor, before initCubic
-        if (!((ICubicWorld) worldIn).isCubicWorld() || this.isCubic()) {
-            super.markAvailableHeight(worldIn, rand, y);
-        }
     }
 }

@@ -39,6 +39,7 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.BiomeProvider;
 import net.minecraft.world.biome.BiomeProviderSingle;
+import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -72,7 +73,8 @@ public class FlatCubicWorldType extends WorldType implements ICubicWorldType {
     }
 
     @Override public boolean hasCubicGeneratorForWorld(World w) {
-        return w.provider.getClass() == WorldProviderSurface.class; // a more general way to check if it's overworld
+        // See CustomCubicWorldType.hasCubicGeneratorForWorld for explanation
+        return w.provider.getClass() == DimensionManager.getProvider(0).getClass();
     }
 
     public boolean isCustomizable() {
