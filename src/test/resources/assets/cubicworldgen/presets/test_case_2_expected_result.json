@@ -1,4 +1,16 @@
 {
+  /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      CC Preset Layers Example 01 | by MineCrak | cc854 - 2018.11.11
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     ~
+     ~~~~~~~~~~~~~~~~~~~~
+      Main DEFAULT Preset
+     ~~~~~~~~~~~~~~~~~~~~
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      y= (+Inf > 0) + y= (-513 > -Inf) + (Any Undefined ranges)
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     ~
+  */
   "waterLevel": 63,
   "caves": true,
   "strongholds": true,
@@ -33,7 +45,9 @@
       "spawnTries": 10,
       "spawnProbability": 0.0625,
       "minHeight": -Infinity,
-      "maxHeight": Infinity
+      "maxHeight": Infinity,
+      "biomes": null,
+      "genInBlockstates": null
     },
     {
       "blockstate": {
@@ -43,7 +57,9 @@
       "spawnTries": 8,
       "spawnProbability": 0.0625,
       "minHeight": -Infinity,
-      "maxHeight": Infinity
+      "maxHeight": Infinity,
+      "biomes": null,
+      "genInBlockstates": null
     },
     {
       "blockstate": {
@@ -56,7 +72,9 @@
       "spawnTries": 10,
       "spawnProbability": 0.2,
       "minHeight": -Infinity,
-      "maxHeight": 0.25
+      "maxHeight": 0.25,
+      "biomes": null,
+      "genInBlockstates": null
     },
     {
       "blockstate": {
@@ -69,7 +87,9 @@
       "spawnTries": 10,
       "spawnProbability": 0.2,
       "minHeight": -Infinity,
-      "maxHeight": 0.25
+      "maxHeight": 0.25,
+      "biomes": null,
+      "genInBlockstates": null
     },
     {
       "blockstate": {
@@ -82,7 +102,9 @@
       "spawnTries": 10,
       "spawnProbability": 0.2,
       "minHeight": -Infinity,
-      "maxHeight": 0.25
+      "maxHeight": 0.25,
+      "biomes": null,
+      "genInBlockstates": null
     },
     {
       "blockstate": {
@@ -92,7 +114,9 @@
       "spawnTries": 20,
       "spawnProbability": 0.125,
       "minHeight": -Infinity,
-      "maxHeight": 1.0
+      "maxHeight": 1.0,
+      "biomes": null,
+      "genInBlockstates": null
     },
     {
       "blockstate": {
@@ -102,7 +126,9 @@
       "spawnTries": 20,
       "spawnProbability": 0.25,
       "minHeight": -Infinity,
-      "maxHeight": 0.0
+      "maxHeight": 0.0,
+      "biomes": null,
+      "genInBlockstates": null
     },
     {
       "blockstate": {
@@ -112,7 +138,9 @@
       "spawnTries": 2,
       "spawnProbability": 0.5,
       "minHeight": -Infinity,
-      "maxHeight": -0.5
+      "maxHeight": -0.5,
+      "biomes": null,
+      "genInBlockstates": null
     },
     {
       "blockstate": {
@@ -122,7 +150,9 @@
       "spawnTries": 8,
       "spawnProbability": 1.0,
       "minHeight": -Infinity,
-      "maxHeight": -0.75
+      "maxHeight": -0.75,
+      "biomes": null,
+      "genInBlockstates": null
     },
     {
       "blockstate": {
@@ -132,7 +162,9 @@
       "spawnTries": 1,
       "spawnProbability": 1.0,
       "minHeight": -Infinity,
-      "maxHeight": -0.75
+      "maxHeight": -0.75,
+      "biomes": null,
+      "genInBlockstates": null
     },
     {
       "blockstate": {
@@ -149,7 +181,8 @@
       "spawnTries": 11,
       "spawnProbability": 0.2857143,
       "minHeight": -Infinity,
-      "maxHeight": 0.0
+      "maxHeight": 0.0,
+      "genInBlockstates": null
     },
     {
       "blockstate": {
@@ -169,7 +202,8 @@
       "spawnTries": 7,
       "spawnProbability": 0.25,
       "minHeight": -Infinity,
-      "maxHeight": -0.5
+      "maxHeight": -0.5,
+      "genInBlockstates": null
     },
     {
       "blockstate": {
@@ -187,7 +221,8 @@
       "spawnTries": 2,
       "spawnProbability": 0.5,
       "minHeight": -0.5,
-      "maxHeight": 0.25
+      "maxHeight": 0.25,
+      "genInBlockstates": null
     }
   ],
   "periodicGaussianOres": [
@@ -202,7 +237,9 @@
       "heightStdDeviation": 0.11231705,
       "heightSpacing": 3.0,
       "minHeight": -Infinity,
-      "maxHeight": -0.5
+      "maxHeight": -0.5,
+      "biomes": null,
+      "genInBlockstates": null
     }
   ],
   "expectedBaseHeight": 64.0,
@@ -236,286 +273,26 @@
   "highNoiseFrequencyY": 0.0026108245,
   "highNoiseFrequencyZ": 0.005221649,
   "highNoiseOctaves": 16,
+  /* ~
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      Added Layers & Regions (below in 'cubeAreas')
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     ~~~~~~~~~~~~~~~~~~~~~~~~
+      Total: y= (-1 > -512)
+     ~~~~~~~~~~~~~~~~~~~~~~~~
+     ~
+  */
   "cubeAreas": [
     [
       {
-        "minX": -1000000000,
-        "minY": -32,
-        "minZ": -1000000000,
-        "maxX": 1000000000,
-        "maxY": -17,
-        "maxZ": 1000000000
-      },
-      {
-        "waterLevel": -449,
-        "caves": true,
-        "strongholds": true,
-        "alternateStrongholdsPositions": false,
-        "villages": true,
-        "mineshafts": true,
-        "temples": true,
-        "oceanMonuments": true,
-        "woodlandMansions": true,
-        "ravines": true,
-        "dungeons": true,
-        "dungeonCount": 7,
-        "waterLakes": true,
-        "waterLakeRarity": 4,
-        "lavaLakes": true,
-        "lavaLakeRarity": 8,
-        "aboveSeaLavaLakeRarity": 13,
-        "lavaOceans": false,
-        "biome": -1,
-        "biomeSize": 4,
-        "riverSize": 4,
-        "standardOres": [
-          {
-            "blockstate": {
-              "Properties": {
-                "variant": "dirt",
-                "snowy": "false"
-              },
-              "Name": "minecraft:dirt"
-            },
-            "spawnSize": 33,
-            "spawnTries": 10,
-            "spawnProbability": 0.0625,
-            "minHeight": -Infinity,
-            "maxHeight": Infinity
-          },
-          {
-            "blockstate": {
-              "Name": "minecraft:gravel"
-            },
-            "spawnSize": 33,
-            "spawnTries": 8,
-            "spawnProbability": 0.0625,
-            "minHeight": -Infinity,
-            "maxHeight": Infinity
-          },
-          {
-            "blockstate": {
-              "Properties": {
-                "variant": "granite"
-              },
-              "Name": "minecraft:stone"
-            },
-            "spawnSize": 33,
-            "spawnTries": 10,
-            "spawnProbability": 0.2,
-            "minHeight": -Infinity,
-            "maxHeight": 0.25
-          },
-          {
-            "blockstate": {
-              "Properties": {
-                "variant": "diorite"
-              },
-              "Name": "minecraft:stone"
-            },
-            "spawnSize": 33,
-            "spawnTries": 10,
-            "spawnProbability": 0.2,
-            "minHeight": -Infinity,
-            "maxHeight": 0.25
-          },
-          {
-            "blockstate": {
-              "Properties": {
-                "variant": "andesite"
-              },
-              "Name": "minecraft:stone"
-            },
-            "spawnSize": 33,
-            "spawnTries": 10,
-            "spawnProbability": 0.2,
-            "minHeight": -Infinity,
-            "maxHeight": 0.25
-          },
-          {
-            "blockstate": {
-              "Name": "minecraft:coal_ore"
-            },
-            "spawnSize": 17,
-            "spawnTries": 20,
-            "spawnProbability": 0.125,
-            "minHeight": -Infinity,
-            "maxHeight": 1.0
-          },
-          {
-            "blockstate": {
-              "Name": "minecraft:iron_ore"
-            },
-            "spawnSize": 9,
-            "spawnTries": 20,
-            "spawnProbability": 0.25,
-            "minHeight": -Infinity,
-            "maxHeight": 0.0
-          },
-          {
-            "blockstate": {
-              "Name": "minecraft:gold_ore"
-            },
-            "spawnSize": 9,
-            "spawnTries": 2,
-            "spawnProbability": 0.5,
-            "minHeight": -Infinity,
-            "maxHeight": -0.5
-          },
-          {
-            "blockstate": {
-              "Name": "minecraft:redstone_ore"
-            },
-            "spawnSize": 8,
-            "spawnTries": 8,
-            "spawnProbability": 1.0,
-            "minHeight": -Infinity,
-            "maxHeight": -0.75
-          },
-          {
-            "blockstate": {
-              "Name": "minecraft:diamond_ore"
-            },
-            "spawnSize": 8,
-            "spawnTries": 1,
-            "spawnProbability": 1.0,
-            "minHeight": -Infinity,
-            "maxHeight": -0.75
-          },
-          {
-            "blockstate": {
-              "Name": "minecraft:emerald_ore"
-            },
-            "biomes": [
-              "minecraft:extreme_hills",
-              "minecraft:smaller_extreme_hills",
-              "minecraft:mutated_extreme_hills_with_trees",
-              "minecraft:extreme_hills_with_trees",
-              "minecraft:mutated_extreme_hills"
-            ],
-            "spawnSize": 1,
-            "spawnTries": 11,
-            "spawnProbability": 0.2857143,
-            "minHeight": -Infinity,
-            "maxHeight": 0.0
-          },
-          {
-            "blockstate": {
-              "Properties": {
-                "variant": "stone"
-              },
-              "Name": "minecraft:monster_egg"
-            },
-            "biomes": [
-              "minecraft:extreme_hills",
-              "minecraft:smaller_extreme_hills",
-              "minecraft:mutated_extreme_hills_with_trees",
-              "minecraft:extreme_hills_with_trees",
-              "minecraft:mutated_extreme_hills"
-            ],
-            "spawnSize": 7,
-            "spawnTries": 7,
-            "spawnProbability": 0.25,
-            "minHeight": -Infinity,
-            "maxHeight": -0.5
-          },
-          {
-            "blockstate": {
-              "Name": "minecraft:gold_ore"
-            },
-            "biomes": [
-              "minecraft:mesa_rock",
-              "minecraft:mesa_clear_rock",
-              "minecraft:mutated_mesa",
-              "minecraft:mutated_mesa_rock",
-              "minecraft:mutated_mesa_clear_rock",
-              "minecraft:mesa"
-            ],
-            "spawnSize": 20,
-            "spawnTries": 2,
-            "spawnProbability": 0.5,
-            "minHeight": -0.5,
-            "maxHeight": 0.25
-          }
-        ],
-        "periodicGaussianOres": [
-          {
-            "blockstate": {
-              "Name": "minecraft:lapis_ore"
-            },
-            "spawnSize": 7,
-            "spawnTries": 1,
-            "spawnProbability": 0.93330777,
-            "heightMean": -0.75,
-            "heightStdDeviation": 0.11231705,
-            "heightSpacing": 3.0,
-            "minHeight": -Infinity,
-            "maxHeight": -0.5
-          }
-        ],
-        "expectedBaseHeight": -448.0,
-        "expectedHeightVariation": 64.0,
-        "actualHeight": 256.0,
-        "heightVariationFactor": 64.0,
-        "specialHeightVariationFactorBelowAverageY": 0.25,
-        "heightVariationOffset": 0.0,
-        "heightFactor": 64.0,
-        "heightOffset": -448.0,
-        "depthNoiseFactor": 1.024,
-        "depthNoiseOffset": 0.0,
-        "depthNoiseFrequencyX": 0.0015258789,
-        "depthNoiseFrequencyZ": 0.0015258789,
-        "depthNoiseOctaves": 16,
-        "selectorNoiseFactor": 12.75,
-        "selectorNoiseOffset": 0.5,
-        "selectorNoiseFrequencyX": 0.016709277,
-        "selectorNoiseFrequencyY": 0.008354639,
-        "selectorNoiseFrequencyZ": 0.016709277,
-        "selectorNoiseOctaves": 8,
-        "lowNoiseFactor": 1.0,
-        "lowNoiseOffset": 0.0,
-        "lowNoiseFrequencyX": 0.005221649,
-        "lowNoiseFrequencyY": 0.0026108245,
-        "lowNoiseFrequencyZ": 0.005221649,
-        "lowNoiseOctaves": 16,
-        "highNoiseFactor": 1.0,
-        "highNoiseOffset": 0.0,
-        "highNoiseFrequencyX": 0.005221649,
-        "highNoiseFrequencyY": 0.0026108245,
-        "highNoiseFrequencyZ": 0.005221649,
-        "highNoiseOctaves": 16,
-        "cubeAreas": [],
-        "replacerConfig": {
-          "defaults": {
-            "cubicgen:biome_fill_noise_octaves": 4.0,
-            "cubicgen:ocean_block": {
-              "Properties": {
-                "level": "0"
-              },
-              "Name": "minecraft:water"
-            },
-            "cubicgen:height_scale": 64.0,
-            "cubicgen:biome_fill_noise_freq": 0.0078125,
-            "cubicgen:water_level": 63.0,
-            "cubicgen:biome_fill_depth_factor": 2.3333333333333335,
-            "cubicgen:terrain_fill_block": {
-              "Properties": {
-                "variant": "stone"
-              },
-              "Name": "minecraft:stone"
-            },
-            "cubicgen:mesa_depth": 16.0,
-            "cubicgen:biome_fill_depth_offset": 3.0,
-            "cubicgen:horizontal_gradient_depth_decrease_weight": 1.0,
-            "cubicgen:height_offset": 64.0
-          },
-          "overrides": {}
-        },
-        "version": 3
-      }
-    ],
-    [
-      {
+        /* ~~~~~~~~~~~~~~
+            Underworld 1
+           ~~~~~~~~~~~~~~
+           ~~~~~~~~~~~~~~~~~~~~~~~
+            Layer: y= (-1 > -256)
+           ~~~~~~~~~~~~~~~~~~~~~~~
+           ~
+        */
         "minX": -1000000000,
         "minY": -16,
         "minZ": -1000000000,
@@ -558,7 +335,9 @@
             "spawnTries": 10,
             "spawnProbability": 0.0625,
             "minHeight": -Infinity,
-            "maxHeight": Infinity
+            "maxHeight": Infinity,
+            "biomes": null,
+            "genInBlockstates": null
           },
           {
             "blockstate": {
@@ -568,7 +347,9 @@
             "spawnTries": 8,
             "spawnProbability": 0.0625,
             "minHeight": -Infinity,
-            "maxHeight": Infinity
+            "maxHeight": Infinity,
+            "biomes": null,
+            "genInBlockstates": null
           },
           {
             "blockstate": {
@@ -581,7 +362,9 @@
             "spawnTries": 10,
             "spawnProbability": 0.2,
             "minHeight": -Infinity,
-            "maxHeight": 0.25
+            "maxHeight": 0.25,
+            "biomes": null,
+            "genInBlockstates": null
           },
           {
             "blockstate": {
@@ -594,7 +377,9 @@
             "spawnTries": 10,
             "spawnProbability": 0.2,
             "minHeight": -Infinity,
-            "maxHeight": 0.25
+            "maxHeight": 0.25,
+            "biomes": null,
+            "genInBlockstates": null
           },
           {
             "blockstate": {
@@ -607,7 +392,9 @@
             "spawnTries": 10,
             "spawnProbability": 0.2,
             "minHeight": -Infinity,
-            "maxHeight": 0.25
+            "maxHeight": 0.25,
+            "biomes": null,
+            "genInBlockstates": null
           },
           {
             "blockstate": {
@@ -617,7 +404,9 @@
             "spawnTries": 20,
             "spawnProbability": 0.125,
             "minHeight": -Infinity,
-            "maxHeight": 1.0
+            "maxHeight": 1.0,
+            "biomes": null,
+            "genInBlockstates": null
           },
           {
             "blockstate": {
@@ -627,7 +416,9 @@
             "spawnTries": 20,
             "spawnProbability": 0.25,
             "minHeight": -Infinity,
-            "maxHeight": 0.0
+            "maxHeight": 0.0,
+            "biomes": null,
+            "genInBlockstates": null
           },
           {
             "blockstate": {
@@ -637,7 +428,9 @@
             "spawnTries": 2,
             "spawnProbability": 0.5,
             "minHeight": -Infinity,
-            "maxHeight": -0.5
+            "maxHeight": -0.5,
+            "biomes": null,
+            "genInBlockstates": null
           },
           {
             "blockstate": {
@@ -647,7 +440,9 @@
             "spawnTries": 8,
             "spawnProbability": 1.0,
             "minHeight": -Infinity,
-            "maxHeight": -0.75
+            "maxHeight": -0.75,
+            "biomes": null,
+            "genInBlockstates": null
           },
           {
             "blockstate": {
@@ -657,7 +452,9 @@
             "spawnTries": 1,
             "spawnProbability": 1.0,
             "minHeight": -Infinity,
-            "maxHeight": -0.75
+            "maxHeight": -0.75,
+            "biomes": null,
+            "genInBlockstates": null
           },
           {
             "blockstate": {
@@ -674,7 +471,8 @@
             "spawnTries": 11,
             "spawnProbability": 0.2857143,
             "minHeight": -Infinity,
-            "maxHeight": 0.0
+            "maxHeight": 0.0,
+            "genInBlockstates": null
           },
           {
             "blockstate": {
@@ -694,7 +492,8 @@
             "spawnTries": 7,
             "spawnProbability": 0.25,
             "minHeight": -Infinity,
-            "maxHeight": -0.5
+            "maxHeight": -0.5,
+            "genInBlockstates": null
           },
           {
             "blockstate": {
@@ -712,7 +511,8 @@
             "spawnTries": 2,
             "spawnProbability": 0.5,
             "minHeight": -0.5,
-            "maxHeight": 0.25
+            "maxHeight": 0.25,
+            "genInBlockstates": null
           }
         ],
         "periodicGaussianOres": [
@@ -727,7 +527,9 @@
             "heightStdDeviation": 0.11231705,
             "heightSpacing": 3.0,
             "minHeight": -Infinity,
-            "maxHeight": -0.5
+            "maxHeight": -0.5,
+            "biomes": null,
+            "genInBlockstates": null
           }
         ],
         "expectedBaseHeight": -192.0,
@@ -761,13 +563,12 @@
         "highNoiseFrequencyY": 0.0026108245,
         "highNoiseFrequencyZ": 0.005221649,
         "highNoiseOctaves": 16,
-        "cubeAreas": [],
         "replacerConfig": {
           "defaults": {
             "cubicgen:biome_fill_noise_octaves": 4.0,
             "cubicgen:ocean_block": {
               "Properties": {
-                "level": "0"
+                "level": 0.0
               },
               "Name": "minecraft:water"
             },
@@ -788,16 +589,335 @@
           },
           "overrides": {}
         },
-        "version": 3
+        "version": 3,
+        "cubeAreas": []
+      }
+    ],
+    [
+      {
+        /* ~~~~~~~~~~~~~~
+            Underworld 2
+           ~~~~~~~~~~~~~~
+           ~~~~~~~~~~~~~~~~~~~~~~~~~
+            Layer: y= (-257 > -512)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~
+           ~
+        */
+        "minX": -1000000000,
+        "minY": -32,
+        "minZ": -1000000000,
+        "maxX": 1000000000,
+        "maxY": -17,
+        "maxZ": 1000000000
+      },
+      {
+        "waterLevel": -449,
+        "caves": true,
+        "strongholds": true,
+        "alternateStrongholdsPositions": false,
+        "villages": true,
+        "mineshafts": true,
+        "temples": true,
+        "oceanMonuments": true,
+        "woodlandMansions": true,
+        "ravines": true,
+        "dungeons": true,
+        "dungeonCount": 7,
+        "waterLakes": true,
+        "waterLakeRarity": 4,
+        "lavaLakes": true,
+        "lavaLakeRarity": 8,
+        "aboveSeaLavaLakeRarity": 13,
+        "lavaOceans": false,
+        "biome": -1,
+        "biomeSize": 4,
+        "riverSize": 4,
+        "standardOres": [
+          {
+            "blockstate": {
+              "Properties": {
+                "variant": "dirt",
+                "snowy": "false"
+              },
+              "Name": "minecraft:dirt"
+            },
+            "spawnSize": 33,
+            "spawnTries": 10,
+            "spawnProbability": 0.0625,
+            "minHeight": -Infinity,
+            "maxHeight": Infinity,
+            "biomes": null,
+            "genInBlockstates": null
+          },
+          {
+            "blockstate": {
+              "Name": "minecraft:gravel"
+            },
+            "spawnSize": 33,
+            "spawnTries": 8,
+            "spawnProbability": 0.0625,
+            "minHeight": -Infinity,
+            "maxHeight": Infinity,
+            "biomes": null,
+            "genInBlockstates": null
+          },
+          {
+            "blockstate": {
+              "Properties": {
+                "variant": "granite"
+              },
+              "Name": "minecraft:stone"
+            },
+            "spawnSize": 33,
+            "spawnTries": 10,
+            "spawnProbability": 0.2,
+            "minHeight": -Infinity,
+            "maxHeight": 0.25,
+            "biomes": null,
+            "genInBlockstates": null
+          },
+          {
+            "blockstate": {
+              "Properties": {
+                "variant": "diorite"
+              },
+              "Name": "minecraft:stone"
+            },
+            "spawnSize": 33,
+            "spawnTries": 10,
+            "spawnProbability": 0.2,
+            "minHeight": -Infinity,
+            "maxHeight": 0.25,
+            "biomes": null,
+            "genInBlockstates": null
+          },
+          {
+            "blockstate": {
+              "Properties": {
+                "variant": "andesite"
+              },
+              "Name": "minecraft:stone"
+            },
+            "spawnSize": 33,
+            "spawnTries": 10,
+            "spawnProbability": 0.2,
+            "minHeight": -Infinity,
+            "maxHeight": 0.25,
+            "biomes": null,
+            "genInBlockstates": null
+          },
+          {
+            "blockstate": {
+              "Name": "minecraft:coal_ore"
+            },
+            "spawnSize": 17,
+            "spawnTries": 20,
+            "spawnProbability": 0.125,
+            "minHeight": -Infinity,
+            "maxHeight": 1.0,
+            "biomes": null,
+            "genInBlockstates": null
+          },
+          {
+            "blockstate": {
+              "Name": "minecraft:iron_ore"
+            },
+            "spawnSize": 9,
+            "spawnTries": 20,
+            "spawnProbability": 0.25,
+            "minHeight": -Infinity,
+            "maxHeight": 0.0,
+            "biomes": null,
+            "genInBlockstates": null
+          },
+          {
+            "blockstate": {
+              "Name": "minecraft:gold_ore"
+            },
+            "spawnSize": 9,
+            "spawnTries": 2,
+            "spawnProbability": 0.5,
+            "minHeight": -Infinity,
+            "maxHeight": -0.5,
+            "biomes": null,
+            "genInBlockstates": null
+          },
+          {
+            "blockstate": {
+              "Name": "minecraft:redstone_ore"
+            },
+            "spawnSize": 8,
+            "spawnTries": 8,
+            "spawnProbability": 1.0,
+            "minHeight": -Infinity,
+            "maxHeight": -0.75,
+            "biomes": null,
+            "genInBlockstates": null
+          },
+          {
+            "blockstate": {
+              "Name": "minecraft:diamond_ore"
+            },
+            "spawnSize": 8,
+            "spawnTries": 1,
+            "spawnProbability": 1.0,
+            "minHeight": -Infinity,
+            "maxHeight": -0.75,
+            "biomes": null,
+            "genInBlockstates": null
+          },
+          {
+            "blockstate": {
+              "Name": "minecraft:emerald_ore"
+            },
+            "biomes": [
+              "minecraft:extreme_hills",
+              "minecraft:smaller_extreme_hills",
+              "minecraft:mutated_extreme_hills_with_trees",
+              "minecraft:extreme_hills_with_trees",
+              "minecraft:mutated_extreme_hills"
+            ],
+            "spawnSize": 1,
+            "spawnTries": 11,
+            "spawnProbability": 0.2857143,
+            "minHeight": -Infinity,
+            "maxHeight": 0.0,
+            "genInBlockstates": null
+          },
+          {
+            "blockstate": {
+              "Properties": {
+                "variant": "stone"
+              },
+              "Name": "minecraft:monster_egg"
+            },
+            "biomes": [
+              "minecraft:extreme_hills",
+              "minecraft:smaller_extreme_hills",
+              "minecraft:mutated_extreme_hills_with_trees",
+              "minecraft:extreme_hills_with_trees",
+              "minecraft:mutated_extreme_hills"
+            ],
+            "spawnSize": 7,
+            "spawnTries": 7,
+            "spawnProbability": 0.25,
+            "minHeight": -Infinity,
+            "maxHeight": -0.5,
+            "genInBlockstates": null
+          },
+          {
+            "blockstate": {
+              "Name": "minecraft:gold_ore"
+            },
+            "biomes": [
+              "minecraft:mesa_rock",
+              "minecraft:mesa_clear_rock",
+              "minecraft:mutated_mesa",
+              "minecraft:mutated_mesa_rock",
+              "minecraft:mutated_mesa_clear_rock",
+              "minecraft:mesa"
+            ],
+            "spawnSize": 20,
+            "spawnTries": 2,
+            "spawnProbability": 0.5,
+            "minHeight": -0.5,
+            "maxHeight": 0.25,
+            "genInBlockstates": null
+          }
+        ],
+        "periodicGaussianOres": [
+          {
+            "blockstate": {
+              "Name": "minecraft:lapis_ore"
+            },
+            "spawnSize": 7,
+            "spawnTries": 1,
+            "spawnProbability": 0.93330777,
+            "heightMean": -0.75,
+            "heightStdDeviation": 0.11231705,
+            "heightSpacing": 3.0,
+            "minHeight": -Infinity,
+            "maxHeight": -0.5,
+            "biomes": null,
+            "genInBlockstates": null
+          }
+        ],
+        "expectedBaseHeight": -448.0,
+        "expectedHeightVariation": 64.0,
+        "actualHeight": 256.0,
+        "heightVariationFactor": 64.0,
+        "specialHeightVariationFactorBelowAverageY": 0.25,
+        "heightVariationOffset": 0.0,
+        "heightFactor": 64.0,
+        "heightOffset": -448.0,
+        "depthNoiseFactor": 1.024,
+        "depthNoiseOffset": 0.0,
+        "depthNoiseFrequencyX": 0.0015258789,
+        "depthNoiseFrequencyZ": 0.0015258789,
+        "depthNoiseOctaves": 16,
+        "selectorNoiseFactor": 12.75,
+        "selectorNoiseOffset": 0.5,
+        "selectorNoiseFrequencyX": 0.016709277,
+        "selectorNoiseFrequencyY": 0.008354639,
+        "selectorNoiseFrequencyZ": 0.016709277,
+        "selectorNoiseOctaves": 8,
+        "lowNoiseFactor": 1.0,
+        "lowNoiseOffset": 0.0,
+        "lowNoiseFrequencyX": 0.005221649,
+        "lowNoiseFrequencyY": 0.0026108245,
+        "lowNoiseFrequencyZ": 0.005221649,
+        "lowNoiseOctaves": 16,
+        "highNoiseFactor": 1.0,
+        "highNoiseOffset": 0.0,
+        "highNoiseFrequencyX": 0.005221649,
+        "highNoiseFrequencyY": 0.0026108245,
+        "highNoiseFrequencyZ": 0.005221649,
+        "highNoiseOctaves": 16,
+        "replacerConfig": {
+          "defaults": {
+            "cubicgen:biome_fill_noise_octaves": 4.0,
+            "cubicgen:ocean_block": {
+              "Properties": {
+                "level": 0.0
+              },
+              "Name": "minecraft:water"
+            },
+            "cubicgen:height_scale": 64.0,
+            "cubicgen:biome_fill_noise_freq": 0.0078125,
+            "cubicgen:water_level": 63.0,
+            "cubicgen:biome_fill_depth_factor": 2.3333333333333335,
+            "cubicgen:terrain_fill_block": {
+              "Properties": {
+                "variant": "stone"
+              },
+              "Name": "minecraft:stone"
+            },
+            "cubicgen:mesa_depth": 16.0,
+            "cubicgen:biome_fill_depth_offset": 3.0,
+            "cubicgen:horizontal_gradient_depth_decrease_weight": 1.0,
+            "cubicgen:height_offset": 64.0
+          },
+          "overrides": {}
+        },
+        "version": 3,
+        "cubeAreas": []
       }
     ]
   ],
+  /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      End of 'cubeAreas' Added Layers
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      Final part of Default Preset (Below)
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     ~
+  */
   "replacerConfig": {
     "defaults": {
       "cubicgen:biome_fill_noise_octaves": 4.0,
       "cubicgen:ocean_block": {
         "Properties": {
-          "level": "0"
+          "level": 0.0
         },
         "Name": "minecraft:water"
       },

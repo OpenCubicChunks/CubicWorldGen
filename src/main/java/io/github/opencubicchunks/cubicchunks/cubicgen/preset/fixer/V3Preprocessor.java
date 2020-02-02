@@ -222,7 +222,8 @@ public class V3Preprocessor {
             } else if (isString()) {
                 val = new JsonPrimitive(getString());
             } else if (isNumber()) {
-                val = new JsonPrimitive(getNumber());
+                // convert to double as workaround to jankson issue, see https://github.com/falkreon/Jankson/issues/37
+                val = new JsonPrimitive(getNumber().doubleValue());
             } else {
                 assert isBoolean();
                 val = new JsonPrimitive(getBoolean());
@@ -260,8 +261,9 @@ public class V3Preprocessor {
                 List<Map.Entry<String, ParsedJson>> obj = new ArrayList<>();
                 in.beginObject();
                 while (in.hasNext()) {
+                    String name = in.nextName();
                     obj.add(new AbstractMap.SimpleEntry<>(
-                            in.nextName(),
+                            name,
                             loadForPreprocess(in)
                     ));
                 }

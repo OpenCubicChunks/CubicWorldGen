@@ -23,23 +23,31 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.CharBuffer;
-
-import javax.annotation.ParametersAreNonnullByDefault;
-
+import blue.endless.jankson.JsonArray;
+import blue.endless.jankson.JsonElement;
+import blue.endless.jankson.JsonObject;
+import blue.endless.jankson.JsonPrimitive;
+import blue.endless.jankson.api.SyntaxError;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.CustomGenSettingsSerialization;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.V3LegacyFix;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.V3Preprocessor;
+import io.github.opencubicchunks.cubicchunks.cubicgen.testutil.MinecraftEnvironment;
+import mcp.MethodsReturnNonnullByDefault;
 import org.apache.logging.log4j.LogManager;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
-import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.CustomGeneratorSettingsFixer;
-import io.github.opencubicchunks.cubicchunks.cubicgen.testutil.MinecraftEnvironment;
-import mcp.MethodsReturnNonnullByDefault;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.CharBuffer;
+import java.util.ArrayList;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
@@ -69,20 +77,79 @@ public class TestCustomGeneratorSettingsFixer {
         }
     }
 
-    private void runTest(String exampleURL, String resultURL) throws IOException {
-        CustomGeneratorSettingsFixer fixer = CustomGeneratorSettingsFixer.INSTANCE;
-        //JsonObject fixed = fixer.fixJson(getTestCaseString(exampleURL));
-       // JsonObject expected = fixer.fixJson(getTestCaseString(resultURL));
-        //assertEquals(expected, fixed);
+    private void runTest(String exampleURL, String resultURL) throws IOException, SyntaxError {
+        final V3Preprocessor legacyPreprocessor = new V3Preprocessor();
+        final V3LegacyFix legacyFixer = new V3LegacyFix();
+
+        String testCaseString = getTestCaseString(exampleURL);
+        JsonObject preprocessed = legacyPreprocessor.load(testCaseString);
+        JsonObject fixed = removeV3FixAndFixComments(legacyFixer.fixGeneratorOptions(preprocessed, new JsonObject()));
+        JsonObject expected = removeV3FixAndFixComments(CustomGenSettingsSerialization.jankson().load(getTestCaseString(resultURL)));
+        assertEquals(expected, fixed);
+    }
+
+    private JsonObject removeV3FixAndFixComments(JsonObject in) {
+        JsonObject sorted = new JsonObject();
+        ArrayList<Map.Entry<String, JsonElement>> keys = new ArrayList<>(in.entrySet());
+        for (Map.Entry<String, JsonElement> e : keys) {
+            String key = e.getKey();
+            if (key.equals("v3fix")) {
+                continue;
+            }
+            String comment = fixComment(in.getComment(key));
+            JsonElement jsonElement = e.getValue();
+            if (jsonElement instanceof JsonObject) {
+                jsonElement = removeV3FixAndFixComments((JsonObject) jsonElement);
+            } else if (jsonElement instanceof JsonArray) {
+                jsonElement = removeV3FixAndFixComments((JsonArray) jsonElement);
+            } else if (jsonElement instanceof JsonPrimitive) {
+                if (((JsonPrimitive) jsonElement).getValue() instanceof Number) {
+                    jsonElement = new JsonPrimitive(((Number) ((JsonPrimitive) jsonElement).getValue()).doubleValue());
+                }
+            }
+            sorted.put(key, jsonElement, comment);
+        }
+        return sorted;
+    }
+
+    private JsonElement removeV3FixAndFixComments(JsonArray in) {
+        JsonArray sorted = new JsonArray();
+        for (int i = 0; i < in.size(); i++) {
+            JsonElement jsonElement = in.get(i);
+            String comment = fixComment(in.getComment(i));
+            if (jsonElement instanceof JsonObject) {
+                jsonElement = removeV3FixAndFixComments((JsonObject) jsonElement);
+            } else if (jsonElement instanceof JsonArray) {
+                jsonElement = removeV3FixAndFixComments((JsonArray) jsonElement);
+            } else if (jsonElement instanceof JsonPrimitive) {
+                if (((JsonPrimitive) jsonElement).getValue() instanceof Number) {
+                    jsonElement = new JsonPrimitive(((Number) ((JsonPrimitive) jsonElement).getValue()).doubleValue());
+                }
+            }
+            sorted.add(jsonElement, comment);
+        }
+        return sorted;
+    }
+
+    @Nullable
+    private String fixComment(@Nullable String comment) {
+        if (comment == null) return null;
+        // jankson trims comments when deserializing, but fixer doesn't
+        // this is expected difference so ignore it
+        String[] split = comment.split("\n");
+        for (int i = 0; i < split.length; i++) {
+            split[i] = split[i].trim();
+        }
+        return String.join("\n", split);
     }
 
     @Test
-    public void testCustomGeneratorSettingsFixerCC655() throws IOException {
+    public void testCustomGeneratorSettingsFixerCC655() throws IOException, SyntaxError {
         runTest(testCase1, testCase1ExpectedResult);
     }
 
     @Test
-    public void testCustomGeneratorSettingsFixerCC854MultiLayer() throws IOException {
+    public void testCustomGeneratorSettingsFixerCC854MultiLayer() throws IOException, SyntaxError {
         runTest(testCase2, testCase2ExpectedResult);
     }
 }

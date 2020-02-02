@@ -189,7 +189,7 @@ dependencies {
     }
 
     shade("com.flowpowered:flow-noise:1.0.1-SNAPSHOT")
-    shade("blue.endless:jankson:1.2.0-beta.2-61")
+    shade("blue.endless:jankson:1.2.0-75")
 
     testCompile("junit:junit:4.11")
     testCompile("org.hamcrest:hamcrest-junit:2.0.0.0")

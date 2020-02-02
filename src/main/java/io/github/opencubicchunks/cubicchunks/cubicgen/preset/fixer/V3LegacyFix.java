@@ -69,7 +69,7 @@ public class V3LegacyFix {
             "goldOre", "redstoneOre", "diamondOre", "hillsEmeraldOre", "hillsSilverfishStone", "mesaAddedGoldOre", "lapisLazuli"};
 
     private final String[] legacyOreFieldNames = new String[(standard.length - 1) * 5];
-    private final String[] legacyOreFieldNamesPeriodic = new String[5];
+    private final String[] legacyOreFieldNamesPeriodic = new String[7];
 
     {
         int i = 0;
@@ -87,7 +87,10 @@ public class V3LegacyFix {
         legacyOreFieldNamesPeriodic[i++] = ore + "SpawnTries";
         legacyOreFieldNamesPeriodic[i++] = ore + "SpawnProbability";
         legacyOreFieldNamesPeriodic[i++] = ore + "SpawnMinHeight";
-        legacyOreFieldNamesPeriodic[i] = ore + "SpawnMaxHeight";
+        legacyOreFieldNamesPeriodic[i++] = ore + "SpawnMaxHeight";
+        legacyOreFieldNamesPeriodic[i++] = ore + "HeightMean";
+        legacyOreFieldNamesPeriodic[i] = ore + "HeightStdDeviation";
+
     }
 
     private final JsonObject[] standardBlockstates = new JsonObject[14];
@@ -156,10 +159,10 @@ public class V3LegacyFix {
         JsonObject monsterEggProps = new JsonObject();
         monsterEggProps.put("variant", new JsonPrimitive("stone"));
         monsterEgg.put("Name", new JsonPrimitive("minecraft:monster_egg"), null);
-        monsterEgg.put("variant", monsterEggProps, null);
+        monsterEgg.put("Properties", monsterEggProps, null);
         blockstates[11] = monsterEgg;
 
-        blockstates[12] = blockstates[6].clone();
+        blockstates[12] = blockstates[7].clone();
 
         JsonObject lapisOre = new JsonObject();
         lapisOre.put("Name", new JsonPrimitive("minecraft:lapis_ore"));
@@ -324,8 +327,8 @@ public class V3LegacyFix {
         {
             JsonObject stoneProps = new JsonObject();
             stoneProps.put("variant", new JsonPrimitive("stone"));
-            stoneBlock.put("Properties", stoneProps);
             stoneBlock.put("Name", new JsonPrimitive("minecraft:stone"));
+            stoneBlock.put("Properties", stoneProps);
         }
         builder.objectTransform("replacerConfig",
                 (oldRoot, newRoot, context) ->
@@ -385,11 +388,12 @@ public class V3LegacyFix {
                                         .build())
                         .build());
 
-        builder.transform("cubeAreas", (oldRoot, newRoot, context) -> newRoot.put("cubeAreas", oldRoot.getOrDefault("cubeAreas", new JsonArray())));
+        builder.transform("cubeAreas", (oldRoot, newRoot, context) ->
+                newRoot.put("cubeAreas", oldRoot.getOrDefault("cubeAreas", new JsonArray()), oldRoot.getComment("cubeAreas")));
         transformer = builder.build();
     }
 
-    JsonObject fixGeneratorOptions(JsonObject json, @Nullable JsonObject parent) {
+    public JsonObject fixGeneratorOptions(JsonObject json, @Nullable JsonObject parent) {
         JsonObject transformed = transformer.transform(json, parent);
         JsonArray cubeAreas = (JsonArray) transformed.get("cubeAreas");
 
@@ -431,7 +435,7 @@ public class V3LegacyFix {
             newRoot.put("cubicgen:water_level", oldRoot.get("cubicgen:water_level"), oldRoot.getComment("cubicgen:water_level"));
             return;
         }
-        JsonElement newEntry = getOrDefault(oldRoot, ctx.parent().parent(), "waterLevel", new JsonPrimitive(64));
+        JsonElement newEntry = getOrDefault(oldRoot, ctx.parent().parent(), "waterLevel", new JsonPrimitive(63));
         newRoot.put("cubicgen:water_level", newEntry);
     }
 
@@ -557,6 +561,8 @@ public class V3LegacyFix {
                     ret = newOres;
                 }
                 newRoot.put("standardOres", ret, parent.getComment("standardOres"));
+            } else {
+                newRoot.put("standardOres", standardOres, oldRoot.getComment("standardOres"));
             }
         }
     }
