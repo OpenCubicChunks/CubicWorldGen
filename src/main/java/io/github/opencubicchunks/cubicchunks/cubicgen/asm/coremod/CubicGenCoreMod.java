@@ -69,7 +69,13 @@ public class CubicGenCoreMod implements IFMLLoadingPlugin {
     }
 
     public static void initMixin() {
-        MixinBootstrap.init();
-        Mixins.addConfiguration("cubicgen.mixins.json");
+        try {
+            Class.forName("org.spongepowered.asm.launch.MixinBootstrap");
+            MixinBootstrap.init();
+            Mixins.addConfiguration("cubicgen.mixins.json");
+        } catch (ClassNotFoundException ignored) {
+            // this means cubic chunks isn't there, let forge show missing dependency screen
+        }
+
     }
 }
