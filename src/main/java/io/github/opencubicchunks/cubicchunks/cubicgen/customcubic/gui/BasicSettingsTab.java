@@ -100,24 +100,24 @@ class BasicSettingsTab {
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 4, WIDTH_2_COL))
 
                 .add(this.lavaOceans = makeCheckbox(gui, malisisText("lavaOceans"), conf.getBool("lavaOceans")),
-                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 5, WIDTH_2_COL))
+                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 4, WIDTH_2_COL))
 
 
                 .add(this.biome = makeBiomeList(gui, conf.getInt("biome")),
-                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 6, WIDTH_2_COL))
+                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 5, WIDTH_2_COL))
                 .add(this.dungeonCount = makeIntSlider(gui, malisisText("dungeonCount", ": %d"), 1, 100, conf.getInt("dungeonCount")),
-                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 6, WIDTH_2_COL))
+                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 5, WIDTH_2_COL))
                 
                 .add(this.biomeSize = makeIntSlider(gui, malisisText("biomeSize", ": %d"), 1, 8, conf.getInt("biomeSize")),
-                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 8, WIDTH_2_COL))
+                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 6, WIDTH_2_COL))
                 .add(this.riverSize = makeIntSlider(gui, malisisText("riverSize", ": %d"), 1, 5, conf.getInt("riverSize")),
-                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 8, WIDTH_2_COL))
+                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 6, WIDTH_2_COL))
 
 
                 .add(this.waterLevel = makeExponentialSlider(
                         gui, malisisText("water_level", ": %.2f"),
                         1, 12, 1, 12, conf.getInt("waterLevel")),
-                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 9, WIDTH_2_COL));
+                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 7, WIDTH_2_COL));
 
 
         this.container = layout;

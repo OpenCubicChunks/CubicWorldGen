@@ -110,25 +110,6 @@ public class UIOptionScrollbar extends UIScrollBar implements IDragTickable {
         scrollShapeInner.storeState();
     }
 
-    @Override
-    public int getWidth() {
-        int w = super.getWidth();
-        if (type == Type.HORIZONTAL) {
-            w -= getScrollable().getLeftPadding() + getScrollable().getRightPadding();
-        }
-        return w;
-    }
-
-    @Override
-    public int getHeight() {
-        int h = super.getHeight();
-        if (type == Type.VERTICAL) {
-            h -= getScrollable().getTopPadding() + getScrollable().getBottomPadding();
-        }
-        return h;
-
-    }
-
     public void setColor(int scrollColor1, int scrollColor2) {
         setColor(scrollColor1, scrollColor2, backgroundColor);
     }

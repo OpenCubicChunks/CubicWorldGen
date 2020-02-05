@@ -47,8 +47,6 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
         offsetX *= ratio;
         offsetX += scaleCenterX;
 
-        int i = 0;
-        int y = 0;
         scaleX = Math.pow(2, x);
 
         return x;
@@ -61,8 +59,6 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
         offsetY -= scaleCenterY;
         offsetY *= ratio;
         offsetY += scaleCenterY;
-
-        int i = 0;
 
         scaleY = Math.pow(2, y);
         return y;
@@ -386,6 +382,20 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
     }
 
     @Override public boolean onDrag(int prevMouseX, int prevMouseY, int x, int y, MouseButton button) {
+        if (button == MouseButton.MIDDLE) {
+            double dx = x - prevMouseX;
+            double dy = y - prevMouseY;
+            if (flipXY) {
+                double t = dx;
+                dx = dy;
+                dy = t;
+            }
+            dx *= scaleX;
+            dy *= scaleY;
+            offsetX += dx;
+            offsetY += dy;
+            return true;
+        }
         if (!isInteractionEnabled) {
             return false;
         }
