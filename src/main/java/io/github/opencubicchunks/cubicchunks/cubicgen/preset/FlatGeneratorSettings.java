@@ -28,6 +28,7 @@ import java.util.TreeMap;
 
 import blue.endless.jankson.Jankson;
 
+import blue.endless.jankson.api.DeserializationException;
 import blue.endless.jankson.api.SyntaxError;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.FlatGeneratorSettingsFixer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
@@ -38,13 +39,6 @@ public class FlatGeneratorSettings {
 
     public TreeMap<Integer, FlatLayer> layers = new TreeMap<Integer, FlatLayer>();
     public int version = 1;
-
-    public FlatGeneratorSettings() {
-        addLayer(Integer.MIN_VALUE + 1, Blocks.BEDROCK.getDefaultState());
-        addLayer(-8, Blocks.STONE.getDefaultState());
-        addLayer(-1, Blocks.DIRT.getDefaultState());
-        addLayer(0, Blocks.GRASS.getDefaultState());
-    }
 
     public void addLayer(int toY, IBlockState block) {
         int fromY = Integer.MIN_VALUE + 1;
@@ -69,10 +63,12 @@ public class FlatGeneratorSettings {
         }
         Jankson gson = jankson();
         try {
-            return gson.fromJson(json, FlatGeneratorSettings.class);
+            return gson.fromJsonCarefully(json, FlatGeneratorSettings.class);
         } catch (SyntaxError syntaxError) {
             String message = syntaxError.getMessage() + "\n" + syntaxError.getLineMessage();
             throw new RuntimeException(message, syntaxError);
+        } catch (DeserializationException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -81,7 +77,12 @@ public class FlatGeneratorSettings {
     }
 
     public static FlatGeneratorSettings defaults() {
-        return new FlatGeneratorSettings();
+        FlatGeneratorSettings s = new FlatGeneratorSettings();
+        s.addLayer(Integer.MIN_VALUE + 1, Blocks.BEDROCK.getDefaultState());
+        s.addLayer(-8, Blocks.STONE.getDefaultState());
+        s.addLayer(-1, Blocks.DIRT.getDefaultState());
+        s.addLayer(0, Blocks.GRASS.getDefaultState());
+        return s;
     }
     
     @Override

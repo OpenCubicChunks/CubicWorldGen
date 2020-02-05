@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.annotation.Nullable;
-
 public class CustomGenSettingsSerialization {
 
     public static final JsonGrammar OUT_GRAMMAR = JsonGrammar.builder()
@@ -227,6 +225,22 @@ public class CustomGenSettingsSerialization {
         return json;
     }
 
+    @SuppressWarnings("unchecked")
+    private static FlatGeneratorSettings deserializeFlatGenSettings(JsonObject obj, Marshaller marshaller) throws DeserializationException {
+        FlatGeneratorSettings gen = new FlatGeneratorSettings();
+        gen.layers = marshaller.marshallCarefully(TreeMap.class, obj.get("layers"));
+        gen.version = obj.getInt("version", 0);
+        return gen;
+    }
+
+    private static JsonObject serializeFlatGenSettings(FlatGeneratorSettings t, Marshaller marshaller) {
+        JsonObject layers = (JsonObject) marshaller.serialize(t.layers);
+        JsonObject obj = new JsonObject();
+        obj.put("layers", layers);
+        obj.put("version", new JsonPrimitive(t.version));
+        return obj;
+    }
+
     private static StandardOreList deserializeStandardOreList(JsonArray obj, Marshaller marshaller) throws DeserializationException {
         StandardOreList ores = new StandardOreList();
         for (JsonElement element : obj) {
@@ -282,6 +296,9 @@ public class CustomGenSettingsSerialization {
 
         builder.registerDeserializer(JsonObject.class, TreeMap.class, CustomGenSettingsSerialization::deserializeFlatCubicLayers);
         builder.registerSerializer(TreeMap.class, CustomGenSettingsSerialization::serializeCubeFlatCubicLayers);
+
+        builder.registerDeserializer(JsonObject.class, FlatGeneratorSettings.class, CustomGenSettingsSerialization::deserializeFlatGenSettings);
+        builder.registerSerializer(FlatGeneratorSettings.class, CustomGenSettingsSerialization::serializeFlatGenSettings);
 
         builder.registerDeserializer(JsonArray.class, StandardOreList.class, CustomGenSettingsSerialization::deserializeStandardOreList);
         builder.registerSerializer(StandardOreList.class, CustomGenSettingsSerialization::serializeStandardOreList);
