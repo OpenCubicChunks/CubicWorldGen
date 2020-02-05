@@ -7,9 +7,8 @@ import blue.endless.jankson.JsonObject;
 import blue.endless.jankson.JsonPrimitive;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.JsonTransformer.CombinedContext;
 
-import java.util.function.BiFunction;
-
 import javax.annotation.Nullable;
+import java.util.function.BiFunction;
 
 public class V3LegacyFix {
 
@@ -394,8 +393,38 @@ public class V3LegacyFix {
         transformer = builder.build();
     }
 
-    public JsonObject fixGeneratorOptions(JsonObject json, @Nullable JsonObject parent) {
+    public JsonObject fixGeneratorOptions(JsonObject json, @Nullable JsonObject parent, String lastCwgVersion) {
+        // biome size and river size have been implemented since CWG 39.
+        // presets from before that may have it changed and this has a very significant effect on the world
+        boolean hasWorkingBiomeSizes = true;
+        if (lastCwgVersion != null && lastCwgVersion.matches("\\d+\\.\\d+\\.\\d+\\.\\d+(-.*)?")) {
+            String[] split = lastCwgVersion.split("\\.");
+            if (split[0].equals("0") && split[1].equals("0") && Integer.parseInt(split[2]) < 39) {
+                hasWorkingBiomeSizes = false;
+            }
+        } else {
+            // if there is no replacer config, then it DEFINITELY didn't work
+            // even versions with compressed presets always keys replacer config key
+            // and to my knowledge, noone ever understood the compressed presets well enough
+            // to manually remove replacer config entries
+            if (!json.containsKey("replacerConfig")) {
+                hasWorkingBiomeSizes = false;
+            } else {
+                // CWG 12 switched from using "cubicchunks:" to "cubicgen:" in replacer config IDs
+                // this was before compressed configs, so if there are eny entries that still have "cubicchunks:"
+                // then river and biome size definitely didn't work
+                JsonObject replacerConfigDefaults = (JsonObject) json.getOrDefault("replacerConfig", new JsonObject());
+                replacerConfigDefaults = (JsonObject) replacerConfigDefaults.getOrDefault("defaults", new JsonObject());
+                if (replacerConfigDefaults.keySet().stream().anyMatch(n -> n.startsWith("cubicchunks:"))) {
+                    hasWorkingBiomeSizes = false;
+                }
+            }
+        }
         JsonObject transformed = transformer.transform(json, parent);
+        if (!hasWorkingBiomeSizes) {
+            transformed.put("biomeSize", new JsonPrimitive(4));
+            transformed.put("riverSize", new JsonPrimitive(4));
+        }
         JsonArray cubeAreas = (JsonArray) transformed.get("cubeAreas");
 
         assert cubeAreas != null;
@@ -403,7 +432,7 @@ public class V3LegacyFix {
             JsonArray entry = (JsonArray) cubeArea;
             JsonObject presetLayer = (JsonObject) entry.get(1);
             String layerComment = entry.getComment(1);
-            JsonObject fixedLayer = fixGeneratorOptions(presetLayer, transformed);
+            JsonObject fixedLayer = fixGeneratorOptions(presetLayer, transformed, lastCwgVersion);
 
             entry.remove(presetLayer);
             entry.add(fixedLayer, layerComment);

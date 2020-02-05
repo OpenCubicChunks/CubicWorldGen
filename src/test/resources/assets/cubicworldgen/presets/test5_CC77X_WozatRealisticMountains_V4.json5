@@ -247,8 +247,8 @@
   ],
   "lavaOceans": false,
   "biome": -1,
-  "biomeSize": 8,
-  "riverSize": 5,
+  "biomeSize": 4,
+  "riverSize": 4,
   "standardOres": [
     {
       "blockstate": {

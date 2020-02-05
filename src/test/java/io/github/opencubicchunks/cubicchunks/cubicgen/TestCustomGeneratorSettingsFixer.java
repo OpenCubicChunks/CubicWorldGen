@@ -136,13 +136,13 @@ public class TestCustomGeneratorSettingsFixer {
 
         String testCaseString = getTestCaseString(examplePath);
         JsonObject preprocessed = legacyPreprocessor.load(testCaseString);
-        JsonObject fixed = removeExpectedDifferences(legacyFixer.fixGeneratorOptions(preprocessed, new JsonObject()));
+        JsonObject fixed = removeExpectedDifferences(legacyFixer.fixGeneratorOptions(preprocessed, new JsonObject(), null));
         JsonObject expected = removeExpectedDifferences(Jankson.builder().build().load(getTestCaseString(resutPath)));
         assertEquals(expected, fixed);
 
         // make sure that it also matches the second time (test that there is no internal state that changes results)
         preprocessed = legacyPreprocessor.load(testCaseString);
-        fixed = removeExpectedDifferences(legacyFixer.fixGeneratorOptions(preprocessed, new JsonObject()));
+        fixed = removeExpectedDifferences(legacyFixer.fixGeneratorOptions(preprocessed, new JsonObject(), null));
         expected = removeExpectedDifferences(Jankson.builder().build().load(getTestCaseString(resutPath)));
         assertEquals(expected, fixed);
     }

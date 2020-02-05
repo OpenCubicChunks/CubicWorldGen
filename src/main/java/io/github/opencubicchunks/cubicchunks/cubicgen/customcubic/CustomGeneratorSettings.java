@@ -236,7 +236,7 @@ public class CustomGeneratorSettings {
     public static CustomGeneratorSettings getFromWorld(World world) {
         try {
             String jsonString = world.getWorldInfo().getGeneratorOptions();
-            jsonString = CustomGeneratorSettingsFixer.INSTANCE.fixJsonString(jsonString);
+            jsonString = CustomGeneratorSettingsFixer.INSTANCE.fixJsonString(jsonString, null);
             IWorldInfoAccess wia = (IWorldInfoAccess) world.getWorldInfo();
             wia.setGeneratorOptions(jsonString);
 

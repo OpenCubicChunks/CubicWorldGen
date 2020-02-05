@@ -25,8 +25,15 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common;
 
 import javax.annotation.Nullable;
 
+import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.PresetLoadError;
+import net.minecraft.nbt.CompressedStreamTools;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraftforge.common.util.Constants;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -41,8 +48,18 @@ import net.minecraft.world.storage.ISaveHandler;
 import net.minecraft.world.storage.SaveHandler;
 import net.minecraft.world.storage.WorldInfo;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 @Mixin(SaveHandler.class)
 public class MixinSaveHandler {
+
+    @Shadow @Final private File worldDirectory;
 
     @Inject(method = "loadWorldInfo", at = @At("RETURN"))
     private void onLoadWorldInfo(CallbackInfoReturnable<WorldInfo> cir) {
@@ -52,7 +69,8 @@ public class MixinSaveHandler {
         if (generatorOptions == null)
             return;
         try {
-            generatorOptions = CustomGeneratorSettingsFixer.INSTANCE.fixJsonString(generatorOptions);
+            String lastCwgVersion = getCwgVersionFromLevel(this.worldDirectory.toPath().resolve("level.dat"));
+            generatorOptions = CustomGeneratorSettingsFixer.INSTANCE.fixJsonString(generatorOptions, lastCwgVersion);
             CustomGeneratorSettings.saveToFile((ISaveHandler) this, generatorOptions);
         } catch (PresetLoadError presetLoadError) {
             throw new RuntimeException(presetLoadError);
@@ -60,6 +78,30 @@ public class MixinSaveHandler {
         IWorldInfoAccess worldInfo = (IWorldInfoAccess) cir.getReturnValue();
         worldInfo.setGeneratorOptions(generatorOptions);
     }
+
+    private String getCwgVersionFromLevel(Path levelDat) {
+        try {
+            NBTTagCompound nbt = CompressedStreamTools.readCompressed(Files.newInputStream(levelDat));
+            NBTTagCompound fml = nbt.getCompoundTag("FML");
+            NBTTagList modList = fml.getTagList("ModList", Constants.NBT.TAG_COMPOUND);
+            for (NBTBase entry : modList) {
+                NBTTagCompound mod = (NBTTagCompound) entry;
+                String id = mod.getString("ModId");
+                if (id.equals(CustomCubicMod.MODID)) {
+                    String v = mod.getString("ModVersion");
+                    if (v.equals("${version}")) {
+                        return CustomCubicMod.MODID;
+                    }
+                    return v;
+                }
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        // cubicgen wasn't there, so the world had to be loaded with pre-api version
+        return "0.0.0.0";
+    }
+
 
     @Inject(method = "saveWorldInfoWithPlayer", at = @At("RETURN"))
     private void onSavingWorldInfoWithPlayer(WorldInfo worldInformation, @Nullable NBTTagCompound tagCompound,

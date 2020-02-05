@@ -62,10 +62,14 @@ public class CustomGeneratorSettingsFixer {
         if (isUpToDate(obj)) {
             return obj;
         }
-        return fixJsonWithLegacy(obj);
+        return fixJsonWithLegacy(obj, null);
     }
 
-    public String fixJsonString(String json) {
+    // Note: lastCwgVersion is only given by MixinSaveHandler, as this is the first time conversion happens
+    // then the preset is saved back, already converted
+    // so there is no need for any other code to give valid cwg version data
+    // this is only used to determine whether river and biome size options should be considered valid
+    public String fixJsonString(String json, @Nullable String lastCwgVersion) {
         // when creating a world without configuring preset, the string is empty
         if (json.isEmpty()) {
             return CustomGeneratorSettings.defaults().toJsonObject().toJson(CustomGenSettingsSerialization.OUT_GRAMMAR);
@@ -74,7 +78,7 @@ public class CustomGeneratorSettingsFixer {
         if (isUpToDate(obj)) {
             return obj.toJson(CustomGenSettingsSerialization.OUT_GRAMMAR);
         }
-        JsonObject newObj = fixJsonWithLegacy(obj);
+        JsonObject newObj = fixJsonWithLegacy(obj, lastCwgVersion);
         return newObj.toJson(CustomGenSettingsSerialization.OUT_GRAMMAR);
     }
 
@@ -103,18 +107,18 @@ public class CustomGeneratorSettingsFixer {
         return ((JsonPrimitive) json.get("version")).asInt(0) == version;
     }
 
-    private JsonObject fixJsonWithLegacy(JsonObject toFix) throws UnsupportedPresetException {
-        return fixJsonWithLegacy(toFix, new JsonObject());
+    private JsonObject fixJsonWithLegacy(JsonObject toFix, @Nullable String lastCwgVersion) throws UnsupportedPresetException {
+        return fixJsonWithLegacy(toFix, new JsonObject(), lastCwgVersion);
     }
 
-    private JsonObject fixJsonWithLegacy(JsonObject toFix, @Nullable JsonObject parent) throws UnsupportedPresetException {
+    private JsonObject fixJsonWithLegacy(JsonObject toFix, @Nullable JsonObject parent, @Nullable String lastCwgVersion) throws UnsupportedPresetException {
         int v = getVersion(toFix);
         boolean v3fix = toFix.getOrDefault("v3fix", JsonPrimitive.FALSE).equals(JsonPrimitive.TRUE);
         if (v <= 3 && !v3fix && parent == null) {
             throw new UnsupportedPresetException("V3 and older layers are not supported in V4+ presets");
         }
         if (v <= 3 && !v3fix) { // reprocess existing V3, some V3 presets aren't proper output of V3 fixer
-            toFix = legacyFixer.fixGeneratorOptions(toFix, parent);
+            toFix = legacyFixer.fixGeneratorOptions(toFix, parent, lastCwgVersion);
         }
         for (int i = v + 1; i < fixers.size(); i++) {
             IJsonFix fixer = fixers.get(i);

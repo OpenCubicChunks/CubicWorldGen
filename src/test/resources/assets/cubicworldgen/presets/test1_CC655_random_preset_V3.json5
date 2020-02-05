@@ -17,8 +17,8 @@
   "aboveSeaLavaLakeRarity": 104,
   "lavaOceans": true,
   "biome": 1,
-  "biomeSize": 104,
-  "riverSize": 105,
+  "biomeSize": 4,
+  "riverSize": 4,
   "standardOres": [
     {
       "blockstate": {
