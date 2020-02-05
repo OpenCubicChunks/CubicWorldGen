@@ -23,21 +23,23 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui;
 
+import com.google.common.eventbus.Subscribe;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.DummyWorld;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.GuiOverlay;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBlockStateButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIOptionScrollbar;
-import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UITextFieldFixed;
+import net.malisis.core.client.gui.Anchor;
 import net.malisis.core.client.gui.ClipArea;
 import net.malisis.core.client.gui.GuiRenderer;
 import net.malisis.core.client.gui.MalisisGui;
-import net.malisis.core.client.gui.component.IClipable;
 import net.malisis.core.client.gui.component.container.UIContainer;
-import net.malisis.core.client.gui.component.control.IScrollable;
 import net.malisis.core.client.gui.component.control.UIScrollBar;
 import net.malisis.core.client.gui.component.decoration.UITooltip;
+import net.malisis.core.client.gui.component.interaction.UITextField;
+import net.malisis.core.client.gui.event.component.ContentUpdateEvent;
 import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
@@ -58,8 +60,10 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIContainer<T> {
 
@@ -69,9 +73,11 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
     private Consumer<IBlockState> onSelect;
 
     private final List<IBlockState> blockstates;
+    private List<IBlockState> filteredStates;
 
     private static final List<IBlockState> allStates;
     private static final List<IBlockState> allDefaultStates;
+
 
     static {
         List<IBlockState> states = new ArrayList<>();
@@ -108,6 +114,7 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
         super(gui);
         this.onSelect = onSelect;
         this.blockstates = blockstates;
+        this.filteredStates = blockstates;
 
         UIScrollBar scrollbar = new UIOptionScrollbar(gui, (T) this, UIScrollBar.Type.VERTICAL);
         scrollbar.setVisible(true);
@@ -123,19 +130,20 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
 
     @Override public boolean onMouseMove(int lastX, int lastY, int x, int y) {
         int idx = getSelectedIdx(x, y);
-        if (idx < 0 || idx >= blockstates.size()) {
+        if (idx < 0 || idx >= filteredStates.size()) {
             tooltip = null;
         } else {
             if (tooltip == null) {
                 tooltip = new UITooltip(getGui());
             }
-            tooltip.setText(generateTooltip(blockstates.get(idx)));
+            tooltip.setText(generateTooltip(filteredStates.get(idx)));
         }
         return true;
     }
 
     private static String generateTooltip(IBlockState blockState) {
         StringBuffer sb = new StringBuffer(128);
+        sb.append(blockState.getBlock().getLocalizedName()).append("\n");
         sb.append(ForgeRegistries.BLOCKS.getKey(blockState.getBlock()));
         for (Map.Entry<IProperty<?>, Comparable<?>> entry : blockState.getProperties().entrySet()) {
             sb.append(" \n ");
@@ -148,15 +156,16 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
 
     @Override public boolean onClick(int x, int y) {
         int idx = getSelectedIdx(x, y);
-        if (idx < 0 || idx >= blockstates.size()) {
+        if (idx < 0 || idx >= filteredStates.size()) {
             return false;
         }
-        onSelect.accept(blockstates.get(idx));
+        onSelect.accept(filteredStates.get(idx));
         getGui().close();
         return true;
     }
 
     @Override public void drawBackground(GuiRenderer renderer, int mouseX, int mouseY, float partialTick) {
+        super.drawBackground(renderer, mouseX, mouseY, partialTick);
         rp.useTexture.set(false);
 
         renderer.disableTextures();
@@ -183,7 +192,6 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
     }
 
     @Override public void drawForeground(GuiRenderer renderer, int mouseX, int mouseY, float partialTick) {
-
         // half of that on the left, half on the right
         int addPadding =
                 (int) Math.round((getAvailableWidth() - getLineStates() * UIBlockStateButton.SIZE) * 0.5);
@@ -199,7 +207,7 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
 
         GlStateManager.bindTexture(0);
         int idx = getSelectedIdx(mouseX, mouseY);
-        if (idx >= 0 && idx < blockstates.size()) {
+        if (idx >= 0 && idx < filteredStates.size()) {
             int line = idx / getLineStates();
             int num = idx % getLineStates();
 
@@ -221,7 +229,7 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
         GlStateManager.enableDepth();
 
         for (int i = itemStart; i < itemEnd; i++) {
-            if (i >= blockstates.size() || i < 0) {
+            if (i >= filteredStates.size() || i < 0) {
                 continue;
             }
             int line = i / getLineStates();
@@ -232,7 +240,7 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
             Minecraft.getMinecraft().entityRenderer.enableLightmap();
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, blockTexture.getGlTextureId());
 
-            drawState(blockstates.get(i), num * UIBlockStateButton.SIZE + PADDING_HORIZ + addPadding,
+            drawState(filteredStates.get(i), num * UIBlockStateButton.SIZE + PADDING_HORIZ + addPadding,
                     (int) (line * UIBlockStateButton.SIZE - pixelsOffset + PADDING_VERT));
         }
 
@@ -242,6 +250,11 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
         GlStateManager.disableRescaleNormal();
         RenderHelper.disableStandardItemLighting();
         GlStateManager.disableDepth();
+
+        renderer.next();
+        Minecraft.getMinecraft().getTextureManager().bindTexture(renderer.getDefaultTexture().getResourceLocation());
+
+        super.drawForeground(renderer, mouseX, mouseY, partialTick);
 
     }
 
@@ -260,7 +273,7 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
             Minecraft.getMinecraft().getBlockRendererDispatcher().renderBlock(state, BlockPos.ORIGIN,
                     DummyWorld.getInstanceWithBlockState(state), buf);
         } catch(Throwable t) {
-            if (t instanceof VirtualMachineError || t instanceof VerifyError || t instanceof LinkageError) {
+            if (t instanceof VirtualMachineError || t instanceof LinkageError) {
                 throw (Error) t;
             }
             // TODO: draw something to indicate it's broken
@@ -303,7 +316,7 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
     }
 
     private int getLineCount() {
-        return MathHelper.ceil(blockstates.size() / (double) getLineStates());
+        return MathHelper.ceil(filteredStates.size() / (double) getLineStates());
     }
 
     @Override
@@ -316,11 +329,42 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
         return getLineCount() * UIBlockStateButton.SIZE;
     }
 
+    private void setFilterText(String text) {
+        String txt = text.toLowerCase(Locale.ROOT);
+        String txtLocalized = text.toLowerCase();
+        filteredStates = blockstates.parallelStream()
+                .filter(b -> b.getBlock().getRegistryName().toString().toLowerCase(Locale.ROOT).contains(txt) ||
+                        b.getBlock().getLocalizedName().toLowerCase().contains(txtLocalized)).collect(Collectors.toList());
+    }
+
     public static MalisisGui makeOverlay(GuiScreen parent, Consumer<IBlockState> onSelect) {
-        return new GuiOverlay(parent, gui -> new UIBlockStateSelect<>(gui, onSelect, allStates));
+        return new GuiOverlay(parent, gui -> new BlockStateSelectContainer(gui, new UIBlockStateSelect<>(gui, onSelect, allStates)));
     }
 
     public static MalisisGui makeDefaultStatesOverlay(GuiScreen parent, Consumer<IBlockState> onSelect) {
-        return new GuiOverlay(parent, gui -> new UIBlockStateSelect<>(gui, onSelect, allDefaultStates));
+        return new GuiOverlay(parent, gui -> new BlockStateSelectContainer(gui, new UIBlockStateSelect<>(gui, onSelect, allDefaultStates)));
+    }
+    private static class BlockStateSelectContainer extends UIContainer<BlockStateSelectContainer> {
+
+        public BlockStateSelectContainer(ExtraGui gui, UIBlockStateSelect<?> blockstateSelect) {
+            super(gui);
+            add(blockstateSelect);
+            int textFieldHeight = 12;
+            int extraYSpace = 2;
+            int scrollbarWidthHalf = 3;
+            add(new UITextFieldFixed(gui, "")
+                    .setPosition(-PADDING_HORIZ + scrollbarWidthHalf,
+                            -(textFieldHeight - PADDING_VERT + extraYSpace),
+                            Anchor.TOP | Anchor.RIGHT)
+                    .setSize(100, 12).register(
+                            new Object() {
+                                @Subscribe
+                                public void onChange(ContentUpdateEvent<UITextField> event) {
+                                    blockstateSelect.setFilterText(event.getComponent().getText());
+                                }
+                            }
+                    ));
+        }
+
     }
 }
