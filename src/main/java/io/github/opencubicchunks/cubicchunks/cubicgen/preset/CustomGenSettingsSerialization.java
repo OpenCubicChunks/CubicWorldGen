@@ -38,7 +38,7 @@ public class CustomGenSettingsSerialization {
             .withComments(true)
             .bareSpecialNumerics(true)
             .printWhitespace(true)
-            .printUnquotedKeys(true)
+            .printUnquotedKeys(false) // change when https://github.com/falkreon/Jankson/issues/38 is fixed
             .printCommas(true)
             .bareRootObject(false)
             .build();
