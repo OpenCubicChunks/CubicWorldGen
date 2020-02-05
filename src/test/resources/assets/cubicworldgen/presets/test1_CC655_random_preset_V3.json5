@@ -257,36 +257,36 @@
   "highNoiseFrequencyY": 131.0,
   "highNoiseFrequencyZ": 132.0,
   "highNoiseOctaves": 3,
-  "expectedBaseHeight": 110.0,
   "version": 3,
+  "alternateStrongholdsPositions": false,
+  "expectedBaseHeight": 110.0,
+  "expectedHeightVariation": 109.0,
+  "actualHeight": 544.0,
   "replacerConfig": {
     "defaults": {
-      "cubicgen:terrain_fill_block": {
-         "Name": "minecraft:stone",
-         "Properties": {
-           "variant": "stone"
-         }
-      },
+      "cubicgen:biome_fill_noise_octaves": 4.0,
       "cubicgen:ocean_block": {
         "Properties": {
-          "level": "0"
+          "level": 0.0
         },
         "Name": "minecraft:water"
       },
-      "cubicgen:mesa_depth": 16.0,
-      "cubicgen:biome_fill_depth_offset": 3.0,
-      "cubicgen:biome_fill_noise_octaves": 4.0,
-      "cubicgen:horizontal_gradient_depth_decrease_weight": 1.0,
-      "cubicgen:height_offset": 110.0,
-      "cubicgen:biome_fill_noise_freq": 0.0078125,
       "cubicgen:height_scale": 109.0,
+      "cubicgen:biome_fill_noise_freq": 0.0078125,
+      "cubicgen:water_level": 63.0,
       "cubicgen:biome_fill_depth_factor": 2.3333333333333335,
-      "cubicgen:water_level": 63.0
+      "cubicgen:terrain_fill_block": {
+        "Name": "minecraft:stone",
+        "Properties": {
+          "variant": "stone"
+        }
+      },
+      "cubicgen:mesa_depth": 16.0,
+      "cubicgen:horizontal_gradient_depth_decrease_weight": 1.0,
+      "cubicgen:biome_fill_depth_offset": 3.0,
+      "cubicgen:height_offset": 110.0
     },
     "overrides": {}
   },
-  "expectedHeightVariation": 109.0,
-  "cubeAreas": [],
-  "alternateStrongholdsPositions": false,
-  "actualHeight": 544.0
+  "cubeAreas": []
 }

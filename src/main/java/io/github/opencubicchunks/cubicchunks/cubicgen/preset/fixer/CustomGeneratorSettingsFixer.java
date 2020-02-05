@@ -119,7 +119,7 @@ public class CustomGeneratorSettingsFixer {
         for (int i = v + 1; i < fixers.size(); i++) {
             IJsonFix fixer = fixers.get(i);
             if (fixer != null) {
-                toFix = fixer.fix(this, toFix);
+                toFix = fixer.fix(this::fixJsonNew, toFix);
             }
         }
         return toFix;

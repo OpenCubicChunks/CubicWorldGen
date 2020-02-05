@@ -10,10 +10,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public class V4Fix implements IJsonFix {
 
-    private final JsonTransformer<CustomGeneratorSettingsFixer> transformer = JsonTransformer.<CustomGeneratorSettingsFixer>builder("V3 -> V4")
+    private final JsonTransformer<Function<JsonObject, JsonObject>> transformer = JsonTransformer.<Function<JsonObject, JsonObject>>builder("V3 -> V4")
             .drop("v3fix")
             .valueTransform("version", (e, ctx) -> new JsonPrimitive(4))
             .passthroughFor(
@@ -40,10 +41,10 @@ public class V4Fix implements IJsonFix {
                     }, JsonTransformer.passthroughAll("V3 -> V4 (lakes)"),
                     "waterLakeRarity", "lavaLakeRarity", "aboveSeaLavaLakeRarity", "waterLakes", "lavaLakes")
             .objectTransform("replacerConfig",
-                    JsonTransformer.<CombinedContext<CustomGeneratorSettingsFixer>>builder("V3 -> V4 (replacer config)")
+                    JsonTransformer.<CombinedContext<Function<JsonObject, JsonObject>>>builder("V3 -> V4 (replacer config)")
                             .passthroughFor("overrides")
                             .objectTransform("defaults",
-                                    JsonTransformer.<CombinedContext<CombinedContext<CustomGeneratorSettingsFixer>>>builder(
+                                    JsonTransformer.<CombinedContext<CombinedContext<Function<JsonObject, JsonObject>>>>builder(
                                             "V3 -> V4 (replacer config defaults)")
                                             .passthroughFor(
                                                     "cubicgen:biome_fill_noise_octaves",
@@ -66,11 +67,11 @@ public class V4Fix implements IJsonFix {
             .valueTransform("cubeAreas", this::convertCubeAreas)
             .build();
 
-    @Override public JsonObject fix(CustomGeneratorSettingsFixer fixer, JsonObject oldRoot) {
-        return transformer.transform(oldRoot, fixer);
+    @Override public JsonObject fix(Function<JsonObject, JsonObject> fixerFunction, JsonObject oldRoot) {
+        return transformer.transform(oldRoot, fixerFunction);
     }
 
-    private JsonElement convertCubeAreas(JsonElement oldCubeAreasElement, CustomGeneratorSettingsFixer fixer) {
+    private JsonElement convertCubeAreas(JsonElement oldCubeAreasElement, Function<JsonObject, JsonObject> fixer) {
         JsonArray newCubeAreas = new JsonArray();
         JsonArray oldCubeAreas = (JsonArray) oldCubeAreasElement;
         for (int i = 0; i < oldCubeAreas.size(); i++) {
@@ -79,7 +80,7 @@ public class V4Fix implements IJsonFix {
 
             newLayer.add(oldLayer.get(0), oldLayer.getComment(0));
 
-            JsonObject fixedLayer = fixer.fixJsonNew((JsonObject) oldLayer.get(1));
+            JsonObject fixedLayer = fixer.apply((JsonObject) oldLayer.get(1));
             newLayer.add(fixedLayer, oldLayer.getComment(1));
 
             newCubeAreas.add(newLayer, oldCubeAreas.getComment(i));
@@ -202,10 +203,6 @@ public class V4Fix implements IJsonFix {
             comment = String.join("\n", comments);
         }
         lakes.add(lakeConfig, comment);
-    }
-
-    private void convertReplacerConfigs(JsonObject oldRoot, JsonObject newRoot) {
-
     }
 
     private double lavaLakeProbability(double expectedBaseHeight, double expectedHeightVariation, double rarity, double aboveSeaRarity, double y) {

@@ -194,7 +194,7 @@ public class CustomCubicGui extends ExtraGui {
                         public void onChange(ComponentEvent.ValueChange<UITextField, String> event) {
                             float scroll = textExpanded.getOffsetY();
                             try {
-                                jsonConf = CustomGeneratorSettings.asJsonObject(event.getNewValue());
+                                JsonObject jsonConf = CustomGeneratorSettings.asJsonObject(event.getNewValue());
                                 textExpanded.setText(getFormattedJson(jsonConf));
                                 textExpanded.setOffsetY(scroll, 0);// delta doesn't appear to be used
                             } catch (JsonSyntaxException | NumberFormatException ex) {
@@ -207,7 +207,7 @@ public class CustomCubicGui extends ExtraGui {
                         @Subscribe
                         public void onChange(ComponentEvent.ValueChange<UITextField, String> event) {
                             try {
-                                jsonConf = CustomGeneratorSettings.asJsonObject(event.getNewValue());
+                                JsonObject jsonConf = CustomGeneratorSettings.asJsonObject(event.getNewValue());
                                 textMinified.setText(getSettingsJson(jsonConf));
                             } catch (JsonSyntaxException | NumberFormatException ex) {
                                 textMinified.setText(I18n.format("cubicgen.gui.cubicgen.presets.invalid_json"));

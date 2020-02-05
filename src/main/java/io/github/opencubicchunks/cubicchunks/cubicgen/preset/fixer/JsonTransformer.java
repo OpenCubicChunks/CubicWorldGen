@@ -10,8 +10,8 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -114,8 +114,9 @@ public class JsonTransformer<CTX> {
     public static class Builder<CTX> {
 
         private final String transformName;
-        private Map<EntryTransform<CTX>, String> transformToNew = new HashMap<>();
-        private Map<String, List<EntryTransform<CTX>>> oldToTransforms = new HashMap<>();
+        // linked hashmap ensures deterministic order
+        private Map<EntryTransform<CTX>, String> transformToNew = new LinkedHashMap<>();
+        private Map<String, List<EntryTransform<CTX>>> oldToTransforms = new LinkedHashMap<>();
         private UnhandledEntryTransform<CTX> unhandledTransform;
 
         public Builder(String transformName) {

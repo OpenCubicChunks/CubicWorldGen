@@ -3,9 +3,11 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer;
 import blue.endless.jankson.JsonElement;
 import blue.endless.jankson.JsonObject;
 
+import java.util.function.Function;
+
 public interface IJsonFix {
 
-    JsonObject fix(CustomGeneratorSettingsFixer fixer, JsonObject jsonObject);
+    JsonObject fix(Function<JsonObject, JsonObject> fixer, JsonObject jsonObject);
 
 
     default void copyDirect(String name, JsonObject oldRoot, JsonObject newRoot) {

@@ -69,7 +69,7 @@ public class V3LegacyFix {
             "goldOre", "redstoneOre", "diamondOre", "hillsEmeraldOre", "hillsSilverfishStone", "mesaAddedGoldOre", "lapisLazuli"};
 
     private final String[] legacyOreFieldNames = new String[(standard.length - 1) * 5];
-    private final String[] legacyOreFieldNamesPeriodic = new String[7];
+    private final String[] legacyOreFieldNamesPeriodic = new String[8];
 
     {
         int i = 0;
@@ -89,7 +89,8 @@ public class V3LegacyFix {
         legacyOreFieldNamesPeriodic[i++] = ore + "SpawnMinHeight";
         legacyOreFieldNamesPeriodic[i++] = ore + "SpawnMaxHeight";
         legacyOreFieldNamesPeriodic[i++] = ore + "HeightMean";
-        legacyOreFieldNamesPeriodic[i] = ore + "HeightStdDeviation";
+        legacyOreFieldNamesPeriodic[i++] = ore + "HeightStdDeviation";
+        legacyOreFieldNamesPeriodic[i] = ore + "HeightSpacing";
 
     }
 
@@ -467,7 +468,7 @@ public class V3LegacyFix {
         String liquidName = JsonPrimitive.TRUE.equals(lavaOceans) ? "minecraft:lava" : "minecraft:water";
         JsonObject liquid = new JsonObject();
         JsonObject liquidProp = new JsonObject();
-        liquidProp.put("level", new JsonPrimitive("0"));
+        liquidProp.put("level", new JsonPrimitive(0.0));
         liquid.put("Properties", liquidProp);
         liquid.put("Name", new JsonPrimitive(liquidName));
         newRoot.put("cubicgen:ocean_block", liquid);

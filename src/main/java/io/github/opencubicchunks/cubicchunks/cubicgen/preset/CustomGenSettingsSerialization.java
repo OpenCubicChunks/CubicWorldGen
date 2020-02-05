@@ -38,9 +38,8 @@ public class CustomGenSettingsSerialization {
             .withComments(true)
             .bareSpecialNumerics(true)
             .printWhitespace(true)
-            .printUnquotedKeys(false) // TODO set to true once it's fixed in jankson https://github.com/falkreon/Jankson/issues/26
+            .printUnquotedKeys(true)
             .printCommas(true)
-            .printTrailingCommas(true)
             .bareRootObject(false)
             .build();
 
@@ -54,14 +53,14 @@ public class CustomGenSettingsSerialization {
         if (defaults != null) {
             for (Map.Entry<String, JsonElement> e : defaults.entrySet()) {
                 ResourceLocation key = new ResourceLocation(e.getKey());
-                Object value = getObject(e);
+                Object value = getObject(e, marshaller);
                 conf.setDefault(key, value);
             }
         }
         if (overrides != null) {
             for (Map.Entry<String, JsonElement> e : overrides.entrySet()) {
                 ResourceLocation key = new ResourceLocation(e.getKey());
-                Object value = getObject(e);
+                Object value = getObject(e, marshaller);
                 conf.set(key, value);
             }
         }
@@ -88,13 +87,13 @@ public class CustomGenSettingsSerialization {
         return root;
     }
 
-    private static Object getObject(Map.Entry<String, JsonElement> e) {
+    private static Object getObject(Map.Entry<String, JsonElement> e, Marshaller marshaller) {
         Object value;
         if (e.getValue() instanceof JsonPrimitive) {
             value = ((JsonPrimitive) e.getValue()).asDouble(0.0);
         } else {
             // currently the only object suppoorted is blockstate
-            value = ((JsonObject) e.getValue()).getMarshaller().marshall(BlockStateDesc.class, e.getValue());
+            value = marshaller.marshall(BlockStateDesc.class, e.getValue());
         }
         return value;
     }
@@ -122,7 +121,7 @@ public class CustomGenSettingsSerialization {
         return new JsonPrimitive(biome.getBiomeId());
     }
 
-    public static UserFunction deserializeUserFunction(JsonArray arr, @Nullable Marshaller marshaller) {
+    public static UserFunction deserializeUserFunction(JsonArray arr, Marshaller marshaller) {
         UserFunction.Entry[] entries = new UserFunction.Entry[arr.size()];
         for (int i = 0; i < arr.size(); i++) {
             JsonObject e = (JsonObject) arr.get(i);
@@ -131,7 +130,7 @@ public class CustomGenSettingsSerialization {
         return new UserFunction(entries);
     }
 
-    public static JsonElement serializeUserFunction(UserFunction func, @Nullable Marshaller marshaller) {
+    public static JsonElement serializeUserFunction(UserFunction func, Marshaller marshaller) {
         JsonArray arr = new JsonArray();
         for (UserFunction.Entry value : func.values) {
             JsonObject e = new JsonObject();
@@ -150,7 +149,7 @@ public class CustomGenSettingsSerialization {
         return new JsonPrimitive(block.getBlockId());
     }
 
-    public static BlockStateDesc deserializeBlockstate(JsonObject obj, @Nullable Marshaller marshaller) {
+    public static BlockStateDesc deserializeBlockstate(JsonObject obj, Marshaller marshaller) {
         String name = obj.get(String.class, "Name");
         Map<String, String> properties = new HashMap<>();
         if (obj.containsKey("Properties")) {
@@ -182,8 +181,8 @@ public class CustomGenSettingsSerialization {
             JsonObject key = (JsonObject) entry.get(0);
             JsonObject value = (JsonObject) entry.get(1);
 
-            IntAABB aabb = arr.getMarshaller().marshall(IntAABB.class, key);
-            CustomGeneratorSettings conf = arr.getMarshaller().marshall(CustomGeneratorSettings.class, value);
+            IntAABB aabb = marshaller.marshall(IntAABB.class, key);
+            CustomGeneratorSettings conf = marshaller.marshall(CustomGeneratorSettings.class, value);
             map.add(new AbstractMap.SimpleEntry<>(aabb, conf));
         }
         return new CubeAreas(map);
@@ -214,7 +213,7 @@ public class CustomGenSettingsSerialization {
         for (String yStr : obj.keySet()) {
             JsonObject value = (JsonObject) obj.get(yStr);
             int y = Integer.parseInt(yStr);
-            FlatLayer layer = obj.getMarshaller().marshall(FlatLayer.class, value);
+            FlatLayer layer = marshaller.marshall(FlatLayer.class, value);
             map.put(y, layer);
         }
         return map;

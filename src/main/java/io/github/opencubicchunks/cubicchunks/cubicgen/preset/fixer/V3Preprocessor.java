@@ -335,6 +335,9 @@ public class V3Preprocessor {
     }
 
     public JsonObject load(String json) throws PresetLoadError {
+        Jankson jankson = blue.endless.jankson.Jankson
+                .builder()
+                .build();
         Exception gsonException = null;
         try {
             Gson gson = new GsonBuilder().setPrettyPrinting().setLenient().serializeSpecialFloatingPointValues().create();
@@ -349,7 +352,18 @@ public class V3Preprocessor {
             int v = version.getValue().getNumber().intValue();
             if (v <= 3) {
                 outJson = preprocess(outJson);
-                return (JsonObject) outJson.toJankson();
+                JsonObject preprocessedGson = (JsonObject) outJson.toJankson();
+                JsonObject newJson = null;
+                try {
+                    newJson = jankson.load(json);
+                } catch (SyntaxError ex) {
+                    CustomCubicMod.LOGGER.log(Level.DEBUG, "Couldn't parse json using jankson library, skipping merging of comments with legacy gson preprocessing (this is expected for some old json presets)", ex);
+                }
+                if (newJson != null) {
+                    return mergeComments(preprocessedGson, newJson);
+                } else {
+                    return preprocessedGson;
+                }
             }
         } catch (JsonParseException | MalformedJsonException ex) {
             CustomCubicMod.LOGGER.log(Level.DEBUG, "Couldn't parse json using gson library, skipping legacy preprocessing (this is expected for new json presets)", ex);
@@ -358,9 +372,7 @@ public class V3Preprocessor {
         } catch (IOException e) {
             throw new PresetLoadError(e);
         }
-        Jankson jankson = blue.endless.jankson.Jankson
-                .builder()
-                .build();
+
         try {
             JsonObject configObject = jankson.load(json);
             if (((JsonPrimitive) configObject.getOrDefault("version", new JsonPrimitive(3))).asInt(3) <= 3) {
@@ -382,6 +394,51 @@ public class V3Preprocessor {
                         .append(err.getMessage()).append("\n")
                         .append(err.getLineMessage());
                 throw new PresetLoadError(msg.toString(), err);
+            }
+        }
+    }
+
+    private JsonObject mergeComments(JsonObject preprocessed, JsonObject newJson) {
+        for (Map.Entry<String, JsonElement> entry : preprocessed.entrySet()) {
+            String key = entry.getKey();
+            String newJsonComment = newJson.getComment(key);
+            if (newJsonComment != null) {
+                String oldComment = preprocessed.getComment(key);
+                if (oldComment != null) {
+                    newJsonComment = oldComment + "\n" + newJsonComment;
+                }
+                preprocessed.setComment(key, newJsonComment);
+            }
+
+            JsonElement newElement = newJson.get(key);
+            if (newElement != null) {
+                if (newElement instanceof JsonObject) {
+                    mergeComments((JsonObject) entry.getValue(), (JsonObject) newElement);
+                } else if (newElement instanceof JsonArray) {
+                    mergeComments((JsonArray) entry.getValue(), (JsonArray) newElement);
+                }
+            }
+        }
+        return preprocessed;
+    }
+
+    private void mergeComments(JsonArray preprocessed, JsonArray newJson) {
+        for (int i = 0; i < preprocessed.size(); i++) {
+            String newComment = newJson.getComment(i);
+            String oldComment = preprocessed.getComment(i);
+            if (newComment != null) {
+                if (oldComment != null) {
+                    newComment = oldComment + "\n" + newComment;
+                }
+                preprocessed.setComment(i, newComment);
+            }
+            JsonElement newElement = newJson.get(i);
+            if (newElement != null) {
+                if (newElement instanceof JsonObject) {
+                    mergeComments((JsonObject) preprocessed.get(i), (JsonObject) newElement);
+                } else if (newElement instanceof JsonArray) {
+                    mergeComments((JsonArray) preprocessed.get(i), (JsonArray) newElement);
+                }
             }
         }
     }
