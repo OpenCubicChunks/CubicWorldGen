@@ -77,7 +77,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 @Mod(modid = CustomCubicMod.MODID,
-        dependencies = "required:cubicchunks@[0.0.983.0,);required:forge@[14.23.3.2658,)",
+        dependencies = "required:cubicchunks@[0.0.1015.0,);required:forge@[14.23.3.2658,)",
         acceptableRemoteVersions = "*",
         version = "0.0.9999.0"
 )
