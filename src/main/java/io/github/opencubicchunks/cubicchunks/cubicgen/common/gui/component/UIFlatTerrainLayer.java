@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -23,69 +23,63 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
 import net.malisis.core.client.gui.Anchor;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
 import net.malisis.core.client.gui.component.decoration.UILabel;
 import net.malisis.core.client.gui.component.decoration.UISeparator;
 import net.malisis.core.client.gui.component.interaction.UIButton;
-import net.malisis.core.client.gui.component.interaction.UITextField;
-import net.minecraft.block.state.IBlockState;
+import net.malisis.core.renderer.font.FontOptions;
 import net.minecraft.init.Blocks;
 
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.malisisText;
 
 import com.google.common.eventbus.Subscribe;
 
-import io.github.opencubicchunks.cubicchunks.cubicgen.flat.Layer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.FlatLayer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.FlatCubicGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.FlatLayersTab;
+import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.UIBlockStateSelect;
 
 public class UIFlatTerrainLayer extends UIContainer<UIFlatTerrainLayer> {
 
     private static final int BTN_WIDTH = 90;
     private final FlatLayersTab flatLayersTab;
-    public final Layer layer;
     private final UIButton addLayer;
     private final UIButton removeLayer;
-    private final UIButton selectBlock;
+    private final UIBlockStateButton<?> block;
     private final UILabel blockName;
+    private final UILabel blockProperties;
     private final UILabel from;
     private final UILabel to;
     private final UISeparator separator;
-    private final UITextField fromField;
-    private final UITextField toField;
-    private final UIBlockStateButton blockButton;
+    private final UIIntegerInputField fromField;
+    private final UIIntegerInputField toField;
+    private final FontOptions whiteFontWithShadow = FontOptions.builder().color(0xFFFFFF).shadow().build();
 
     private final FlatCubicGui gui;
 
-    public UIFlatTerrainLayer(FlatCubicGui guiFor, FlatLayersTab flatLayersTabFor, Layer layerFor) {
+    public UIFlatTerrainLayer(FlatCubicGui guiFor, FlatLayersTab flatLayersTabFor, FlatLayer layer) {
         super(guiFor);
         this.setSize(UIComponent.INHERITED, 60);
         this.flatLayersTab = flatLayersTabFor;
-        this.layer = layerFor;
         this.gui = guiFor;
-        blockButton = new UIBlockStateButton<>(gui, layer.blockState).onClick(btn -> {
-            new SelectBlockGui(this, null).display();
-        }).setPosition(4, 0);
-        add(blockButton);
 
-        selectBlock = new UIButton(gui, malisisText("select_block")).setSize(BTN_WIDTH, 20).setPosition(0, 20)
-                .register(new Object() {
-
-                    @Subscribe
-                    public void onClick(UIButton.ClickEvent evt) {
-                        new SelectBlockGui(UIFlatTerrainLayer.this, null).display();
-                    }
-                });
-        add(selectBlock);
-
-        blockName = new UILabel(gui, this.layer.blockState.getBlock().getLocalizedName()).setPosition(30, 5);
+        this.block = new UIBlockStateButton(gui, layer.blockState);
+        this.blockName = new UILabel(gui).setPosition(30, 0).setFontOptions(whiteFontWithShadow);
+        this.blockProperties = new UILabel(gui).setPosition(30, 10).setFontOptions(whiteFontWithShadow);
+        this.block.onClick(btn -> UIBlockStateSelect.makeOverlay(gui, state -> {
+            block.setBlockState(new BlockStateDesc(state));
+            updateLabels();
+        }).display());
+        add(block);
+        updateLabels();
         add(blockName);
+        add(blockProperties);
 
         addLayer = new UIButton(gui, malisisText("add_layer")).setSize(BTN_WIDTH, 20).setPosition(0, 0)
-                .setAnchor(Anchor.RIGHT)
-                .register(new Object() {
+                .setAnchor(Anchor.RIGHT).register(new Object() {
 
                     @Subscribe
                     public void onClick(UIButton.ClickEvent evt) {
@@ -95,8 +89,7 @@ public class UIFlatTerrainLayer extends UIContainer<UIFlatTerrainLayer> {
         add(addLayer);
 
         removeLayer = new UIButton(gui, malisisText("remove_layer")).setSize(BTN_WIDTH, 20).setPosition(0, 20)
-                .setAnchor(Anchor.RIGHT)
-                .register(new Object() {
+                .setAnchor(Anchor.RIGHT).register(new Object() {
 
                     @Subscribe
                     public void onClick(UIButton.ClickEvent evt) {
@@ -105,22 +98,29 @@ public class UIFlatTerrainLayer extends UIContainer<UIFlatTerrainLayer> {
                 });
         add(removeLayer);
 
-        toField = new UITextField(gui, String.valueOf(this.layer.toY), false).setPosition(0, 45, Anchor.RIGHT).setSize(40, 5);
+        toField = (UIIntegerInputField) new UIIntegerInputField(gui, layer.toY).setPosition(0, 45, Anchor.RIGHT)
+                .setSize(80, 5);
         add(toField);
 
-        to = new UILabel(gui, malisisText("to_exclusively"), false);
-        to.setPosition(-10 - toField.getWidth(), 47, Anchor.RIGHT);
+        to = new UILabel(gui, malisisText("to_exclusively"), false)
+                .setPosition(-10 - toField.getWidth(), 47, Anchor.RIGHT).setFontOptions(whiteFontWithShadow);
         add(to);
 
-        from = new UILabel(gui, malisisText("from"), false).setPosition(0, 47);
+        from = new UILabel(gui, malisisText("from"), false).setPosition(0, 47).setFontOptions(whiteFontWithShadow);
         add(from);
 
-        fromField = new UITextField(gui, String.valueOf(this.layer.fromY), false).setPosition(from.getWidth() + 10, 45).setSize(40, 5);
+        fromField = (UIIntegerInputField) new UIIntegerInputField(gui, layer.fromY)
+                .setPosition(from.getWidth() + 10, 45).setSize(80, 5);
         add(fromField);
 
         separator = new UISeparator(gui, false).setColor(0x767676).setPosition(0, to.getY() + to.getHeight() + 3)
                 .setSize(UIComponent.INHERITED, 1);
         super.add(separator);
+    }
+
+    private void updateLabels() {
+        blockName.setText(block.getBlockName());
+        blockProperties.setText(block.getBlockProperties());
     }
 
     protected void saveConfig() {
@@ -132,33 +132,12 @@ public class UIFlatTerrainLayer extends UIContainer<UIFlatTerrainLayer> {
     }
 
     protected void addLayer() {
-        Layer newLayer = new Layer(this.layer.toY, this.layer.toY + 1, Blocks.SANDSTONE.getDefaultState());
+        int to = this.toField.getValue();
+        FlatLayer newLayer = new FlatLayer(to, to + 1, new BlockStateDesc(Blocks.SANDSTONE.getDefaultState()));
         this.flatLayersTab.add(this, newLayer);
     }
 
-    public int getLevelValueFromY() {
-        int fromY = layer.fromY;
-        try {
-            fromY = Integer.parseInt(fromField.getText());
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-        }
-        return fromY;
-    }
-
-    public int getLevelValueToY() {
-        int toY = layer.toY;
-        try {
-            toY = Integer.parseInt(toField.getText());
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-        }
-        return toY;
-    }
-
-    public void setBlockState(IBlockState blockStateTo) {
-        this.layer.blockState = blockStateTo;
-        blockButton.setBlockState(blockStateTo);
-        blockName.setText(blockStateTo.getBlock().getLocalizedName());
+    public FlatLayer toLayer() {
+        return new FlatLayer(fromField.getValue(), toField.getValue(), block.getState());
     }
 }

@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@ import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisG
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.vanillaText;
 
 import com.google.common.eventbus.Subscribe;
-import io.github.opencubicchunks.cubicchunks.cubicgen.flat.FlatGeneratorSettings;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.FlatGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBorderLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIColoredPanel;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIMultilineLabel;

@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ public class FarLands {
     /**
      * @author Barteks2x
      */
-    @Overwrite
+    @Overwrite(remap = false)
     public static double makeInt32Range(double n) {
         return n;
     }

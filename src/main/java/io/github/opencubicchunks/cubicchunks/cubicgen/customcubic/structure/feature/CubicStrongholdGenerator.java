@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +23,13 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.feature;
 
-import static io.github.opencubicchunks.cubicchunks.api.util.Coords.blockCeilToCube;
-import static io.github.opencubicchunks.cubicchunks.api.util.Coords.blockToCube;
-import static io.github.opencubicchunks.cubicchunks.api.util.Coords.cubeToCenterBlock;
-import static java.lang.Math.cos;
-import static java.lang.Math.round;
-import static java.lang.Math.sin;
-
 import com.google.common.collect.Lists;
+import io.github.opencubicchunks.cubicchunks.api.util.Bits;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.feature.CubicFeatureGenerator;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.feature.ICubicFeatureStart;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
+import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -43,13 +40,18 @@ import net.minecraft.world.gen.structure.StructureStrongholdPieces;
 import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import javax.annotation.Nullable;
+import static io.github.opencubicchunks.cubicchunks.api.util.Coords.*;
+import static java.lang.Math.*;
 
+@MethodsReturnNonnullByDefault
+@ParametersAreNonnullByDefault
 public class CubicStrongholdGenerator extends CubicFeatureGenerator {
 
     private CubePos[] structureCoords;
@@ -60,12 +62,12 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
     private final CustomGeneratorSettings conf;
 
     public CubicStrongholdGenerator(CustomGeneratorSettings conf) {
-        super(4);
+        super(2, 0);
         this.conf = conf;
         this.structureCoords = new CubePos[128];
         this.distance = 32.0D;
         this.spread = 3;
-        this.allowedBiomes = Lists.<Biome>newArrayList();
+        this.allowedBiomes = Lists.newArrayList();
 
         for (Biome biome : ForgeRegistries.BIOMES) {
             if (biome != null && biome.getBaseHeight() > 0.0F && !BiomeManager.strongHoldBiomesBlackList.contains(biome)) {
@@ -84,12 +86,16 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
         this(conf);
 
         for (Map.Entry<String, String> entry : data.entrySet()) {
-            if (entry.getKey().equals("distance")) {
-                this.distance = MathHelper.getDouble(entry.getValue(), this.distance, 1.0D);
-            } else if (entry.getKey().equals("count")) {
-                this.structureCoords = new CubePos[MathHelper.getInt(entry.getValue(), this.structureCoords.length, 1)];
-            } else if (entry.getKey().equals("spread")) {
-                this.spread = MathHelper.getInt(entry.getValue(), this.spread, 1);
+            switch (entry.getKey()) {
+                case "distance":
+                    this.distance = MathHelper.getDouble(entry.getValue(), this.distance, 1.0D);
+                    break;
+                case "count":
+                    this.structureCoords = new CubePos[MathHelper.getInt(entry.getValue(), this.structureCoords.length, 1)];
+                    break;
+                case "spread":
+                    this.spread = MathHelper.getInt(entry.getValue(), this.spread, 1);
+                    break;
             }
         }
     }
@@ -98,8 +104,8 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
         return "Stronghold";
     }
 
-    @Nullable @Override public BlockPos getClosestStrongholdPos(World worldIn, BlockPos pos, boolean findUnexplored) {
-        checkPositionsGenerated();
+    @Nullable @Override public BlockPos getNearestStructurePos(World world, BlockPos pos, boolean findUnexplored) {
+        checkPositionsGenerated(world);
 
         BlockPos.MutableBlockPos currentBlock = new BlockPos.MutableBlockPos(0, 0, 0);
 
@@ -121,34 +127,35 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
         return closestPos;
     }
 
-    @Override protected boolean canSpawnStructureAtCoords(int chunkX, int chunkY, int chunkZ) {
-        checkPositionsGenerated();
+    @Override protected boolean canSpawnStructureAtCoords(World world, Random rand, int chunkX, int chunkY, int chunkZ) {
+        checkPositionsGenerated(world);
 
         return Arrays.stream(this.structureCoords)
                 .anyMatch(cubePos -> chunkX == cubePos.getX() && chunkY == cubePos.getY() && chunkZ == cubePos.getZ());
     }
 
-    @Override protected StructureStart getStructureStart(int chunkX, int chunkY, int chunkZ) {
+    @Override protected StructureStart getStructureStart(World world, Random rand, int chunkX, int chunkY, int chunkZ) {
         StructureStart start;
         do {
-            start = new MapGenStronghold.Start((World) this.world, this.rand, chunkX, chunkZ);
-            ((ICubicStructureStart) start).initCubic((World) world, conf, chunkY);
+            start = new MapGenStronghold.Start(world, rand, chunkX, chunkZ);
+            @SuppressWarnings("ConstantConditions") CubicStart cubic = (CubicStart) start;
+            cubic.initCubicStronghold(world, chunkY, MathHelper.floor(conf.expectedBaseHeight) + 10);
         } while (start.getComponents().isEmpty() || ((StructureStrongholdPieces.Stairs2) start.getComponents().get(0)).strongholdPortalRoom == null);
         return start;
     }
 
-    private void checkPositionsGenerated() {
+    private void checkPositionsGenerated(World world) {
         if (!this.positionsGenerated) {
-            this.generatePositions();
+            this.generatePositions(world);
             this.positionsGenerated = true;
         }
     }
 
-    private void generatePositions() {
-        this.initializeStructureData((World) this.world);
+    private void generatePositions(World world) {
+        this.initializeStructureData(world);
         {
             int i = 0;
-            for (ICubicStructureStart start : this.structureMap) {
+            for (ICubicFeatureStart start : this.structureMap) {
                 if (i >= this.structureCoords.length) {
                     break;
                 }
@@ -162,7 +169,7 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
         }
 
         Random rand = new Random();
-        rand.setSeed(this.world.getSeed());
+        rand.setSeed(world.getSeed());
 
         double angle = rand.nextDouble() * Math.PI * 2.0D;
 
@@ -186,7 +193,7 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
                 chunkY = MathHelper.getInt(rand, minCubeY, maxCubeY);
                 chunkZ = (int) round(sin(angle) * distance);
             }
-            BlockPos blockPos = this.world.getBiomeProvider().findBiomePosition(
+            BlockPos blockPos = world.getBiomeProvider().findBiomePosition(
                     cubeToCenterBlock(chunkX), cubeToCenterBlock(chunkZ), 112, this.allowedBiomes, rand);
 
             if (blockPos != null) {
@@ -194,9 +201,12 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
                 chunkZ = blockToCube(blockPos.getZ());
             }
 
-            chunkX = Math.floorDiv(chunkX, this.spacing) * this.spacing;
-            chunkY = Math.floorDiv(chunkY, this.spacing) * this.spacing;
-            chunkZ = Math.floorDiv(chunkZ, this.spacing) * this.spacing;
+            int spacingBits = spacingBitCount == 0 ? 0xFFFFFFFF : ~Bits.getMask(spacingBitCount);
+            int spacingBitsY = spacingBitCountY == 0 ? 0xFFFFFFFF : ~Bits.getMask(spacingBitCountY);
+
+            chunkX = chunkX & spacingBits;
+            chunkY = chunkY & spacingBitsY;
+            chunkZ = chunkZ & spacingBits;
 
             if (i >= nextIndex) {
                 this.structureCoords[i] = new CubePos(chunkX, chunkY, chunkZ);
@@ -213,5 +223,9 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
                 angle += rand.nextDouble() * Math.PI * 2.0D;
             }
         }
+    }
+
+    public interface CubicStart extends ICubicFeatureStart {
+        void initCubicStronghold(World world, int cubeY, int baseY);
     }
 }

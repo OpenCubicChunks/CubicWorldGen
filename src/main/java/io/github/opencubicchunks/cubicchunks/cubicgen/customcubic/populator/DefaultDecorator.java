@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -32,8 +32,10 @@ import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.event.CubicOreGenEvent;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.event.DecorateCubeBiomeEvent;
-import io.github.opencubicchunks.cubicchunks.core.event.CCEventFactory;
+import io.github.opencubicchunks.cubicchunks.cubicgen.CWGEventFactory;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BiomeDesc;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.BlockFlower;
 import net.minecraft.block.material.Material;
@@ -51,11 +53,10 @@ import net.minecraft.world.gen.feature.WorldGenPumpkin;
 import net.minecraft.world.gen.feature.WorldGenerator;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
-import net.minecraftforge.event.terraingen.TerrainGen;
 
 import java.util.Random;
 import java.util.Set;
-import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -82,27 +83,40 @@ public final class DefaultDecorator implements ICubicPopulator {
 
             // TODO: allow interleaved order
             for (CustomGeneratorSettings.StandardOreConfig c : cfg.standardOres) {
-                if (c.biomes != null && !c.biomes.contains(biome)) {
+                if (c.blockstate.getBlockState() == null) {
+                    continue;
+                }
+                if (c.biomes != null && !c.biomes.contains(new BiomeDesc(biome))) {
                     continue;
                 }
 
-                Set<IBlockState> states = c.genInBlockstates;
+
+                Set<IBlockState> states = c.genInBlockstates == null ? null :
+                        c.genInBlockstates.stream().filter(b -> b.getBlockState() != null)
+                        .map(BlockStateDesc::getBlockState)
+                        .collect(Collectors.toSet());
                 WorldGenMinable gen = states == null ?
-                        new WorldGenMinable(c.blockstate, c.spawnSize) :
-                        new WorldGenMinable(c.blockstate, c.spawnSize, states::contains);
-                if (CCEventFactory.generateOre(world, random, gen, pos, c.blockstate)) {
+                        new WorldGenMinable(c.blockstate.getBlockState(), c.spawnSize) :
+                        new WorldGenMinable(c.blockstate.getBlockState(), c.spawnSize, states::contains);
+                if (CWGEventFactory.generateOre(world, random, gen, pos, c.blockstate.getBlockState())) {
                     genOreUniform(world, cfg, random, pos, c.spawnTries, c.spawnProbability, gen, c.minHeight, c.maxHeight);
                 }
             }
             for (CustomGeneratorSettings.PeriodicGaussianOreConfig c : cfg.periodicGaussianOres) {
-                if (c.biomes != null && !c.biomes.contains(biome)) {
+                if (c.blockstate.getBlockState() == null) {
                     continue;
                 }
-                Set<IBlockState> states = c.genInBlockstates;
+                if (c.biomes != null && !c.biomes.contains(new BiomeDesc(biome))) {
+                    continue;
+                }
+                Set<IBlockState> states = c.genInBlockstates == null ? null :
+                        c.genInBlockstates.stream().filter(b -> b.getBlockState() != null)
+                                .map(BlockStateDesc::getBlockState)
+                                .collect(Collectors.toSet());
                 WorldGenMinable gen = states == null ?
-                        new WorldGenMinable(c.blockstate, c.spawnSize) :
-                        new WorldGenMinable(c.blockstate, c.spawnSize, states::contains);
-                if (CCEventFactory.generateOre(world, random, gen, pos, c.blockstate)) {
+                        new WorldGenMinable(c.blockstate.getBlockState(), c.spawnSize) :
+                        new WorldGenMinable(c.blockstate.getBlockState(), c.spawnSize, states::contains);
+                if (CWGEventFactory.generateOre(world, random, gen, pos, c.blockstate.getBlockState())) {
                     genOreBellCurve(world, cfg, random, pos, c.spawnTries, c.spawnProbability, gen, c.heightMean, c.heightStdDeviation,
                             c.heightSpacing, c.minHeight, c.maxHeight);
                 }
@@ -113,19 +127,19 @@ public final class DefaultDecorator implements ICubicPopulator {
 
     @Override public void generate(World world, Random random, CubePos pos, Biome biome) {
         ICubicWorld cworld = (ICubicWorld) world;
-        BiomeDecorator dec = biome.theBiomeDecorator;
-        if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.SAND)) {
+        BiomeDecorator dec = biome.decorator;
+        if (CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.SAND)) {
             generateOnTop(world, random, pos, dec.sandPatchesPerChunk, dec.sandGen);
         }
-        if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.CLAY)) {
+        if (CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.CLAY)) {
             generateOnTop(world, random, pos, dec.clayPerChunk, dec.clayGen);
         }
-        if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.SAND_PASS2)) {
+        if (CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.SAND_PASS2)) {
             generateOnTop(world, random, pos, dec.gravelPatchesPerChunk, dec.gravelGen);
         }
 
         int treeCount = random.nextFloat() < dec.extraTreeChance ? dec.treesPerChunk + 1 : dec.treesPerChunk;
-        if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.TREE)) {
+        if (CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.TREE)) {
             for (int i = 0; i < treeCount; ++i) {
                 int xOffset1 = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
                 int zOffset1 = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
@@ -138,7 +152,7 @@ public final class DefaultDecorator implements ICubicPopulator {
             }
         }
 
-        if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.BIG_SHROOM)) {
+        if (CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.BIG_SHROOM)) {
             for (int i = 0; i < dec.bigMushroomsPerChunk; ++i) {
                 int xOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
                 int zOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
@@ -149,7 +163,7 @@ public final class DefaultDecorator implements ICubicPopulator {
             }
         }
 
-        if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.FLOWERS)) {
+        if (CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.FLOWERS)) {
             for (int i = 0; i < dec.flowersPerChunk; ++i) {
                 // vanilla chooses random height between 0 and topBlock+32.
                 // Assuming average height a bit less than the average of sea level and 128,
@@ -163,13 +177,13 @@ public final class DefaultDecorator implements ICubicPopulator {
                 BlockFlower flowerBlock = type.getBlockType().getBlock();
 
                 if (flowerBlock.getDefaultState().getMaterial() != Material.AIR) {
-                    dec.yellowFlowerGen.setGeneratedBlock(flowerBlock, type);
-                    dec.yellowFlowerGen.generate(world, random, blockPos);
+                    dec.flowerGen.setGeneratedBlock(flowerBlock, type);
+                    dec.flowerGen.generate(world, random, blockPos);
                 }
             }
         }
 
-        if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.GRASS)) {
+        if (CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.GRASS)) {
             for (int i = 0; i < dec.grassPerChunk; ++i) {
                 // vanilla chooses random height between 0 and topBlock*2.
                 // Then the grass generator goes down to find the top block.
@@ -189,7 +203,7 @@ public final class DefaultDecorator implements ICubicPopulator {
             }
         }
 
-        if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.DEAD_BUSH)) {
+        if (CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.DEAD_BUSH)) {
             for (int i = 0; i < dec.deadBushPerChunk; ++i) {
                 // same as above
                 if (random.nextBoolean()) {
@@ -204,7 +218,7 @@ public final class DefaultDecorator implements ICubicPopulator {
             }
         }
 
-        if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.LILYPAD)) {
+        if (CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.LILYPAD)) {
             for (int i = 0; i < dec.waterlilyPerChunk; ++i) {
                 // same as above
                 if (random.nextBoolean()) {
@@ -220,7 +234,7 @@ public final class DefaultDecorator implements ICubicPopulator {
         }
 
         int mushroomCount = Math.max(dec.mushroomsPerChunk + 1, 1);
-        if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.SHROOM)) {
+        if (CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.SHROOM)) {
             for (int i = 0; i < mushroomCount; ++i) {
                 if (random.nextInt(4) == 0) {
                     int xOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
@@ -251,7 +265,7 @@ public final class DefaultDecorator implements ICubicPopulator {
         }
 
         int reedCount = Math.max(dec.reedsPerChunk + 10, 10);
-        if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.REED)) {
+        if (CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.REED)) {
             for (int i = 0; i < reedCount; ++i) {
                 // same as for red mushrooms above
                 if (random.nextInt(10) != 0) {
@@ -268,7 +282,7 @@ public final class DefaultDecorator implements ICubicPopulator {
         }
 
         // *10 - same reason as for red mushrooms
-        if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.PUMPKIN)) {
+        if (CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.PUMPKIN)) {
             if (random.nextInt(32 * 10) == 0) {
                 int xOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
                 int zOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
@@ -280,7 +294,7 @@ public final class DefaultDecorator implements ICubicPopulator {
             }
         }
 
-        if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.CACTUS)) {
+        if (CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.CACTUS)) {
             for (int i = 0; i < dec.cactiPerChunk; ++i) {
                 // same as for red mushrooms above
                 if (random.nextInt(10) != 0) {
@@ -296,8 +310,8 @@ public final class DefaultDecorator implements ICubicPopulator {
             }
         }
 
-        if (dec.generateLakes) {
-            if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.LAKE_WATER)) {
+        if (dec.generateFalls) {
+            if (CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.LAKE_WATER)) {
                 for (int i = 0; i < 50; ++i) {
                     int yOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
                     double prob = waterSourceProbabilityForY(cfg, pos.getMinBlockY() + yOffset);
@@ -311,7 +325,7 @@ public final class DefaultDecorator implements ICubicPopulator {
                 }
             }
 
-            if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.LAKE_LAVA)) {
+            if (CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.LAKE_LAVA)) {
                 for (int i = 0; i < 20; ++i) {
                     int yOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
                     double prob = lavaSourceProbabilityForY(cfg, pos.getMinBlockY() + yOffset);

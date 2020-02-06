@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,13 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic;
 
+import blue.endless.jankson.JsonGrammar;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.ICubeGenerator;
 import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorldType;
 import io.github.opencubicchunks.cubicchunks.api.util.IntRange;
+import io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common.accessor.IBiomeProvider;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.CustomGeneratorSettingsFixer;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
@@ -34,10 +37,12 @@ import net.minecraft.init.Biomes;
 import net.minecraft.world.*;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeProvider;
+import net.minecraft.world.biome.BiomeProviderSingle;
 import net.minecraft.world.gen.ChunkProviderSettings;
 import net.minecraft.world.gen.layer.GenLayer;
 import net.minecraft.world.gen.layer.IntCache;
 import net.minecraft.world.storage.WorldInfo;
+import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -51,7 +56,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
 
-    private CustomCubicWorldType() {
+    protected CustomCubicWorldType() {
         super("CustomCubic");
     }
 
@@ -59,34 +64,54 @@ public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
         return new CustomCubicWorldType();
     }
 
+    private IBiomeProvider self() {
+        return (IBiomeProvider) this;
+    }
+
     @Override public IntRange calculateGenerationHeightRange(WorldServer world) {
-        CustomGeneratorSettings opts = CustomGeneratorSettings.load(world);
+        CustomGeneratorSettings opts = CustomGeneratorSettings.getFromWorld(world);
         // TODO: better handling of min height
         return new IntRange(0, (int) opts.actualHeight);
     }
 
     @Override public boolean hasCubicGeneratorForWorld(World w) {
-        return w.provider.getClass() == WorldProviderSurface.class; // a more general way to check if it's overworld
+        // check if the class of world provider is the same as whatever the Overworld has
+        // checking for WorldProviderSurface.class doesn't work in case a mod replaces the overworld WorldProvider
+        // causing false negatives
+        // and instanceof check fails when a world creates a custom dimension with a WorldProvider that extends WorldProviderSurface
+        // creating false positives
+        // this is still not an ideal solution as a mod may completely replace the overworld world provider with something
+        // completely different where CWG may not even work properly, but this is the best I can come up with that covers
+        // most of the cases
+        // "w.provider.getDimensionType() == DimensionManager.getProviderType(0)" might be equivalent or better,
+        // so it may be changed to that if any more issues are found
+        return w.provider.getClass() == DimensionManager.getProvider(0).getClass();
     }
 
     public BiomeProvider getBiomeProvider(World world) {
         if ("true".equalsIgnoreCase(System.getProperty("cubicchunks.debug.biomes"))) {
             return new BiomeProvider() {{
-                this.genBiomes = new GenLayerDebug(4);
-                this.biomeIndexLayer = new GenLayerDebug(4 + 2);
+                self().setGenBiomes(new GenLayerDebug(4));
+                self().setBiomeIndexLayer(new GenLayerDebug(4 + 2));
             }};
         } else {
-            CustomGeneratorSettings conf = CustomGeneratorSettings.load(world);
-            WorldSettings fakeSettings = new WorldSettings(world.getWorldInfo());
-            ChunkProviderSettings.Factory fakeGenOpts = new ChunkProviderSettings.Factory();
-            fakeGenOpts.biomeSize = conf.biomeSize;
-            fakeGenOpts.riverSize = conf.riverSize;
-            fakeGenOpts.fixedBiome = conf.biome;
-            fakeSettings.setGeneratorOptions(fakeGenOpts.toString());
-            WorldInfo fakeInfo = new WorldInfo(fakeSettings, world.getWorldInfo().getWorldName());
-            fakeInfo.setTerrainType(WorldType.CUSTOMIZED);
-            return new BiomeProvider(fakeInfo);
+            if (world.isRemote)
+                return new BiomeProviderSingle(Biomes.PLAINS);
+            CustomGeneratorSettings conf = CustomGeneratorSettings.getFromWorld(world);
+            return makeBiomeProvider(world, conf);
         }
+    }
+
+    public static BiomeProvider makeBiomeProvider(World world, CustomGeneratorSettings conf) {
+        WorldSettings fakeSettings = new WorldSettings(world.getWorldInfo());
+        ChunkProviderSettings.Factory fakeGenOpts = new ChunkProviderSettings.Factory();
+        fakeGenOpts.biomeSize = conf.biomeSize;
+        fakeGenOpts.riverSize = conf.riverSize;
+        fakeSettings.setGeneratorOptions(fakeGenOpts.toString());
+        WorldInfo fakeInfo = new WorldInfo(fakeSettings, world.getWorldInfo().getWorldName());
+        fakeInfo.setTerrainType(WorldType.CUSTOMIZED);
+        Biome biome = Biome.getBiomeForId(conf.biome);
+        return conf.biome < 0 ? new BiomeProvider(fakeInfo) : new BiomeProviderSingle(biome == null ? Biomes.OCEAN : biome);
     }
 
     @Override
@@ -104,8 +129,7 @@ public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
             new CustomCubicGui(guiCreateWorld).display();
         } else {
             mc.displayGuiScreen(new MinimalCustomizeWorldGui(guiCreateWorld,
-                    CustomGeneratorSettings.fromJson(guiCreateWorld.chunkProviderSettingsJson)
-                            .toJson().replace("\n", "").replaceAll(" ", ""),
+                    CustomGeneratorSettingsFixer.INSTANCE.fixJson(guiCreateWorld.chunkProviderSettingsJson).toJson(JsonGrammar.COMPACT),
                     preset -> {
                         try {
                             CustomGeneratorSettings.fromJson(preset);
@@ -122,7 +146,7 @@ public class CustomCubicWorldType extends WorldType implements ICubicWorldType {
         private final ArrayList<Biome> biomes;
         private int scaleBits;
 
-        public GenLayerDebug(int scaleBits) {
+        GenLayerDebug(int scaleBits) {
             super(0);
             this.scaleBits = scaleBits;
 

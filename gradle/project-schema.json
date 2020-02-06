@@ -90,6 +90,26 @@
                 "name": "ext"
             },
             {
+                "type": "org.gradle.api.publish.PublishingExtension",
+                "target": "org.gradle.api.Project",
+                "name": "publishing"
+            },
+            {
+                "type": "org.gradle.api.plugins.ExtraPropertiesExtension",
+                "target": "org.gradle.api.publish.PublishingExtension",
+                "name": "ext"
+            },
+            {
+                "type": "org.gradle.plugins.ide.idea.model.IdeaModel",
+                "target": "org.gradle.api.Project",
+                "name": "idea"
+            },
+            {
+                "type": "org.gradle.api.plugins.ExtraPropertiesExtension",
+                "target": "org.gradle.plugins.ide.idea.model.IdeaModel",
+                "name": "ext"
+            },
+            {
                 "type": "net.minecraftforge.gradle.user.patcherUser.forge.ForgeExtension",
                 "target": "org.gradle.api.Project",
                 "name": "minecraft"
@@ -110,16 +130,6 @@
                 "name": "ext"
             },
             {
-                "type": "org.gradle.plugins.ide.idea.model.IdeaModel",
-                "target": "org.gradle.api.Project",
-                "name": "idea"
-            },
-            {
-                "type": "org.gradle.api.plugins.ExtraPropertiesExtension",
-                "target": "org.gradle.plugins.ide.idea.model.IdeaModel",
-                "name": "ext"
-            },
-            {
                 "type": "org.gradle.api.NamedDomainObjectContainer<net.minecraftforge.gradle.user.IReobfuscator>",
                 "target": "org.gradle.api.Project",
                 "name": "reobf"
@@ -128,6 +138,16 @@
                 "type": "org.gradle.api.plugins.ExtraPropertiesExtension",
                 "target": "org.gradle.api.NamedDomainObjectContainer<net.minecraftforge.gradle.user.IReobfuscator>",
                 "name": "ext"
+            },
+            {
+                "type": "io.github.opencubicchunks.gradle.MixinGenExtension",
+                "target": "org.gradle.api.Project",
+                "name": "mixinGen"
+            },
+            {
+                "type": "io.github.opencubicchunks.gradle.McGitVersionExtension",
+                "target": "org.gradle.api.Project",
+                "name": "mcGitVersion"
             },
             {
                 "type": "com.github.jengelman.gradle.plugins.shadow.ShadowExtension",

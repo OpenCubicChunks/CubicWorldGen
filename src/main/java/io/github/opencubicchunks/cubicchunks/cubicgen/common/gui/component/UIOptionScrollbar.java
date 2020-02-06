@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,10 @@
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 
 import com.google.common.eventbus.Subscribe;
+import io.github.opencubicchunks.cubicchunks.api.util.MathUtil;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CooldownTimer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicConfig;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.DynamicLerpAnimation;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import net.malisis.core.client.gui.Anchor;
 import net.malisis.core.client.gui.GuiRenderer;
@@ -38,6 +41,7 @@ import net.malisis.core.renderer.animation.Animation;
 import net.malisis.core.renderer.animation.transformation.AlphaTransform;
 import net.malisis.core.util.MouseButton;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.util.math.MathHelper;
 import org.lwjgl.input.Mouse;
 
 import java.util.concurrent.TimeUnit;
@@ -58,6 +62,9 @@ public class UIOptionScrollbar extends UIScrollBar implements IDragTickable {
     protected SimpleGuiShape scrollShapeInner;
     private int lastHeight = Integer.MIN_VALUE;
     private int lastWidth = Integer.MIN_VALUE;
+
+    private final DynamicLerpAnimation animation = new DynamicLerpAnimation(
+            CustomCubicConfig.guiScrollAnimationTime, 0, x -> scrollToDirect((float) x), x -> MathHelper.clamp(x, 0, 1));
 
     public <T extends UIComponent<T> & IScrollable> UIOptionScrollbar(ExtraGui gui, T parent, Type type) {
         super(gui, parent, type);
@@ -138,14 +145,15 @@ public class UIOptionScrollbar extends UIScrollBar implements IDragTickable {
         // it has to be in draw() so that it's called even when scrollbar is not visible
         if (lastHeight != parent.getHeight() || lastWidth != parent.getWidth()) {
 
-            int contentSize = ((IScrollable) parent).getContentHeight();
-            this.setVisible(contentSize > parent.getHeight());
+            int contentSize = isHorizontal() ? ((IScrollable) parent).getContentWidth() : ((IScrollable) parent).getContentHeight();
+            this.setVisible(contentSize > (isHorizontal() ? parent.getWidth() : parent.getHeight()));
 
-            float visibleHeight = getHeight();
+            float visibleHeight = (this.type == Type.VERTICAL ? getHeight() : getWidth());
             float visibleFraction = visibleHeight / contentSize;
             int scrollbarHeight = Math.round(visibleFraction * visibleHeight);
             this.setScrollSize(scrollThickness, scrollbarHeight);
         }
+        animation.tick();
         super.draw(renderer, mouseX, mouseY, partialTick);
     }
 
@@ -272,6 +280,33 @@ public class UIOptionScrollbar extends UIScrollBar implements IDragTickable {
         if (isFocused() && !isOnScroll()) {
             timer.tryDo(() -> scrollByStepClick(mouseX, mouseY));
         }
+    }
+
+    @Override public void scrollBy(float amount) {
+        this.scrollTo((float) (animation.getTarget() + amount));
+    }
+
+    @Override public void scrollTo(float offset) {
+        //noinspection ConstantConditions because super() constructor calls this...
+        if (!this.isDisabled() && this.animation != null) {
+            animation.setTarget(offset);
+        }
+    }
+
+    // used by smooth scrolling
+    private float scrollToDirect(float offset) {
+        if (!this.isDisabled()) {
+            offset = MathHelper.clamp(offset, 0, 1);
+
+            int delta = this.hasVisibleOtherScrollbar() ? this.scrollThickness : 0;
+            if (this.isHorizontal()) {
+                this.getScrollable().setOffsetX(offset, delta);
+            } else {
+                this.getScrollable().setOffsetY(offset, delta);
+            }
+            return offset;
+        }
+        return MathHelper.clamp(offset, 0, 1);
     }
 
     protected void onScrollBy(int x, int y) {

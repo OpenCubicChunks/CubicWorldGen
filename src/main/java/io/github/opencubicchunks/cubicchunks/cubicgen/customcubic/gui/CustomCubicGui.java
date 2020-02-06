@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,23 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui;
 
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.malisisText;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.vanillaText;
-
+import blue.endless.jankson.JsonGrammar;
+import blue.endless.jankson.JsonObject;
 import com.google.common.eventbus.Subscribe;
 import com.google.gson.JsonSyntaxException;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.BiomeBlockReplacerConfig;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UITextFieldFixed;
-import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomCubicWorldType;
-import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.GuiOverlay;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.NoTranslationFont;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBorderLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIColoredPanel;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIMultilineLabel;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UITabbedContainer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UITextFieldFixed;
+import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.CustomGenSettingsSerialization;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.JsonObjectView;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.CustomGeneratorSettingsFixer;
 import mcp.MethodsReturnNonnullByDefault;
 import net.malisis.core.client.gui.Anchor;
 import net.malisis.core.client.gui.MalisisGui;
@@ -50,9 +51,11 @@ import net.malisis.core.client.gui.event.ComponentEvent;
 import net.malisis.core.renderer.font.FontOptions;
 import net.minecraft.client.gui.GuiCreateWorld;
 import net.minecraft.client.resources.I18n;
-import java.util.Map;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.malisisText;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.vanillaText;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
@@ -73,9 +76,10 @@ public class CustomCubicGui extends ExtraGui {
 
     private BasicSettingsTab basicSettings;
     private OreSettingsTab oreSettings;
+    private LakeSettingsTab lakeSettings;
     private AdvancedTerrainShapeTab advancedterrainShapeSettings;
-    private Map<CustomGeneratorSettings.IntAABB, CustomGeneratorSettings> areas;
-    private BiomeBlockReplacerConfig replacerConf;
+
+    private JsonObject jsonConf;
 
     public CustomCubicGui(GuiCreateWorld parent) {
         super();
@@ -88,29 +92,43 @@ public class CustomCubicGui extends ExtraGui {
      */
     @Override
     public void construct() {
-        CustomGeneratorSettings conf = CustomGeneratorSettings.fromJson(parent.chunkProviderSettingsJson);
+        JsonObject conf = CustomGeneratorSettingsFixer.INSTANCE.fixJson(parent.chunkProviderSettingsJson);
         reinit(conf);
     }
 
-    public void reinit(CustomGeneratorSettings conf) {
-        clearScreen();
-
-        this.basicSettings = new BasicSettingsTab(this, conf);
-        this.oreSettings = new OreSettingsTab(this, conf);
-        this.advancedterrainShapeSettings = new AdvancedTerrainShapeTab(this, conf);
-
-        tabs = makeTabContainer();
-        tabs.addTab(inPanel(basicSettings.getContainer()), vanillaText("basic_tab_title"));
-        tabs.addTab(inPanel(oreSettings.getContainer()), vanillaText("ores_tab_title"));
-        tabs.addTab(inPanel(advancedterrainShapeSettings.getContainer()), vanillaText("advanced_tab_title"));
-        addToScreen(tabs);
-
-        this.areas = conf.cubeAreas;
-        this.replacerConf = conf.replacerConfig;
+    @Override public void clearScreen() {
+        tabs = null;
+        basicSettings = null;
+        oreSettings = null;
+        lakeSettings = null;
+        advancedterrainShapeSettings = null;
+        super.clearScreen();
     }
 
-    private UIContainer<?> inPanel(UIComponent<?> comp) {
-        UIColoredPanel panel = new UIColoredPanel(this);
+    public void reinit(JsonObject json) {
+        clearScreen();
+        this.jsonConf = json;
+
+        JsonObjectView jsonView = JsonObjectView.of(json);
+
+        this.basicSettings = new BasicSettingsTab(this, jsonView);
+        this.advancedterrainShapeSettings = new AdvancedTerrainShapeTab(this, jsonView, basicSettings::getWaterLevel);
+        this.oreSettings = new OreSettingsTab(this, jsonView,
+                advancedterrainShapeSettings.getExpectedBaseHeight(), advancedterrainShapeSettings.getExpectedHeightVariation());
+        this.lakeSettings = new LakeSettingsTab(this, jsonView);
+
+        tabs = makeTabContainer();
+        tabs.addTab(inPanel(this, basicSettings.getContainer()), vanillaText("basic_tab_title"));
+        tabs.addTab(inPanel(this, oreSettings.getContainer()), vanillaText("ores_tab_title"));
+        tabs.addTab(inPanel(this, lakeSettings.getContainer()), vanillaText("lake_tab_title"));
+        tabs.addTab(inPanel(this, advancedterrainShapeSettings.getContainer()), vanillaText("advanced_tab_title"));
+        addToScreen(tabs);
+
+        super.afterConstruct();
+    }
+
+    private UIContainer<?> inPanel(ExtraGui gui, UIComponent<?> comp) {
+        UIColoredPanel panel = new UIColoredPanel(gui);
         panel.setSize(UIComponent.INHERITED, UIComponent.INHERITED - VERTICAL_PADDING * 2);
         panel.setPosition(0, VERTICAL_PADDING);
         panel.add(comp);
@@ -148,88 +166,84 @@ public class CustomCubicGui extends ExtraGui {
         sharePreset.register(new Object() {
             @Subscribe
             public void onClick(UIButton.ClickEvent evt) {
-                new ExtraGui() {
+                new GuiOverlay(CustomCubicGui.this, gui -> {
+                    UIButton done, cancel;
+                    UITextField textMinified, textExpanded;
 
-                    @Override public void construct() {
-
-                        UIButton done, cancel;
-                        UITextField textMinified, textExpanded;
-
-                        UISplitLayout<?> presetsSplit = new UISplitLayout<>(this, UISplitLayout.Type.STACKED,
-                                textMinified = new UITextFieldFixed(this, "").setSize(0, 10),
-                                textExpanded = new UITextFieldFixed(this, "", true)
-                        ).setSizeOf(UISplitLayout.Pos.FIRST, 20);
+                    UISplitLayout<?> presetsSplit = new UISplitLayout<>(gui, UISplitLayout.Type.STACKED,
+                            textMinified = new UITextFieldFixed(gui, "").setSize(0, 10),
+                            textExpanded = new UITextFieldFixed(gui, "", true)
+                    ).setSizeOf(UISplitLayout.Pos.FIRST, 20);
                         presetsSplit.setPadding(0, 3);
 
-                        UISplitLayout<?> presetsButtonsSplit = new UISplitLayout<>(this, UISplitLayout.Type.STACKED,
-                                presetsSplit,
-                                new UISplitLayout<>(this, UISplitLayout.Type.SIDE_BY_SIDE,
-                                        done = new UIButton(this, malisisText("presets.done")).setAutoSize(false).setSize(0, 20),
-                                        cancel = new UIButton(this, malisisText("presets.cancel")).setAutoSize(false).setSize(0, 20)
-                                )
-                        ).setSizeOf(UISplitLayout.Pos.SECOND, 26);
+                    UISplitLayout<?> presetsButtonsSplit = new UISplitLayout<>(gui, UISplitLayout.Type.STACKED,
+                            presetsSplit,
+                            new UISplitLayout<>(gui, UISplitLayout.Type.SIDE_BY_SIDE,
+                                    done = new UIButton(gui, malisisText("presets.done")).setAutoSize(false).setSize(0, 20),
+                                    cancel = new UIButton(gui, malisisText("presets.cancel")).setAutoSize(false).setSize(0, 20)
+                            )
+                    ).setSizeOf(UISplitLayout.Pos.SECOND, 26);
                         presetsButtonsSplit.setPadding(HORIZONTAL_PADDING, 0);
                         ((UIContainer<?>) presetsButtonsSplit.getSecond()).setPadding(0, 3);
 
-                        textMinified.register(new Object() {
-                            @Subscribe
-                            public void onChange(ComponentEvent.ValueChange<UITextField, String> event) {
-                                float scroll = textExpanded.getOffsetY();
-                                try {
-                                    CustomGeneratorSettings settings = CustomGeneratorSettings.fromJson(event.getNewValue());
-                                    textExpanded.setText(getFormattedJson(settings));
-                                    textExpanded.setOffsetY(scroll, 0);// delta doesn't appear to be used
-                                } catch (JsonSyntaxException | NumberFormatException ex) {
-                                    textExpanded.setText(I18n.format("cubicgen.gui.cubicgen.presets.invalid_json"));
-                                }
+                    textMinified.register(new Object() {
+                        @Subscribe
+                        public void onChange(ComponentEvent.ValueChange<UITextField, String> event) {
+                            float scroll = textExpanded.getOffsetY();
+                            try {
+                                JsonObject jsonConf = CustomGeneratorSettings.asJsonObject(event.getNewValue());
+                                textExpanded.setText(getFormattedJson(jsonConf));
+                                textExpanded.setOffsetY(scroll, 0);// delta doesn't appear to be used
+                            } catch (JsonSyntaxException | NumberFormatException ex) {
+                                textExpanded.setText(I18n.format("cubicgen.gui.cubicgen.presets.invalid_json"));
                             }
-                        });
+                        }
+                    });
 
-                        textExpanded.register(new Object() {
-                            @Subscribe
-                            public void onChange(ComponentEvent.ValueChange<UITextField, String> event) {
-                                try {
-                                    CustomGeneratorSettings settings = CustomGeneratorSettings.fromJson(event.getNewValue());
-                                    textMinified.setText(getSettingsJson(settings));
-                                } catch (JsonSyntaxException | NumberFormatException ex) {
-                                    textMinified.setText(I18n.format("cubicgen.gui.cubicgen.presets.invalid_json"));
-                                }
+                    textExpanded.register(new Object() {
+                        @Subscribe
+                        public void onChange(ComponentEvent.ValueChange<UITextField, String> event) {
+                            try {
+                                JsonObject jsonConf = CustomGeneratorSettings.asJsonObject(event.getNewValue());
+                                textMinified.setText(getSettingsJson(jsonConf));
+                            } catch (JsonSyntaxException | NumberFormatException ex) {
+                                textMinified.setText(I18n.format("cubicgen.gui.cubicgen.presets.invalid_json"));
                             }
-                        });
+                        }
+                    });
 
-                        textExpanded.setFont(NoTranslationFont.DEFAULT);
-                        textExpanded.setText(getFormattedJson(getConfig()));
+                    textExpanded.setFont(NoTranslationFont.DEFAULT);
+                    textExpanded.setText(getFormattedJson(jsonConf));
 
-                        // if we don't set the size before setting the text and jumping to the end,
-                        // the end will be shown at the beginning of the
-                        // textField, making the text invisible by default
-                        textMinified.setSize(this.width - HORIZONTAL_PADDING*2, 10);
-                        textMinified.setFont(NoTranslationFont.DEFAULT);
-                        textMinified.setText(getSettingsJson(getConfig()));
-                        textMinified.getCursorPosition().jumpToEnd();
+                    // if we don't set the size before setting the text and jumping to the end,
+                    // the end will be shown at the beginning of the
+                    // textField, making the text invisible by default
+                    textMinified.setSize(gui.width - HORIZONTAL_PADDING*2, 10);
+                    textMinified.setFont(NoTranslationFont.DEFAULT);
+                    textMinified.setText(getSettingsJson(jsonConf));
+                    textMinified.getCursorPosition().jumpToEnd();
 
-                        done.register(new Object() {
-                            @Subscribe
-                            public void onClick(UIButton.ClickEvent evt) {
-                                try {
-                                    CustomGeneratorSettings settings = CustomGeneratorSettings.fromJson(textMinified.getText());
-                                    CustomCubicGui.this.reinit(settings);
-                                    mc.displayGuiScreen(CustomCubicGui.this);
-                                } catch (JsonSyntaxException | NumberFormatException ex) {
-                                    done.setFontOptions(FontOptions.builder().color(0x00FF2222).build());
-                                }
-                            }
-                        });
-                        cancel.register(new Object() {
-                            @Subscribe
-                            public void onClick(UIButton.ClickEvent evt) {
+                    done.register(new Object() {
+                        @Subscribe
+                        public void onClick(UIButton.ClickEvent evt) {
+                            try {
+                                JsonObject settings = CustomGeneratorSettings.asJsonObject(textMinified.getText());
+                                CustomCubicGui.this.reinit(settings);
                                 mc.displayGuiScreen(CustomCubicGui.this);
+                            } catch (JsonSyntaxException | NumberFormatException ex) {
+                                done.setFontOptions(FontOptions.builder().color(0x00FF2222).build());
                             }
-                        });
-                        addToScreen(inPanel(presetsButtonsSplit));
-                        presetsButtonsSplit.setSize(UIComponent.INHERITED, UIComponent.INHERITED);
-                    }
-                }.display();
+                        }
+                    });
+                    cancel.register(new Object() {
+                        @Subscribe
+                        public void onClick(UIButton.ClickEvent evt) {
+                            mc.displayGuiScreen(CustomCubicGui.this);
+                        }
+                    });
+                    presetsButtonsSplit.setSize(UIComponent.INHERITED, UIComponent.INHERITED);
+                    return inPanel(gui, presetsButtonsSplit);
+                }).guiScreenAlpha(255).display();
             }
         });
         sharePreset.setPosition(BTN_WIDTH + 10, 0);
@@ -250,26 +264,35 @@ public class CustomCubicGui extends ExtraGui {
     }
 
     private void done() {
-        parent.chunkProviderSettingsJson = getSettingsJson(getConfig());
+        updateConfig();
+        parent.chunkProviderSettingsJson = getFormattedJson(jsonConf);
+        close();
+    }
+
+    @Override public void close() {
+        super.close();
         this.mc.displayGuiScreen(parent);
     }
 
+    public void updateConfig() {
+        JsonObjectView json = JsonObjectView.of(this.jsonConf);
+        this.basicSettings.writeConfig(json);
+        this.oreSettings.writeConfig(json);
+        this.lakeSettings.writeConfig(json);
+        this.advancedterrainShapeSettings.writeConfig(json);
+    }
+
+    String getSettingsJson(JsonObject json) {
+        return json.toJson(JsonGrammar.COMPACT);
+    }
+
+    String getFormattedJson(JsonObject json) {
+        return json.toJson(CustomGenSettingsSerialization.OUT_GRAMMAR);
+    }
+
+    @Deprecated // should use JsonObject directly
     public CustomGeneratorSettings getConfig() {
-        CustomGeneratorSettings conf = CustomGeneratorSettings.defaults();
-        this.basicSettings.writeConfig(conf);
-        this.oreSettings.writeConfig(conf);
-        this.advancedterrainShapeSettings.writeConfig(conf);
-        // no gui for those
-        conf.cubeAreas = areas;
-        conf.replacerConfig = replacerConf;
-        return conf;
-    }
-
-    String getSettingsJson(CustomGeneratorSettings conf) {
-        return conf.toJson();
-    }
-
-    String getFormattedJson(CustomGeneratorSettings conf) {
-        return CustomGeneratorSettings.gsonBuilder().setPrettyPrinting().create().toJson(conf);
+        updateConfig();
+        return CustomGenSettingsSerialization.jankson().fromJson(jsonConf, CustomGeneratorSettings.class);
     }
 }

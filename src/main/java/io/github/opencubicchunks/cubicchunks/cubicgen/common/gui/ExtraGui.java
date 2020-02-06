@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -29,14 +29,14 @@ import net.malisis.core.client.gui.MalisisGui;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
 import net.malisis.core.util.MouseButton;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -44,11 +44,13 @@ import java.util.WeakHashMap;
 public abstract class ExtraGui extends MalisisGui {
 
     private Map<IDragTickable, DragTickableWrapper> set = new WeakHashMap<>();
-    protected Set<UIComponent<?>> addedComponents = new HashSet<>();
+    private Set<UIComponent<?>> addedComponents = new HashSet<>();
 
     private final Field componentsField;
 
     private boolean debug = false;
+
+    private List<UIComponent<?>> toAddLater = new ArrayList<>();
 
     {
         try {
@@ -71,6 +73,16 @@ public abstract class ExtraGui extends MalisisGui {
         });
     }
 
+    // a workaround to make UISelect have correct Z order
+    public <T> void delayedAdd(UIComponent<?> toAdd) {
+        this.toAddLater.add(toAdd);
+    }
+
+    protected void afterConstruct() {
+        this.toAddLater.forEach(this::addToScreen);
+        this.toAddLater.clear();
+    }
+
     @Override public void addToScreen(UIComponent<?> component) {
         addedComponents.add(component);
         super.addToScreen(component);
@@ -81,6 +93,14 @@ public abstract class ExtraGui extends MalisisGui {
         super.removeFromScreen(component);
     }
 
+    @Override public void close() {
+        // do proper cleanup, because there are static variables (and weak hash maps) that keep track of everything
+        tooltipComponent = null;
+        this.clearScreen();
+
+        super.close();
+    }
+
     @Override public void clearScreen() {
         addedComponents.clear();
         set.clear();
@@ -89,12 +109,10 @@ public abstract class ExtraGui extends MalisisGui {
 
     @Override
     public void update(int mouseX, int mouseY, float partialTick) {
-        for (Iterator<DragTickableWrapper> iterator = set.values().iterator(); iterator.hasNext(); ) {
-            DragTickableWrapper wrapper = iterator.next();
-            if (!wrapper.tick(mouseX, mouseY, partialTick)) {
-                iterator.remove();
-            }
-        }
+        set.values().removeIf(wrapper -> !wrapper.tick(mouseX, mouseY, partialTick));
+
+        toAddLater.forEach(this::addToScreen);
+        toAddLater.clear();
 
         if (!debug) {
             addedComponents.forEach(this::layout);

@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -88,10 +88,10 @@ public class UITabbedContainer extends UIContainer<UITabbedContainer> {
         }
         if (previousTab != -1) {
             // remove the previous tab
-            remove(tabs.get(previousTab).getComponent());
+            tabs.get(previousTab).getComponent().setVisible(false);
         }
         if (currentTab != -1) {
-            add(tabs.get(currentTab).getComponent());
+            tabs.get(currentTab).getComponent().setVisible(true);
             onTitleUpdate.accept(tabs.get(currentTab).getTitle());
         }
 
@@ -99,6 +99,8 @@ public class UITabbedContainer extends UIContainer<UITabbedContainer> {
 
     public void addTab(UIComponent<?> tab, String title) {
         tabs.add(new Tab(tab, title));
+        tab.setVisible(false);
+        this.add(tab);
         updateTab(currentTab == -1 ? 0 : currentTab);
     }
 

@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,4 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 public interface IDragTickable {
 
     void onDragTick(int mouseX, int mouseY, float partialTick);
-
-    ;
 }

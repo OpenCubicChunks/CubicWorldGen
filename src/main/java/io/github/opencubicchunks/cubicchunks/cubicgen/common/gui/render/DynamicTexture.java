@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +23,9 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.render;
 
-import static java.nio.ByteOrder.BIG_ENDIAN;
 import static java.nio.ByteOrder.LITTLE_ENDIAN;
-import static org.lwjgl.opengl.GL11.GL_FLOAT;
-import static org.lwjgl.opengl.GL11.GL_LUMINANCE;
-import static org.lwjgl.opengl.GL11.GL_RED;
-import static org.lwjgl.opengl.GL11.GL_RGB;
 import static org.lwjgl.opengl.GL11.GL_RGBA;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_MAG_FILTER;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_MIN_FILTER;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_BYTE;
 import static org.lwjgl.opengl.GL11.glTexImage2D;
 import static org.lwjgl.opengl.GL12.GL_BGRA;
@@ -40,27 +33,15 @@ import static org.lwjgl.opengl.GL12.GL_TEXTURE_MAX_LEVEL;
 import static org.lwjgl.opengl.GL12.GL_TEXTURE_MAX_LOD;
 import static org.lwjgl.opengl.GL12.GL_TEXTURE_MIN_LOD;
 import static org.lwjgl.opengl.GL14.GL_TEXTURE_LOD_BIAS;
-import static org.lwjgl.opengl.GL30.GL_R16F;
-import static org.lwjgl.opengl.GL30.GL_RG;
-import static org.lwjgl.opengl.GL30.GL_RG16F;
-import static org.lwjgl.opengl.GL30.GL_RGB16F;
-import static org.lwjgl.opengl.GL30.GL_RGBA16F;
 
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.ITextureObject;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.resources.IResourceManager;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
-import org.lwjgl.opengl.GL14;
-import org.lwjgl.opengl.GL30;
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 // TODO: replace with Minecraft's DynamicTexture
@@ -69,16 +50,11 @@ public class DynamicTexture implements ITextureObject {
     private final int width, height;
     private int texture;
     private final ByteBuffer data;
-    private int channels;
-    private int glInterpolationMode;
 
     /**
      * @param img BufferedImage to create texture from
-     * @param glInterpolationMode either {@link GL11#GL_NEAREST} or {@link GL11#GL_LINEAR}
      */
-    public DynamicTexture(BufferedImage img, int glInterpolationMode) {
-        this.glInterpolationMode = glInterpolationMode;
-        this.channels = channels;
+    public DynamicTexture(BufferedImage img) {
         // Java:
         // "All BufferedImage objects have an upper left corner coordinate of (0, 0)"
         // OpenGL:

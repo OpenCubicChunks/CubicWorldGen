@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,9 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui;
 
-import static java.lang.Math.round;
-
 import com.google.common.base.Converter;
 import com.google.common.eventbus.Subscribe;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.BiomeOption;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UICheckboxNoAutoSize;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIRangeSlider;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISliderImproved;
@@ -44,23 +40,49 @@ import net.malisis.core.client.gui.component.interaction.UICheckBox;
 import net.malisis.core.client.gui.component.interaction.UISelect;
 import net.malisis.core.client.gui.component.interaction.UISlider;
 import net.malisis.core.client.gui.component.interaction.UITextField;
-import net.malisis.core.client.gui.event.component.SpaceChangeEvent;
+import net.malisis.core.client.gui.event.ComponentEvent;
 import net.malisis.core.renderer.font.FontOptions;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.DoubleSupplier;
+import java.util.function.Function;
 
-import javax.annotation.Nonnull;
+import static java.lang.Math.round;
 
 public class MalisisGuiUtils {
 
+    public static UISlider<Float> makeFloatSlider(MalisisGui gui, float min, float max, float defVal, Function<Double, String> text) {
+
+        UISlider<Float>[] wrappedSlider = new UISlider[1];
+        BiPredicate<Double, Double> isInRoundRadius = getIsInRoundRadiusPredicate(wrappedSlider);
+
+        float defMult = defVal == 0 ? 1 : defVal;
+
+        Converter<Float, Float> conv = Converters.builder()
+                .linearScale(min, max).rounding().withBase(2, 1).withBase(10, 1).withBase(2, defMult).withBase(10, defMult).withMaxExp(128)
+                .withRoundingRadiusPredicate(isInRoundRadius)
+                .build();
+
+        UISlider<Float> slider = new UISliderImproved<>(gui, 100, conv, value -> text.apply((double) (float) value)).setValue(defVal);
+        wrappedSlider[0] = slider;
+        return slider;
+    }
+
     public static UISlider<Float> makeFloatSlider(MalisisGui gui, String name, float min, float max, float defaultVal) {
+        return makeFloatSlider(gui, min, max, defaultVal, value -> String.format(name, value));
+    }
+
+    public static UISlider<Float> makePositiveExponentialSlider(MalisisGui gui, float minPos, float maxPos, float defaultVal, Function<Double, String> text) {
 
         UISlider<Float>[] wrappedSlider = new UISlider[1];
         BiPredicate<Double, Double> isInRoundRadius = getIsInRoundRadiusPredicate(wrappedSlider);
@@ -68,17 +90,19 @@ public class MalisisGuiUtils {
         float defMult = defaultVal == 0 ? 1 : defaultVal;
 
         Converter<Float, Float> conv = Converters.builder()
-                .linearScale(min, max).rounding().withBase(2, 1).withBase(10, 1).withBase(2, defMult).withBase(10, defMult).withMaxExp(128)
+                .exponential().withBaseValue(2).withPositiveExponentRange(minPos, maxPos)
+                .rounding().withBase(2, 1).withBase(10, 1).withBase(2, defMult).withBase(10, defMult).withMaxExp(128)
                 .withRoundingRadiusPredicate(isInRoundRadius)
+                .withInfinity().positiveAt((float)Math.pow(2, maxPos)).negativeAt(Float.NaN)
                 .build();
 
-        UISlider<Float> slider = new UISliderImproved<>(gui, 100, conv, name).setValue(defaultVal);
+        UISlider<Float> slider = new UISliderImproved<>(gui, 100, conv, value -> text.apply((double) (float) value)).setValue(defaultVal);
         wrappedSlider[0] = slider;
         return slider;
     }
 
-    public static UISlider<Float> makePositiveExponentialSlider(MalisisGui gui, String name, float minPos, float maxPos,
-                                                        float defaultVal) {
+
+    public static UISlider<Float> makePositiveExponentialSlider(MalisisGui gui, String name, float minPos, float maxPos, float defaultVal) {
 
         UISlider<Float>[] wrappedSlider = new UISlider[1];
         BiPredicate<Double, Double> isInRoundRadius = getIsInRoundRadiusPredicate(wrappedSlider);
@@ -94,7 +118,7 @@ public class MalisisGuiUtils {
 
         UISlider<Float> slider = new UISliderImproved<>(gui, 100, conv, name).setValue(defaultVal);
         wrappedSlider[0] = slider;
-        return slider;
+        return makePositiveExponentialSlider(gui, minPos, maxPos, defaultVal, value -> String.format(name, value));
     }
 
     public static UISlider<Float> makeExponentialSlider(MalisisGui gui, String name, float minNeg, float maxNeg, float minPos, float maxPos,
@@ -191,6 +215,21 @@ public class MalisisGuiUtils {
     }
 
     public static UIRangeSlider<Float> makeRangeSlider(ExtraGui gui, String name, float min, float max, float defaultMin, float defaultMax) {
+        return rangeSlider(gui, name, min, max, defaultMin, defaultMax, (a, b) -> I18n.format(name, a * 100, b * 100));
+    }
+
+    public static UIRangeSlider<Float> makeOreHeightSlider(ExtraGui gui, String name, float min, float max, float defaultMin, float defaultMax,
+            DoubleSupplier expectedBaseHeight, DoubleSupplier expectedHeightVariation) {
+        BiFunction<Float, Float, String> i18nFormat = (a, b) -> I18n.format(name,
+                String.format("%.2f", a * 100), String.format("%.2f", b * 100),
+                String.format("%.1f", a * expectedHeightVariation.getAsDouble() + expectedBaseHeight.getAsDouble()),
+                String.format("%.1f", b * expectedHeightVariation.getAsDouble() + expectedBaseHeight.getAsDouble()));
+        return rangeSlider(gui, name, min, max, defaultMin, defaultMax, i18nFormat);
+    }
+
+    private static UIRangeSlider<Float> rangeSlider(ExtraGui gui, String name, float min, float max, float defMin, float defMax,
+            BiFunction<Float, Float, String> i18nFormat) {
+
         UIRangeSlider<Float>[] wrappedSlider = new UIRangeSlider[1];
         BiPredicate<Double, Double> isInRoundRadius = getIsInRoundRadiusPredicate(wrappedSlider);
         float maxExp = MathHelper.ceil(Math.log(Math.max(1, max)) / Math.log(2));
@@ -201,31 +240,32 @@ public class MalisisGuiUtils {
                 .withInfinity().negativeAt(min).positiveAt(max)
                 .build();
 
-        UIRangeSlider<Float> slider = new UIRangeSlider<Float>(
-                gui, 100,
-                conv,
-                (a, b) -> I18n.format(name, a * 100, b * 100))
-                .setRange(defaultMin, defaultMax);
+        UIRangeSlider<Float> slider = new UIRangeSlider<>(gui, 100, conv, i18nFormat).setRange(defMin, defMax);
         wrappedSlider[0] = slider;
         return slider;
     }
 
     public static <T> UISelect<T> makeUISelect(MalisisGui gui, Iterable<T> values) {
-        UISelect<T> select = new UISelect<T>(gui, 0, values);
+        UISelect<T> select = new UISelect<T>(gui, 10, values) {{
+            gui.removeFromScreen(this.optionsContainer);
+            ((ExtraGui) gui).delayedAdd(this.optionsContainer);
+        }};
         return select;
     }
 
-    public static UISelect<BiomeOption> makeBiomeList(MalisisGui gui) {
+    public static UISelect<BiomeOption> makeBiomeList(MalisisGui gui, int selectedId) {
         List<BiomeOption> biomes = new ArrayList<>();
+        Map<Integer, BiomeOption> byId = new HashMap<>();
         biomes.add(BiomeOption.ALL);
         for (Biome biome : ForgeRegistries.BIOMES) {
-            if (!biome.isMutation()) {
-                biomes.add(new BiomeOption(biome));
-            }
+            BiomeOption bo = new BiomeOption(biome);
+            biomes.add(bo);
+            byId.put(Biome.REGISTRY.getIDForObject(biome), bo);
         }
         UISelect<BiomeOption> select = makeUISelect(gui, biomes);
 
-        select.select(BiomeOption.ALL);
+        select.select(byId.getOrDefault(selectedId, BiomeOption.ALL));
+
         select.maxDisplayedOptions(8);
         return select;
     }

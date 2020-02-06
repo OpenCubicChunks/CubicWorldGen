@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -65,7 +65,7 @@ public class OceanWaterReplacer implements IBiomeBlockReplacer {
             private final ResourceLocation OCEAN_LEVEL = CustomCubicMod.location("water_level");
 
             @Override public IBiomeBlockReplacer create(World world, CubicBiome biome, BiomeBlockReplacerConfig conf) {
-                IBlockState oceanBlock = conf.getBlockstate(OCEAN_BLOCK);
+                IBlockState oceanBlock = conf.getBlockstate(OCEAN_BLOCK, Blocks.WATER.getDefaultState());
                 int oceanHeight = (int) Math.round(conf.getDouble(OCEAN_LEVEL));
                 return new OceanWaterReplacer(oceanBlock, oceanHeight);
             }

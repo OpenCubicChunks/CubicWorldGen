@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,6 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-
 package io.github.opencubicchunks.cubicchunks.cubicgen;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -42,6 +41,14 @@ public class CustomCubicConfig {
     @Config.Comment("Disabling this will disable spawn of a entities on a cube generation stage. "
             + "Any mobs and animals will be spawned according regular respawn rules.")
     public static boolean worldgenMobSpawn = true;
+
+    @Config.LangKey("cubicgen.config.gui_scroll_step")
+    @Config.Comment("GUI scroll step factor. Lower values = slower scrolling.")
+    public static float guiScrollStep = 200;
+
+    @Config.LangKey("cubicgen.config.gui_scroll_anim_time")
+    @Config.Comment("GUI scroll animation time (not in any specific unit, more = slower)")
+    public static int guiScrollAnimationTime = 300;
 
     @SubscribeEvent
     public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {

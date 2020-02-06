@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -219,7 +219,7 @@ public class ExponentialConverter extends Converter<Float, Float> {
     }
 
     private double doBackwardDouble(double value) {
-        if (value != value) {
+        if (Double.isNaN(value)) {
             return value;
         }
         // linear part for positive

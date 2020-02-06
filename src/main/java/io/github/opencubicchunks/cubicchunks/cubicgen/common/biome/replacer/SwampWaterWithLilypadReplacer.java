@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer;
 
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
+import io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common.accessor.IBiome;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.IBiomeBlockReplacer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.IBiomeBlockReplacerProvider;
 import mcp.MethodsReturnNonnullByDefault;
@@ -31,7 +32,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.NoiseGeneratorPerlin;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -68,7 +68,7 @@ public class SwampWaterWithLilypadReplacer implements IBiomeBlockReplacer {
 
     public static IBiomeBlockReplacerProvider provider() {
         return IBiomeBlockReplacerProvider.of((world, biome, conf) ->
-                new SwampWaterWithLilypadReplacer(Biome.GRASS_COLOR_NOISE, MathHelper.floor(conf.getDouble(OCEAN_LEVEL)))
+                new SwampWaterWithLilypadReplacer(IBiome.getGrassColorNoise(), MathHelper.floor(conf.getDouble(OCEAN_LEVEL)))
         );
     }
 }

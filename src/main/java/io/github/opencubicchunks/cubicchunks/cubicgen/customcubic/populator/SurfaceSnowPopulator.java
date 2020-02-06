@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@ import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
-import io.github.opencubicchunks.cubicchunks.core.event.CCEventFactory;
+import io.github.opencubicchunks.cubicchunks.cubicgen.CWGEventFactory;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -44,7 +44,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class SurfaceSnowPopulator implements ICubicPopulator {
 
     @Override public void generate(World world, Random random, CubePos pos, Biome biome) {
-        if (CCEventFactory.populate(world, random, pos, false, PopulateChunkEvent.Populate.EventType.ICE)) {
+        if (CWGEventFactory.populate(world, random, pos, false, PopulateChunkEvent.Populate.EventType.ICE)) {
             for (int dx = 0; dx < ICube.SIZE; ++dx) {
                 for (int dz = 0; dz < ICube.SIZE; ++dz) {
                     int xOffset = dx + ICube.SIZE / 2;
