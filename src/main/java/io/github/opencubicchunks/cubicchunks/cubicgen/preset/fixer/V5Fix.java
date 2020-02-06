@@ -36,7 +36,7 @@ public class V5Fix implements IJsonFix {
 
     private final JsonTransformer<Function<JsonObject, JsonObject>> transformer = JsonTransformer.<Function<JsonObject, JsonObject>>builder("V4 -> V5")
             .drop("v3fix")
-            .valueTransform("version", (e, ctx) -> new JsonPrimitive(4))
+            .valueTransform("version", (e, ctx) -> new JsonPrimitive(5))
             .passthroughFor(
                     "waterLevel",
                     "caves",
