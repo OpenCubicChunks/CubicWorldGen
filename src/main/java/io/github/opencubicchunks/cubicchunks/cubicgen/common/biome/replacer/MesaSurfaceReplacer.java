@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@ import static java.lang.Math.abs;
 import com.google.common.collect.Sets;
 import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
+import io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common.accessor.IBiomeMesa;
 import io.github.opencubicchunks.cubicchunks.cubicgen.cache.HashCacheDoubles;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.BiomeBlockReplacerConfig;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.ConfigOptionInfo;
@@ -37,6 +38,7 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.IBuilder;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.NoiseSource;
 import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockColored;
 import net.minecraft.block.BlockDirt;
 import net.minecraft.block.state.IBlockState;
@@ -88,14 +90,17 @@ public class MesaSurfaceReplacer implements IBiomeBlockReplacer {
         this.heightScale = heightScale;
         this.waterHeight = waterHeight;
 
-        if (biomeMesa.clayBands == null || biomeMesa.worldSeed != world.getSeed()) {
+        IBiomeMesa mesa = (IBiomeMesa) biomeMesa;
+
+        if (mesa.getClayBands() == null || mesa.getWorldSeed() != world.getSeed()) {
             biomeMesa.generateBands(world.getSeed());
         }
+        assert mesa.getClayBands() != null;
         // so that we don't cause issues when we replace clayBands and scrollOffset noise
-        biomeMesa.worldSeed = world.getSeed();
-        this.clayBands = Arrays.copyOf(biomeMesa.clayBands, biomeMesa.clayBands.length);
+        mesa.setWorldSeed(world.getSeed());
+        this.clayBands = Arrays.copyOf(mesa.getClayBands(), mesa.getClayBands().length);
         this.clayBandsOffsetNoise = HashCacheDoubles.create(
-                256, p -> p.getX() * 16 + p.getZ(), p -> biomeMesa.clayBandsOffsetNoise.getValue(p.getX() / 512.0, p.getZ() / 512.0)
+                256, p -> p.getX() * 16 + p.getZ(), p -> mesa.getClayBandsOffsetNoise().getValue(p.getX() / 512.0, p.getZ() / 512.0)
         );
 
         Random random = new Random(world.getSeed());
@@ -134,7 +139,8 @@ public class MesaSurfaceReplacer implements IBiomeBlockReplacer {
         }
 
         if (y >= waterHeight - 1) {
-            if (biomeMesa.hasForest && y >= convertYFromVanilla(86) + depth * 2) {
+            IBiomeMesa mesa = (IBiomeMesa) biomeMesa;
+            if (mesa.getHasForest() && y >= convertYFromVanilla(86) + depth * 2) {
                 top = coarse ? COARSE_DIRT : GRASS;
                 filler = getBand(x, y, z);
             } else if (y > waterHeight + 3 + depth) {
@@ -164,7 +170,8 @@ public class MesaSurfaceReplacer implements IBiomeBlockReplacer {
 
     private double getPillarHeightVanilla(int x, int z, double depth) {
         double pillarHeight = 0.0;
-        if (biomeMesa.brycePillars) {
+        IBiomeMesa mesa = (IBiomeMesa) biomeMesa;
+        if (mesa.isBrycePillars()) {
             double pillarScale = Math.min(abs(depth),
                     this.pillarNoise.get(new BlockPos(x * 0.25D, 0, z * 0.25D)));
 

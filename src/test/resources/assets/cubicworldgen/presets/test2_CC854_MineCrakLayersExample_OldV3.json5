@@ -1,15 +1,4 @@
 {
-   "comment":"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
-   "comment":" CC Preset Layers Example 01 | by MineCrak | cc854 - 2018.11.11 ",
-   "comment":"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
-   "comment":~,
-   "comment":"~~~~~~~~~~~~~~~~~~~~",
-   "comment":" Main DEFAULT Preset",
-   "comment":"~~~~~~~~~~~~~~~~~~~~",
-   "comment":"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
-   "comment":" y= (+Inf > 0) + y= (-513 > -Inf) + (Any Undefined ranges) ",
-   "comment":"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
-   "comment":~,
    "waterLevel":63,
    "caves":true,
    "strongholds":true,
@@ -247,24 +236,9 @@
    "highNoiseFrequencyY":0.0026108245,
    "highNoiseFrequencyZ":0.005221649,
    "highNoiseOctaves":16,
-   "comment":~,
-   "comment":"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
-   "comment":" Added Layers & Regions (below in 'cubeAreas') ",
-   "comment":"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
-   "comment":"~~~~~~~~~~~~~~~~~~~~~~~~",
-   "comment":" Total: y= (-1 > -512)  ",
-   "comment":"~~~~~~~~~~~~~~~~~~~~~~~~",
-   "comment":~,
    "cubeAreas":[
       [
          {
-            "comment":"~~~~~~~~~~~~~~",
-            "comment":" Underworld 1 ",
-            "comment":"~~~~~~~~~~~~~~",
-            "comment":"~~~~~~~~~~~~~~~~~~~~~~~",
-            "comment":" Layer: y= (-1 > -256) ",
-            "comment":"~~~~~~~~~~~~~~~~~~~~~~~",
-            "comment":~,
             "minX":-1000000000,
             "minY":-16,
             "minZ":-1000000000,
@@ -515,7 +489,7 @@
                   "cubicgen:biome_fill_noise_octaves":4.0,
                   "cubicgen:ocean_block":{
                      "Properties":{
-                        "level":"0"
+                        "level":0.0
                      },
                      "Name":"minecraft:water"
                   },
@@ -542,13 +516,6 @@
       ],
       [
          {
-            "comment":"~~~~~~~~~~~~~~",
-            "comment":" Underworld 2 ",
-            "comment":"~~~~~~~~~~~~~~",
-            "comment":"~~~~~~~~~~~~~~~~~~~~~~~~~",
-            "comment":" Layer: y= (-257 > -512) ",
-            "comment":"~~~~~~~~~~~~~~~~~~~~~~~~~",
-            "comment":~,
             "minX":-1000000000,
             "minY":-32,
             "minZ":-1000000000,
@@ -799,7 +766,7 @@
                   "cubicgen:biome_fill_noise_octaves":4.0,
                   "cubicgen:ocean_block":{
                      "Properties":{
-                        "level":"0"
+                        "level":0.0
                      },
                      "Name":"minecraft:water"
                   },
@@ -825,19 +792,12 @@
          }
       ]
    ],
-   "comment":"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
-   "comment":" End of 'cubeAreas' Added Layers ",
-   "comment":"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
-   "comment":"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
-   "comment":" Final part of Default Preset (Below) ",
-   "comment":"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
-   "comment":~,
    "replacerConfig":{
       "defaults":{
          "cubicgen:biome_fill_noise_octaves":4.0,
          "cubicgen:ocean_block":{
             "Properties":{
-               "level":"0"
+               "level":0.0
             },
             "Name":"minecraft:water"
          },

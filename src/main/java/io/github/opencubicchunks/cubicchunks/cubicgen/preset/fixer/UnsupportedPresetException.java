@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -21,24 +21,26 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package io.github.opencubicchunks.cubicchunks.cubicgen.flat;
+package io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer;
 
-import net.minecraft.block.state.IBlockState;
+public class UnsupportedPresetException extends PresetLoadError {
 
-public class Layer implements Comparable<Layer> {
-
-    public int fromY;
-    public int toY;
-    public IBlockState blockState;
-
-    public Layer(int fromY1, int toY1, IBlockState block1) {
-        fromY = fromY1;
-        toY = toY1;
-        blockState = block1;
+    public UnsupportedPresetException() {
     }
 
-    @Override
-    public int compareTo(Layer other) {
-        return this.fromY - other.fromY;
+    public UnsupportedPresetException(String message) {
+        super(message);
+    }
+
+    public UnsupportedPresetException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public UnsupportedPresetException(Throwable cause) {
+        super(cause);
+    }
+
+    public UnsupportedPresetException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
     }
 }

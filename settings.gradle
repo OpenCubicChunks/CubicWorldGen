@@ -25,3 +25,31 @@ pluginManagement {
     }
 }
 enableFeaturePreview('STABLE_PUBLISHING')
+rootProject.name = "CubicWorldGen"
+
+// include CC as subproject if it exists
+if (file("../1.10.2").exists()) {
+    println("Including build at ../1.10.2/ in composite build")
+    includeBuild("../1.10.2") {
+        dependencySubstitution {
+            substitute module('io.github.opencubicchunks:cubicchunks') with project(':')
+        }
+    }
+    includeBuild("../1.10.2/CubicChunksAPI") {
+        dependencySubstitution {
+            substitute module('io.github.opencubicchunks:cubicchunks-api') with project(':')
+        }
+    }
+} else if (file("../CubicChunks").exists()) {
+    println("Including build at ../CubicChunks/ in composite build")
+    includeBuild("../CubicChunks") {
+        dependencySubstitution {
+            substitute module('io.github.opencubicchunks:cubicchunks') with project(':')
+        }
+    }
+    includeBuild("../CubicChunks/CubicChunksAPI") {
+        dependencySubstitution {
+            substitute module('io.github.opencubicchunks:cubicchunks-api') with project(':')
+        }
+    }
+}

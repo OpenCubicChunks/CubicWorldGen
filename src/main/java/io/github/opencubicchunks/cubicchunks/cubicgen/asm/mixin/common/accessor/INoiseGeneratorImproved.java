@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -21,18 +21,21 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.feature;
+package io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common.accessor;
 
-import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
-import io.github.opencubicchunks.cubicchunks.api.util.XYZAddressable;
-import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
-import net.minecraft.world.World;
+import net.minecraft.world.gen.NoiseGeneratorImproved;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
-public interface ICubicStructureStart extends XYZAddressable {
-    int getChunkPosY();
-
-    // internal use instead of constructor argument
-    void initCubic(World world, CustomGeneratorSettings conf, int cubeY);
-
-    CubePos getCubePos();
+@Mixin(NoiseGeneratorImproved.class)
+public interface INoiseGeneratorImproved {
+    @Accessor("GRAD_X") static double[] getGradX() {
+        throw new Error("INoiseGeneratorImproved failed to apply");
+    }
+    @Accessor("GRAD_Y") static double[] getGradY() {
+        throw new Error("INoiseGeneratorImproved failed to apply");
+    }
+    @Accessor("GRAD_Z") static double[] getGradZ() {
+        throw new Error("INoiseGeneratorImproved failed to apply");
+    }
 }

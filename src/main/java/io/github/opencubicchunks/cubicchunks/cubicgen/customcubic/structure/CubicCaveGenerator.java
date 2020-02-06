@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@ import static net.minecraft.util.math.MathHelper.sin;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.ICubicStructureGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.StructureGenUtil;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.state.IBlockState;
@@ -53,7 +54,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 //TODO: Fix code duplication beterrn cave and cave generators
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class CubicCaveGenerator extends CubicStructureGenerator {
+public class CubicCaveGenerator implements ICubicStructureGenerator {
 
     //=============================================
     //Possibly configurable values
@@ -101,37 +102,37 @@ public class CubicCaveGenerator extends CubicStructureGenerator {
     /**
      * After each step the Y direction component will be multiplied by this value, unless steeper cave is allowed
      */
-    private static final double FLATTEN_FACTOR = 0.7;
+    private static final float FLATTEN_FACTOR = 0.7f;
 
     /**
      * If steeper cave is allowed - this value will be used instead of FLATTEN_FACTOR
      */
-    private static final double STEEPER_FLATTEN_FACTOR = 0.92;
+    private static final float STEEPER_FLATTEN_FACTOR = 0.92f;
 
     /**
      * Each step cave direction angles will be changed by this fraction of values that specify how direction changes
      */
-    private static final double DIRECTION_CHANGE_FACTOR = 0.1;
+    private static final float DIRECTION_CHANGE_FACTOR = 0.1f;
 
     /**
      * This fraction of the previous value that controls horizontal direction changes will be used in next step
      */
-    private static final double PREV_HORIZ_DIRECTION_CHANGE_WEIGHT = 0.75;
+    private static final float PREV_HORIZ_DIRECTION_CHANGE_WEIGHT = 0.75f;
 
     /**
      * This fraction of the previous value that controls vertical direction changes will be used in next step
      */
-    private static final double PREV_VERT_DIRECTION_CHANGE_WEIGHT = 0.9;
+    private static final float PREV_VERT_DIRECTION_CHANGE_WEIGHT = 0.9f;
 
     /**
      * Maximum value by which horizontal cave direction randomly changes each step, lower values are much more likely.
      */
-    private static final double MAX_ADD_DIRECTION_CHANGE_HORIZ = 4.0;
+    private static final float MAX_ADD_DIRECTION_CHANGE_HORIZ = 4.0f;
 
     /**
      * Maximum value by which vertical cave direction randomly changes each step, lower values are much more likely.
      */
-    private static final double MAX_ADD_DIRECTION_CHANGE_VERT = 2.0;
+    private static final float MAX_ADD_DIRECTION_CHANGE_VERT = 2.0f;
 
     /**
      * 1 in this amount of steps will actually carve any blocks,
@@ -146,52 +147,52 @@ public class CubicCaveGenerator extends CubicStructureGenerator {
      */
     private static final double CAVE_FLOOR_DEPTH = -0.7;
 
+    private static final int RANGE = 8;
+
     /**
      * Controls which blocks can be replaced by cave
      */
     private static final Predicate<IBlockState> isBlockReplaceable = (state ->
             state.getBlock() == Blocks.STONE || state.getBlock() == Blocks.DIRT || state.getBlock() == Blocks.GRASS);
 
-    public CubicCaveGenerator() {
-        super(2);
+    @Override public void generate(World world, CubePrimer cube, CubePos cubePos) {
+        this.generate(world, cube, cubePos, this::generate, RANGE, RANGE, 1, 1);
     }
 
-
-    @Override
-    protected void generate(World world, CubePrimer cube,
+    protected void generate(World world, Random rand, CubePrimer cube,
             int cubeXOrigin, int cubeYOrigin, int cubeZOrigin, CubePos generatedCubePos) {
-        if (this.rand.nextInt(CAVE_RARITY) != 0) {
+        if (rand.nextInt(CAVE_RARITY) != 0) {
             return;
         }
         //very low probability of generating high number
-        int nodes = this.rand.nextInt(this.rand.nextInt(this.rand.nextInt(MAX_INIT_NODES + 1) + 1) + 1);
+        int nodes = rand.nextInt(rand.nextInt(rand.nextInt(MAX_INIT_NODES + 1) + 1) + 1);
 
         for (int node = 0; node < nodes; ++node) {
-            double branchStartX = localToBlock(cubeXOrigin, this.rand.nextInt(ICube.SIZE));
-            double branchStartY = localToBlock(cubeYOrigin, this.rand.nextInt(ICube.SIZE));
-            double branchStartZ = localToBlock(cubeZOrigin, this.rand.nextInt(ICube.SIZE));
+            double branchStartX = localToBlock(cubeXOrigin, rand.nextInt(ICube.SIZE));
+            double branchStartY = localToBlock(cubeYOrigin, rand.nextInt(ICube.SIZE));
+            double branchStartZ = localToBlock(cubeZOrigin, rand.nextInt(ICube.SIZE));
             int subBranches = 1;
 
-            if (this.rand.nextInt(LARGE_NODE_RARITY) == 0) {
-                this.generateLargeNode(cube, this.rand.nextLong(), generatedCubePos,
+            if (rand.nextInt(LARGE_NODE_RARITY) == 0) {
+                this.generateLargeNode(cube, rand, rand.nextLong(), generatedCubePos,
                         branchStartX, branchStartY, branchStartZ);
-                subBranches += this.rand.nextInt(LARGE_NODE_MAX_BRANCHES);
+                subBranches += rand.nextInt(LARGE_NODE_MAX_BRANCHES);
             }
 
             for (int branch = 0; branch < subBranches; ++branch) {
-                float horizDirAngle = this.rand.nextFloat() * (float) Math.PI * 2.0F;
-                float vertDirAngle = (this.rand.nextFloat() - 0.5F) * 2.0F / 8.0F;
-                float baseHorizSize = this.rand.nextFloat() * 2.0F + this.rand.nextFloat();
+                float horizDirAngle = rand.nextFloat() * (float) Math.PI * 2.0F;
+                float vertDirAngle = (rand.nextFloat() - 0.5F) * 2.0F / 8.0F;
+                float baseHorizSize = rand.nextFloat() * 2.0F + rand.nextFloat();
 
-                if (this.rand.nextInt(BIG_CAVE_RARITY) == 0) {
-                    baseHorizSize *= this.rand.nextFloat() * this.rand.nextFloat() * 3.0F + 1.0F;
+                if (rand.nextInt(BIG_CAVE_RARITY) == 0) {
+                    baseHorizSize *= rand.nextFloat() * rand.nextFloat() * 3.0F + 1.0F;
                 }
 
                 int startWalkedDistance = 0;
                 int maxWalkedDistance = 0;
                 double vertCaveSizeMod = 1.0;
 
-                this.generateNode(cube, this.rand.nextLong(), generatedCubePos,
+                this.generateNode(cube, rand.nextLong(), generatedCubePos,
                         branchStartX, branchStartY, branchStartZ,
                         baseHorizSize, horizDirAngle, vertDirAngle,
                         startWalkedDistance, maxWalkedDistance, vertCaveSizeMod);
@@ -202,9 +203,9 @@ public class CubicCaveGenerator extends CubicStructureGenerator {
     /**
      * Generates a flattened cave "room", usually more caves split off it
      */
-    private void generateLargeNode(CubePrimer cube, long seed, CubePos generatedCubePos,
+    private void generateLargeNode(CubePrimer cube, Random rand, long seed, CubePos generatedCubePos,
             double x, double y, double z) {
-        float baseHorizSize = 1.0F + this.rand.nextFloat() * 6.0F;
+        float baseHorizSize = 1.0F + rand.nextFloat() * 6.0F;
         float horizDirAngle = 0;
         float vertDirAngle = 0;
 
@@ -246,7 +247,7 @@ public class CubicCaveGenerator extends CubicStructureGenerator {
         float vertDirChange = 0.0F;
 
         if (maxWalkedDistance <= 0) {
-            int maxBlockRadius = cubeToMinBlock(this.range - 1);
+            int maxBlockRadius = cubeToMinBlock(RANGE - 1);
             maxWalkedDistance = maxBlockRadius - rand.nextInt(maxBlockRadius / 4);
         }
 

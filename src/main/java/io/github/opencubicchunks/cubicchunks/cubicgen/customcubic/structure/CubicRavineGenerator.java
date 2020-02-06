@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@ import io.github.opencubicchunks.cubicchunks.api.util.Coords;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.ICubicStructureGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.StructureGenUtil;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import mcp.MethodsReturnNonnullByDefault;
@@ -49,7 +50,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class CubicRavineGenerator extends CubicStructureGenerator {
+public class CubicRavineGenerator implements ICubicStructureGenerator {
 
     /**
      * Vanilla value: 50
@@ -85,32 +86,32 @@ public class CubicRavineGenerator extends CubicStructureGenerator {
     /**
      * After each step the Y direction component will be multiplied by this value
      */
-    private static final double FLATTEN_FACTOR = 0.7;
+    private static final float FLATTEN_FACTOR = 0.7f;
 
     /**
      * Each step ravine direction angles will be changed by this fraction of values that specify how direction changes
      */
-    private static final double DIRECTION_CHANGE_FACTOR = 0.05;
+    private static final float DIRECTION_CHANGE_FACTOR = 0.05f;
 
     /**
      * This fraction of the previous value that controls horizontal direction changes will be used in next step
      */
-    private static final double PREV_HORIZ_DIRECTION_CHANGE_WEIGHT = 0.5;
+    private static final float PREV_HORIZ_DIRECTION_CHANGE_WEIGHT = 0.5f;
 
     /**
      * This fraction of the previous value that controls vertical direction changes will be used in next step
      */
-    private static final double PREV_VERT_DIRECTION_CHANGE_WEIGHT = 0.8;
+    private static final float PREV_VERT_DIRECTION_CHANGE_WEIGHT = 0.8f;
 
     /**
      * Maximum value by which horizontal cave direction randomly changes each step, lower values are much more likely.
      */
-    private static final double MAX_ADD_DIRECTION_CHANGE_HORIZ = 4.0;
+    private static final float MAX_ADD_DIRECTION_CHANGE_HORIZ = 4.0f;
 
     /**
      * Maximum value by which vertical cave direction randomly changes each step, lower values are much more likely.
      */
-    private static final double MAX_ADD_DIRECTION_CHANGE_VERT = 2.0;
+    private static final float MAX_ADD_DIRECTION_CHANGE_VERT = 2.0f;
 
     /**
      * 1 in this amount of steps will actually carve any blocks,
@@ -138,13 +139,18 @@ public class CubicRavineGenerator extends CubicStructureGenerator {
      */
     @Nonnull private float[] widthDecreaseFactors = new float[1024];
 
+    private final int range = 8;
+
     public CubicRavineGenerator(CustomGeneratorSettings cfg) {
-        super(2);
         this.maxCubeY = Coords.blockToCube(cfg.expectedBaseHeight);
     }
 
-    @Override
-    protected void generate(World world, CubePrimer cube, int structureX, int structureY, int structureZ,
+
+    @Override public void generate(World world, CubePrimer cube, CubePos cubePos) {
+        this.generate(world, cube, cubePos, this::generate, range, range, 1, 1);
+    }
+
+    protected void generate(World world, Random rand, CubePrimer cube, int structureX, int structureY, int structureZ,
             CubePos generatedCubePos) {
         if (rand.nextInt(RAVINE_RARITY) != 0 || structureY > maxCubeY) {
             return;

@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package io.github.opencubicchunks.cubicchunks.cubicgen.asm;
+package io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod;
 
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraftforge.common.ForgeVersion;
@@ -29,17 +29,15 @@ import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.Mixins;
 
-import java.util.Map;
-
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Map;
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
 // the mcVersion value is inlined at compile time, so this MC version check may still fail
 @IFMLLoadingPlugin.MCVersion(value = ForgeVersion.mcVersion)
 @IFMLLoadingPlugin.SortingIndex(value = 5000)
-@IFMLLoadingPlugin.TransformerExclusions(value = "io.github.opencubicchunks.cubicchunks.cubicgen.asm.")
 public class CubicGenCoreMod implements IFMLLoadingPlugin {
 
     public CubicGenCoreMod() {
@@ -48,7 +46,7 @@ public class CubicGenCoreMod implements IFMLLoadingPlugin {
 
     @Override
     public String[] getASMTransformerClass() {
-        return new String[]{};
+        return new String[]{"io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.MapGenStrongholdCubicConstructorTransform"};
     }
 
     @Nullable @Override
@@ -71,7 +69,13 @@ public class CubicGenCoreMod implements IFMLLoadingPlugin {
     }
 
     public static void initMixin() {
-        MixinBootstrap.init();
-        Mixins.addConfiguration("cubicgen.mixins.json");
+        try {
+            Class.forName("org.spongepowered.asm.launch.MixinBootstrap");
+            MixinBootstrap.init();
+            Mixins.addConfiguration("cubicgen.mixins.json");
+        } catch (ClassNotFoundException ignored) {
+            // this means cubic chunks isn't there, let forge show missing dependency screen
+        }
+
     }
 }

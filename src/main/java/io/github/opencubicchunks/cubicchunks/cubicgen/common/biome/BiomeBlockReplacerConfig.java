@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.biome;
 
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.ResourceLocation;
@@ -30,6 +31,7 @@ import net.minecraft.util.ResourceLocation;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
@@ -47,18 +49,30 @@ public class BiomeBlockReplacerConfig {
     private Map<ResourceLocation, Object> overrides = new HashMap<>();
 
     public void set(ResourceLocation location, Object value) {
+        if (value instanceof IBlockState) {
+            value = new BlockStateDesc((IBlockState) value);
+        }
         overrides.put(location, value);
     }
 
     public void set(String modid, String name, Object value) {
+        if (value instanceof IBlockState) {
+            value = new BlockStateDesc((IBlockState) value);
+        }
         overrides.put(new ResourceLocation(modid, name), value);
     }
 
     public void setDefault(ResourceLocation location, Object defaultValue) {
+        if (defaultValue instanceof IBlockState) {
+            defaultValue = new BlockStateDesc((IBlockState) defaultValue);
+        }
         defaults.put(location, defaultValue);
     }
 
     public void setDefault(String modid, String name, Object defaultValue) {
+        if (defaultValue instanceof IBlockState) {
+            defaultValue = new BlockStateDesc((IBlockState) defaultValue);
+        }
         defaults.put(new ResourceLocation(modid, name), defaultValue);
     }
 
@@ -80,17 +94,21 @@ public class BiomeBlockReplacerConfig {
         return (String) v;
     }
 
-    public IBlockState getBlockstate(String modid, String name) {
-        return getBlockstate(new ResourceLocation(modid, name));
+    public IBlockState getBlockstate(String modid, String name, IBlockState def) {
+        return getBlockstate(new ResourceLocation(modid, name), def);
     }
 
     /* String getters */
-    public IBlockState getBlockstate(ResourceLocation location) {
+    public IBlockState getBlockstate(ResourceLocation location, IBlockState def) {
         Object v = getValue(location);
         if (v == null) {
             throw new NullPointerException();
         }
-        return (IBlockState) v;
+        IBlockState state = ((BlockStateDesc) v).getBlockState();
+        if (state == null) {
+            state = def;
+        }
+        return state;
     }
 
     public String getString(String modid, String name) {
@@ -126,4 +144,5 @@ public class BiomeBlockReplacerConfig {
     public Map<ResourceLocation, Object> getOverrides() {
         return new HashMap<>(overrides);
     }
+
 }

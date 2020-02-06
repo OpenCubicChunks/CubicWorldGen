@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer;
 
+import io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common.accessor.IBiomeTaiga;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.BiomeBlockReplacerConfig;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.ConfigOptionInfo;
@@ -55,7 +56,7 @@ public class TaigaSurfaceReplacer implements IBiomeBlockReplacer {
     }
 
     @Override public IBlockState getReplacedBlock(IBlockState previousBlock, int x, int y, int z, double dx, double dy, double dz, double density) {
-        if (biome.type == BiomeTaiga.Type.MEGA || biome.type == BiomeTaiga.Type.MEGA_SPRUCE) {
+        if (((IBiomeTaiga) biome).getType() == BiomeTaiga.Type.MEGA || ((IBiomeTaiga) biome).getType() == BiomeTaiga.Type.MEGA_SPRUCE) {
             defaultReplacer.setTopBlock(Blocks.GRASS.getDefaultState());
             defaultReplacer.setFillerBlock(Blocks.DIRT.getDefaultState());
 

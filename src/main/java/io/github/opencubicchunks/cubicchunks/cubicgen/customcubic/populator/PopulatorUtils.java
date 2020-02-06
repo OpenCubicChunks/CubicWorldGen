@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,9 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator;
 
-import static io.github.opencubicchunks.cubicchunks.api.util.Coords.blockToCube;
-
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.api.util.MathUtil;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
-import io.github.opencubicchunks.cubicchunks.core.event.CCEventFactory;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.util.math.BlockPos;
@@ -47,14 +44,15 @@ public class PopulatorUtils {
             int count, double probability, WorldGenerator generator, double minY, double maxY) {
         int minBlockY = Math.round((float) (minY * cfg.expectedHeightVariation + cfg.expectedBaseHeight));
         int maxBlockY = Math.round((float) (maxY * cfg.expectedHeightVariation + cfg.expectedBaseHeight));
-        if (pos.getMinBlockY() > maxBlockY || pos.getMaxBlockY() < minBlockY) {
+        int offset = ICube.SIZE / 2;
+        if (pos.getMinBlockY() + offset > maxBlockY || pos.getMaxBlockY() + offset < minBlockY) {
             return;
         }
         for (int i = 0; i < count; ++i) {
             if (random.nextDouble() > probability) {
                 continue;
             }
-            int yOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
+            int yOffset = random.nextInt(ICube.SIZE) + offset;
             int blockY = pos.getMinBlockY() + yOffset;
             if (blockY > maxBlockY || blockY < minBlockY) {
                 continue;

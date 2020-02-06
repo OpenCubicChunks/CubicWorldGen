@@ -22,7 +22,7 @@ script: ./gradlew clean build
 deploy:
   # if only travis supported multiple branches as conditions... or regex
   - provider: script
-    script: "./gradlew clean uploadArchives"
+    script: "./gradlew clean publish"
     skip_cleanup: true
     on:
       repo: OpenCubicChunks/CubicWorldGen

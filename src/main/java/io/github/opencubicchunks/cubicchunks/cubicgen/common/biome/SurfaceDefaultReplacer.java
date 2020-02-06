@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -57,7 +57,7 @@ public class SurfaceDefaultReplacer implements IBiomeBlockReplacer {
     private final double oceanHeight;
 
     public SurfaceDefaultReplacer(IBlockState topBlock, IBlockState fillerBlock, IBuilder depthNoise,
-            double horizontalGradientDepthDecreaseWeight, double oceanHeight) {
+            double horizontalGradientDepthDecreaseWeight, double oceanHeight, int surfaceDepthLimit) {
         this.topBlock = topBlock;
         this.fillerBlock = fillerBlock;
         this.depthNoise = depthNoise;
@@ -126,6 +126,7 @@ public class SurfaceDefaultReplacer implements IBiomeBlockReplacer {
         return new IBiomeBlockReplacerProvider() {
             private final ResourceLocation HORIZONTAL_GRADIENT_DEC = CustomCubicMod.location("horizontal_gradient_depth_decrease_weight");
             private final ResourceLocation OCEAN_LEVEL = CustomCubicMod.location("water_level");
+            private final ResourceLocation SURFACE_BLOCK_DEPTH_LIMIT = CustomCubicMod.location("surface_depth_limit");
             private final ResourceLocation DEPTH_NOISE_FACTOR = CustomCubicMod.location("biome_fill_depth_factor");
             private final ResourceLocation DEPTH_NOISE_OFFSET = CustomCubicMod.location("biome_fill_depth_offset");
             private final ResourceLocation DEPTH_NOISE_FREQUENCY = CustomCubicMod.location("biome_fill_noise_freq");
@@ -140,13 +141,14 @@ public class SurfaceDefaultReplacer implements IBiomeBlockReplacer {
                 double offset = conf.getDouble(DEPTH_NOISE_OFFSET);
                 double freq = conf.getDouble(DEPTH_NOISE_FREQUENCY);
                 int octaves = (int) conf.getDouble(DEPTH_NOISE_OCTAVES);
+                int maxDepth = (int) conf.getDouble(SURFACE_BLOCK_DEPTH_LIMIT);
                 Biome biome = cubicBiome.getBiome();
 
                 IBuilder builder = NoiseSource.perlin()
                         .frequency(freq).octaves(octaves).create()
                         .mul(factor).add(offset)
                         .cached2d(256, v -> v.getX() + v.getZ() * 16);
-                return new SurfaceDefaultReplacer(biome.topBlock, biome.fillerBlock, builder, gradientDec, oceanY);
+                return new SurfaceDefaultReplacer(biome.topBlock, biome.fillerBlock, builder, gradientDec, oceanY, maxDepth);
             }
 
             @Override public Set<ConfigOptionInfo> getPossibleConfigOptions() {
@@ -158,7 +160,8 @@ public class SurfaceDefaultReplacer implements IBiomeBlockReplacer {
                         new ConfigOptionInfo(DEPTH_NOISE_FACTOR, ((1 << 3) - 1) / 3.0),
                         new ConfigOptionInfo(DEPTH_NOISE_OFFSET, 3.0),
                         new ConfigOptionInfo(DEPTH_NOISE_FREQUENCY, ConversionUtils.frequencyFromVanilla(0.0625f, 4)),
-                        new ConfigOptionInfo(DEPTH_NOISE_OCTAVES, 4.0)
+                        new ConfigOptionInfo(DEPTH_NOISE_OCTAVES, 4.0),
+                        new ConfigOptionInfo(SURFACE_BLOCK_DEPTH_LIMIT, 9.0)
                 );
             }
         };

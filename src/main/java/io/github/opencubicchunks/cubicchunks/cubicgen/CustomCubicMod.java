@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -78,8 +78,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 @Mod(modid = CustomCubicMod.MODID,
-        dependencies = "required-after:cubicchunks@[0.0.872.0,);required-after:Forge@[12.18.3.2316,)",
-        acceptableRemoteVersions = "*"
+        dependencies = "required-after:cubicchunks@[0.0.1085.0,);required-after:Forge@[12.18.3.2316,)",
+        acceptableRemoteVersions = "*",
+        version = "0.0.9999.0"
 )
 @Mod.EventBusSubscriber
 public class CustomCubicMod {

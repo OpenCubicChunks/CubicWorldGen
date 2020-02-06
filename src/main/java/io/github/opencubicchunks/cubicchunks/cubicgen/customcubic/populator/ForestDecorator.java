@@ -1,7 +1,7 @@
 /*
  *  This file is part of Cubic World Generation, licensed under the MIT License (MIT).
  *
- *  Copyright (c) 2015 contributors
+ *  Copyright (c) 2015-2020 contributors
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,9 @@ import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
-import io.github.opencubicchunks.cubicchunks.core.event.CCEventFactory;
+import io.github.opencubicchunks.cubicchunks.cubicgen.CWGEventFactory;
+import io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common.accessor.IBiome;
+import io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common.accessor.IBiomeForest;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.BlockDoublePlant;
 import net.minecraft.util.math.BlockPos;
@@ -48,14 +50,14 @@ public class ForestDecorator implements ICubicPopulator {
 
     @Override public void generate(World world, Random random, CubePos pos, Biome biome) {
 
-        if (((BiomeForest) biome).type == BiomeForest.Type.ROOFED) {
+        if (((IBiomeForest) biome).getType() == BiomeForest.Type.ROOFED) {
             this.addMushrooms(world, random, pos, biome);
         }
 
-        if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.FLOWERS)) {
+        if (CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.FLOWERS)) {
             int plantAmount = random.nextInt(5) - 3;
 
-            if (((BiomeForest) biome).type == BiomeForest.Type.FLOWER) {
+            if (((IBiomeForest) biome).getType() == BiomeForest.Type.FLOWER) {
                 plantAmount += 2;
             }
 
@@ -74,9 +76,9 @@ public class ForestDecorator implements ICubicPopulator {
                 if (blockpos == null) {
                     continue;
                 }
-                if (random.nextInt(20) == 0 && CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.BIG_SHROOM)) {
+                if (random.nextInt(20) == 0 && CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.BIG_SHROOM)) {
                     new WorldGenBigMushroom().generate(world, random, blockpos);
-                } else if (CCEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.TREE)) {
+                } else if (CWGEventFactory.decorate(world, random, pos, DecorateBiomeEvent.Decorate.EventType.TREE)) {
                     WorldGenAbstractTree generator = biome.genBigTreeChance(random);
                     generator.setDecorationDefaults();
 
@@ -93,11 +95,11 @@ public class ForestDecorator implements ICubicPopulator {
             int type = random.nextInt(3);
 
             if (type == 0) {
-                biome.DOUBLE_PLANT_GENERATOR.setPlantType(BlockDoublePlant.EnumPlantType.SYRINGA);
+                IBiome.getDoublePlantGenerator().setPlantType(BlockDoublePlant.EnumPlantType.SYRINGA);
             } else if (type == 1) {
-                biome.DOUBLE_PLANT_GENERATOR.setPlantType(BlockDoublePlant.EnumPlantType.ROSE);
+                IBiome.getDoublePlantGenerator().setPlantType(BlockDoublePlant.EnumPlantType.ROSE);
             } else if (type == 2) {
-                biome.DOUBLE_PLANT_GENERATOR.setPlantType(BlockDoublePlant.EnumPlantType.PAEONIA);
+                IBiome.getDoublePlantGenerator().setPlantType(BlockDoublePlant.EnumPlantType.PAEONIA);
             }
 
             for (int j = 0; j < 5; ++j) {
@@ -110,7 +112,7 @@ public class ForestDecorator implements ICubicPopulator {
 
                 BlockPos blockPos = ((ICubicWorld) world).getSurfaceForCube(pos, xOffset, zOffset, 0, ICubicWorld.SurfaceType.OPAQUE);
 
-                if (blockPos != null && biome.DOUBLE_PLANT_GENERATOR.generate(world, random, blockPos)) {
+                if (blockPos != null && IBiome.getDoublePlantGenerator().generate(world, random, blockPos)) {
                     break;
                 }
             }
