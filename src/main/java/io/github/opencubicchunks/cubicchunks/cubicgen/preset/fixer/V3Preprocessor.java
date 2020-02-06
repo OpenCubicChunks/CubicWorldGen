@@ -447,6 +447,10 @@ public class V3Preprocessor {
 
     private void mergeComments(JsonArray preprocessed, JsonArray newJson) {
         for (int i = 0; i < preprocessed.size(); i++) {
+            if (i >= newJson.size()) {
+                assert preprocessed.get(i) instanceof JsonNull;
+                break;
+            }
             String newComment = newJson.getComment(i);
             String oldComment = preprocessed.getComment(i);
             if (newComment != null) {
