@@ -275,8 +275,12 @@
       "spawnProbability": 0.0625,
       "minHeight": -Infinity,
       "maxHeight": Infinity,
-      "biomes": null,
-      "genInBlockstates": null
+      "genInBlockstates": [
+        {
+          "Name": "minecraft:air"
+        }
+      ],
+      "biomes": null
     },
     {
       "blockstate": {

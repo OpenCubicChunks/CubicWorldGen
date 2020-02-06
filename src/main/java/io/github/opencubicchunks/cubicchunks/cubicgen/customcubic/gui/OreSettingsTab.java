@@ -112,7 +112,8 @@ class OreSettingsTab {
 
     private static final JsonTransformer<UIOreOptionEntry> WRITE_TO_JSON_TRANSFORM =
             JsonTransformer.<UIOreOptionEntry>builder("Write GUI state to json")
-                    .passthroughWithDefault("genInBlockstates", null)
+                    .passthroughWithDefault("generateWhen", JsonNull.INSTANCE)
+                    .passthroughWithDefault("placeBlockWhen", JsonNull.INSTANCE)
                     .valueTransform("blockstate", (json, ore) -> CustomGenSettingsSerialization.MARSHALLER.serialize(ore.block.getState()))
                     .valueTransform("biomes", (json, ore) -> {
                         Set<BiomeDesc> biomes = ore.selectBiomes.isChecked() ?

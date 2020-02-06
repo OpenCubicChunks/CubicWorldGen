@@ -79,16 +79,15 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @Mod(modid = CustomCubicMod.MODID,
         dependencies = "required-after:cubicchunks@[0.0.1047.0,);required-after:forge@[13.20.1.2454,)",
         acceptableRemoteVersions = "*",
-        version = "0.0.9999.0"
+        version = CustomCubicMod.VERSION
 )
 @Mod.EventBusSubscriber
 public class CustomCubicMod {
 
     public static final String MODID = "cubicgen";
-    public static final String VERSION = "@@VERSION@@";
+    public static final String VERSION = "0.0.9999.0";
     public static final String MALISIS_VERSION = "@@MALISIS_VERSION@@";
 
-    public static final int FIXER_VERSION = 2;
     public static final boolean DEBUG_ENABLED = false;
     public static Logger LOGGER = null;
 

@@ -23,23 +23,18 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator;
 
-import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.PopulatorUtils.genOreBellCurve;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.PopulatorUtils.genOreUniform;
-
-import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld;
-import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
+import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.event.CubicOreGenEvent;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.event.DecorateCubeBiomeEvent;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CWGEventFactory;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BiomeDesc;
-import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.BlockFlower;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -48,17 +43,16 @@ import net.minecraft.world.biome.BiomeDecorator;
 import net.minecraft.world.gen.feature.WorldGenAbstractTree;
 import net.minecraft.world.gen.feature.WorldGenDeadBush;
 import net.minecraft.world.gen.feature.WorldGenLiquids;
-import net.minecraft.world.gen.feature.WorldGenMinable;
 import net.minecraft.world.gen.feature.WorldGenPumpkin;
 import net.minecraft.world.gen.feature.WorldGenerator;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
 
-import java.util.Random;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Random;
+
+import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.PopulatorUtils.genOreBellCurve;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.PopulatorUtils.genOreUniform;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
@@ -90,16 +84,11 @@ public final class DefaultDecorator implements ICubicPopulator {
                     continue;
                 }
 
-
-                Set<IBlockState> states = c.genInBlockstates == null ? null :
-                        c.genInBlockstates.stream().filter(b -> b.getBlockState() != null)
-                        .map(BlockStateDesc::getBlockState)
-                        .collect(Collectors.toSet());
-                WorldGenMinable gen = states == null ?
-                        new WorldGenMinable(c.blockstate.getBlockState(), c.spawnSize) :
-                        new WorldGenMinable(c.blockstate.getBlockState(), c.spawnSize, states::contains);
+                WorldGenerator gen = c.placeBlockWhen == null ?
+                        new CustomVeinGenerator(c.blockstate.getBlockState(), c.spawnSize) :
+                        new CustomVeinGenerator(c.blockstate.getBlockState(), c.spawnSize, c.placeBlockWhen);
                 if (CWGEventFactory.generateOre(world, random, gen, pos, c.blockstate.getBlockState())) {
-                    genOreUniform(world, cfg, random, pos, c.spawnTries, c.spawnProbability, gen, c.minHeight, c.maxHeight);
+                    genOreUniform(world, cfg, random, pos, c.generateWhen, c.spawnTries, c.spawnProbability, gen, c.minHeight, c.maxHeight);
                 }
             }
             for (CustomGeneratorSettings.PeriodicGaussianOreConfig c : cfg.periodicGaussianOres) {
@@ -109,15 +98,11 @@ public final class DefaultDecorator implements ICubicPopulator {
                 if (c.biomes != null && !c.biomes.contains(new BiomeDesc(biome))) {
                     continue;
                 }
-                Set<IBlockState> states = c.genInBlockstates == null ? null :
-                        c.genInBlockstates.stream().filter(b -> b.getBlockState() != null)
-                                .map(BlockStateDesc::getBlockState)
-                                .collect(Collectors.toSet());
-                WorldGenMinable gen = states == null ?
-                        new WorldGenMinable(c.blockstate.getBlockState(), c.spawnSize) :
-                        new WorldGenMinable(c.blockstate.getBlockState(), c.spawnSize, states::contains);
+                WorldGenerator gen = c.placeBlockWhen == null ?
+                        new CustomVeinGenerator(c.blockstate.getBlockState(), c.spawnSize) :
+                        new CustomVeinGenerator(c.blockstate.getBlockState(), c.spawnSize, c.placeBlockWhen);
                 if (CWGEventFactory.generateOre(world, random, gen, pos, c.blockstate.getBlockState())) {
-                    genOreBellCurve(world, cfg, random, pos, c.spawnTries, c.spawnProbability, gen, c.heightMean, c.heightStdDeviation,
+                    genOreBellCurve(world, cfg, random, pos, c.generateWhen, c.spawnTries, c.spawnProbability, gen, c.heightMean, c.heightStdDeviation,
                             c.heightSpacing, c.minHeight, c.maxHeight);
                 }
             }

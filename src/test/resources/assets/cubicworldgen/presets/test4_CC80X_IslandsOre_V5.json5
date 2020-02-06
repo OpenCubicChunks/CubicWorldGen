@@ -264,7 +264,8 @@
       "spawnProbability": 0.0625,
       "minHeight": -Infinity,
       "maxHeight": Infinity,
-      "genInBlockstates": null
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -276,7 +277,8 @@
       "spawnProbability": 0.0625,
       "minHeight": -Infinity,
       "maxHeight": Infinity,
-      "genInBlockstates": null
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -291,7 +293,8 @@
       "spawnProbability": 0.2,
       "minHeight": -Infinity,
       "maxHeight": 0.25,
-      "genInBlockstates": null
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -306,7 +309,8 @@
       "spawnProbability": 0.2,
       "minHeight": -Infinity,
       "maxHeight": 0.25,
-      "genInBlockstates": null
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -321,7 +325,8 @@
       "spawnProbability": 0.2,
       "minHeight": -Infinity,
       "maxHeight": 0.25,
-      "genInBlockstates": null
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -333,7 +338,8 @@
       "spawnProbability": 0.06355932,
       "minHeight": -Infinity,
       "maxHeight": Infinity,
-      "genInBlockstates": null
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -345,7 +351,8 @@
       "spawnProbability": 0.097457625,
       "minHeight": -Infinity,
       "maxHeight": Infinity,
-      "genInBlockstates": null
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -357,7 +364,8 @@
       "spawnProbability": 0.15254237,
       "minHeight": -Infinity,
       "maxHeight": Infinity,
-      "genInBlockstates": null
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -369,7 +377,8 @@
       "spawnProbability": 0.41525424,
       "minHeight": -Infinity,
       "maxHeight": Infinity,
-      "genInBlockstates": null
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -381,7 +390,8 @@
       "spawnProbability": 0.4661017,
       "minHeight": -Infinity,
       "maxHeight": Infinity,
-      "genInBlockstates": null
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -399,7 +409,8 @@
       "spawnProbability": 0.2857143,
       "minHeight": -Infinity,
       "maxHeight": -0.5,
-      "genInBlockstates": null
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -420,7 +431,8 @@
       "spawnProbability": 0.25,
       "minHeight": -Infinity,
       "maxHeight": 0.0,
-      "genInBlockstates": null
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -439,7 +451,8 @@
       "spawnProbability": 0.5,
       "minHeight": -0.5,
       "maxHeight": 0.25,
-      "genInBlockstates": null
+      "placeBlockWhen": null,
+      "generateWhen": null
     }
   ],
   "periodicGaussianOres": [
@@ -456,7 +469,8 @@
       "heightMean": -0.75,
       "heightStdDeviation": 0.11231705,
       "heightSpacing": 3.0,
-      "genInBlockstates": null
+      "placeBlockWhen": null,
+      "generateWhen": null
     }
   ],
   "heightVariationFactor": 2816.0,
@@ -487,7 +501,7 @@
   "highNoiseFrequencyY": 0.0026108245,
   "highNoiseFrequencyZ": 0.005221649,
   "highNoiseOctaves": 16,
-  "version": 4.0,
+  "version": 5.0,
   "expectedBaseHeight": 1.125,
   "expectedHeightVariation": 1.125,
   "actualHeight": 272.25,
