@@ -42,6 +42,8 @@ import java.util.Random;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import static io.github.opencubicchunks.cubicchunks.api.util.Coords.cubeToMinBlock;
+
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class PrePopulator implements ICubicPopulator {
@@ -62,8 +64,10 @@ public class PrePopulator implements ICubicPopulator {
                 continue;
             }
             BlockPos populationPos = pos.randomPopulationPos(random);
-            BlockPos surface = ((ICubicWorld) world).getSurfaceForCube(pos, populationPos.getX(), populationPos.getZ(), 0,
-                    (p, s) -> !s.getBlock().isAir(s, world, p));
+            BlockPos surface = ((ICubicWorld) world).getSurfaceForCube(pos,
+                    populationPos.getX() - cubeToMinBlock(pos.getX()),
+                    populationPos.getZ() - cubeToMinBlock(pos.getZ()),
+                    0, (p, s) -> !s.getBlock().isAir(s, world, p));
             if (surface != null) {
                 float prob = lake.surfaceProbability.getValue(surface.getY());
                 if (random.nextFloat() < prob) {

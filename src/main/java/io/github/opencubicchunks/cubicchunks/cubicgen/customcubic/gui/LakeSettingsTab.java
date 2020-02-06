@@ -158,8 +158,8 @@ public class LakeSettingsTab {
 
         JsonArray newArray = new JsonArray();
 
-        for (int i = 0; i < exist.size(); i++) {
-            newArray.add(old.value(i).object(), old.comment(i));
+        for (int idx : exist) {
+            newArray.add(old.value(idx).object(), old.comment(idx));
         }
         conf.put("lakes", newArray);
     }

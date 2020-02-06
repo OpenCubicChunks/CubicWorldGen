@@ -215,6 +215,8 @@ public class CustomCubicGui extends ExtraGui {
                         }
                     });
 
+                    updateConfig();
+
                     textExpanded.setFont(NoTranslationFont.DEFAULT);
                     textExpanded.setText(getFormattedJson(jsonConf));
 
