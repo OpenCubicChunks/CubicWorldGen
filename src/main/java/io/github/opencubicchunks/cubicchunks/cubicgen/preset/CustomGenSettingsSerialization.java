@@ -49,8 +49,10 @@ import net.minecraft.util.ResourceLocation;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 public class CustomGenSettingsSerialization {
@@ -296,6 +298,92 @@ public class CustomGenSettingsSerialization {
         return json;
     }
 
+    private static CustomGeneratorSettings.GenerationCondition deserializeGenerationCondition(JsonObject obj, Marshaller marshaller) throws DeserializationException {
+        if (obj.containsKey("anyOf")) {
+            JsonArray conditions = (JsonArray) obj.get("anyOf");
+            List<CustomGeneratorSettings.GenerationCondition> conditionList = new ArrayList<>();
+            for (JsonElement element : conditions) {
+                conditionList.add(marshaller.marshallCarefully(CustomGeneratorSettings.GenerationCondition.class, element));
+            }
+            return new CustomGeneratorSettings.AnyOfCompositeCondition(conditionList);
+        } else if (obj.containsKey("allOf")) {
+            JsonArray conditions = (JsonArray) obj.get("allOf");
+            List<CustomGeneratorSettings.GenerationCondition> conditionList = new ArrayList<>();
+            for (JsonElement element : conditions) {
+                conditionList.add(marshaller.marshallCarefully(CustomGeneratorSettings.GenerationCondition.class, element));
+            }
+            return new CustomGeneratorSettings.AllOfCompositeCondition(conditionList);
+        } else if (obj.containsKey("noneOf")) {
+            JsonArray conditions = (JsonArray) obj.get("noneOf");
+            List<CustomGeneratorSettings.GenerationCondition> conditionList = new ArrayList<>();
+            for (JsonElement element : conditions) {
+                conditionList.add(marshaller.marshallCarefully(CustomGeneratorSettings.GenerationCondition.class, element));
+            }
+            return new CustomGeneratorSettings.NoneOfCompositeCondition(conditionList);
+        } else {
+            int x = obj.getInt("x", 0);
+            int y = obj.getInt("y", 0);
+            int z = obj.getInt("z", 0);
+            Set<BlockStateDesc> blockstates = new HashSet<>();
+            JsonElement blocks = obj.get("blocks");
+            if (blocks instanceof JsonObject) {
+                blockstates.add(marshaller.marshall(BlockStateDesc.class, blocks));
+            } else {
+                JsonArray blockArray = (JsonArray) blocks;
+                for (JsonElement jsonElement : blockArray) {
+                    blockstates.add(marshaller.marshall(BlockStateDesc.class, jsonElement));
+                }
+            }
+            return new CustomGeneratorSettings.BlockstateMatchCondition(x, y, z, blockstates);
+        }
+    }
+
+    private static JsonObject serializeGenerationCondition(CustomGeneratorSettings.GenerationCondition value, Marshaller marshaller) {
+        if (value instanceof CustomGeneratorSettings.BlockstateMatchCondition) {
+            CustomGeneratorSettings.BlockstateMatchCondition c = (CustomGeneratorSettings.BlockstateMatchCondition) value;
+            JsonPrimitive x = new JsonPrimitive(c.getX());
+            JsonPrimitive y = new JsonPrimitive(c.getY());
+            JsonPrimitive z = new JsonPrimitive(c.getZ());
+            JsonElement blocks;
+            Set<BlockStateDesc> blockstates = c.getBlockstates();
+            if (blockstates.size() == 1) {
+                blocks = marshaller.serialize(blockstates.iterator().next());
+            } else {
+                JsonArray arr = new JsonArray();
+                for (BlockStateDesc blockstate : blockstates) {
+                    arr.add(marshaller.serialize(blockstate));
+                }
+                blocks = arr;
+            }
+            JsonObject obj = new JsonObject();
+            obj.put("x", x);
+            obj.put("y", y);
+            obj.put("z", z);
+            obj.put("blocks", blocks);
+            return obj;
+        } else {
+            String name;
+            if (value instanceof CustomGeneratorSettings.AnyOfCompositeCondition) {
+                name = "anyOf";
+            } else if (value instanceof CustomGeneratorSettings.AllOfCompositeCondition) {
+                name = "allOf";
+            } else if (value instanceof CustomGeneratorSettings.NoneOfCompositeCondition) {
+                name = "noneOf";
+            } else {
+                throw new IllegalArgumentException("Unknown condition type " + value);
+            }
+            List<CustomGeneratorSettings.GenerationCondition> conditions = ((CustomGeneratorSettings.CompositeCondition) value).getConditions();
+            JsonObject obj = new JsonObject();
+
+            JsonArray conditionArray = new JsonArray();
+            for (CustomGeneratorSettings.GenerationCondition condition : conditions) {
+                conditionArray.add(marshaller.serialize(condition));
+            }
+            obj.put(name, conditionArray);
+            return obj;
+        }
+    }
+
     public static Jankson jankson() {
 
         Jankson.Builder builder = Jankson.builder();
@@ -329,6 +417,9 @@ public class CustomGenSettingsSerialization {
         builder.registerDeserializer(JsonArray.class, PeriodicOreList.class, CustomGenSettingsSerialization::deserializePeriodicOreList);
         builder.registerSerializer(PeriodicOreList.class, CustomGenSettingsSerialization::serializePeriodicOreList);
 
+        builder.registerDeserializer(JsonObject.class, CustomGeneratorSettings.GenerationCondition.class, CustomGenSettingsSerialization::deserializeGenerationCondition);
+        builder.registerSerializer(CustomGeneratorSettings.GenerationCondition.class, CustomGenSettingsSerialization::serializeGenerationCondition);
         return builder.build();
     }
+
 }

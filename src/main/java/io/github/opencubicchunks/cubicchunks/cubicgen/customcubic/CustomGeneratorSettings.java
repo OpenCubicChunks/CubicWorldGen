@@ -23,8 +23,6 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic;
 
-import static io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod.MODID;
-
 import blue.endless.jankson.JsonObject;
 import blue.endless.jankson.api.DeserializationException;
 import blue.endless.jankson.api.SyntaxError;
@@ -46,10 +44,12 @@ import net.minecraft.block.BlockStone;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Biomes;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.storage.ISaveHandler;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -68,9 +68,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod.MODID;
 
 public class CustomGeneratorSettings {
     /**
@@ -576,7 +577,8 @@ public class CustomGeneratorSettings {
         public BlockStateDesc blockstate;
         // null == no biome restrictions
         public Set<BiomeDesc> biomes;
-        public Set<BlockStateDesc> genInBlockstates;
+        public GenerationCondition placeBlockWhen;
+        public GenerationCondition generateWhen;
         public int spawnSize;
         public int spawnTries;
         public float spawnProbability = 1.0f;
@@ -586,11 +588,14 @@ public class CustomGeneratorSettings {
         public StandardOreConfig() {
         }
 
-        private StandardOreConfig(BlockStateDesc state, Set<BiomeDesc> biomes, Set<BlockStateDesc> genInBlockstates, int spawnSize, int spawnTries,
-                float spawnProbability, float minHeight, float maxHeight) {
+        private StandardOreConfig(BlockStateDesc state, Set<BiomeDesc> biomes,
+                                  GenerationCondition placeBlockWhen, GenerationCondition generateWhen,
+                                  int spawnSize, int spawnTries,
+                                  float spawnProbability, float minHeight, float maxHeight) {
             this.blockstate = state;
             this.biomes = biomes;
-            this.genInBlockstates = genInBlockstates;
+            this.placeBlockWhen = placeBlockWhen;
+            this.generateWhen = generateWhen;
             this.spawnSize = spawnSize;
             this.spawnTries = spawnTries;
             this.spawnProbability = spawnProbability;
@@ -606,7 +611,8 @@ public class CustomGeneratorSettings {
 
             private BlockStateDesc blockstate;
             private Set<BiomeDesc> biomes = null;
-            private Set<BlockStateDesc> genInBlockstates;
+            private GenerationCondition placeBlockWhen;
+            private GenerationCondition generateWhen;
             private int spawnSize;
             private int spawnTries;
             private float spawnProbability;
@@ -667,44 +673,24 @@ public class CustomGeneratorSettings {
 
             public Builder genInBlockstates(IBlockState... states) {
                 if (states == null) {
-                    this.genInBlockstates = null;
+                    this.placeBlockWhen = null;
                     return this;
                 }
-                if (this.genInBlockstates == null) {
-                    this.genInBlockstates = new HashSet<>();
-                }
-                for (IBlockState state : states) {
-                    this.genInBlockstates.add(new BlockStateDesc(state));
-                }
+                this.placeBlockWhen = new BlockstateMatchCondition(states);
                 return this;
             }
 
             public Builder genInBlockstates(BlockStateDesc... states) {
                 if (states == null) {
-                    this.genInBlockstates = null;
+                    this.placeBlockWhen = null;
                     return this;
                 }
-                if (this.genInBlockstates == null) {
-                    this.genInBlockstates = new HashSet<>();
-                }
-                this.genInBlockstates.addAll(Arrays.asList(states));
+                this.placeBlockWhen = new BlockstateMatchCondition(0, 0, 0, new HashSet<>(Arrays.asList(states)));
                 return this;
             }
 
-
-            public Builder fromPeriodic(PeriodicGaussianOreConfig config) {
-                return minHeight(config.minHeight)
-                        .maxHeight(config.maxHeight)
-                        .probability(config.spawnProbability)
-                        .size(config.spawnSize)
-                        .attempts(config.spawnTries)
-                        .block(config.blockstate.getBlockState())
-                        .biomes(config.biomes == null ? null : config.biomes.stream().map(BiomeDesc::getBiome).toArray(Biome[]::new))
-                        .genInBlockstates(config.genInBlockstates == null ? null :
-                                config.genInBlockstates.stream().map(BlockStateDesc::getBlockState).toArray(IBlockState[]::new));
-            }
             public StandardOreConfig create() {
-                return new StandardOreConfig(blockstate, biomes, genInBlockstates, spawnSize, spawnTries, spawnProbability, minHeight, maxHeight);
+                return new StandardOreConfig(blockstate, biomes, placeBlockWhen, generateWhen, spawnSize, spawnTries, spawnProbability, minHeight, maxHeight);
             }
         }
     }
@@ -713,7 +699,8 @@ public class CustomGeneratorSettings {
 
         public BlockStateDesc blockstate;
         public Set<BiomeDesc> biomes = null;
-        public Set<BlockStateDesc> genInBlockstates; // unspecified = vanilla defaults
+        public GenerationCondition placeBlockWhen;
+        public GenerationCondition generateWhen;
         public int spawnSize;
         public int spawnTries;
         public float spawnProbability;
@@ -726,12 +713,15 @@ public class CustomGeneratorSettings {
         public PeriodicGaussianOreConfig() {
         }
 
-        private PeriodicGaussianOreConfig(BlockStateDesc blockstate, Set<BiomeDesc> biomes, Set<BlockStateDesc> genInBlockstates, int spawnSize,
-                int spawnTries,
-                float spawnProbability, float heightMean, float heightStdDeviation, float heightSpacing, float minHeight, float maxHeight) {
+        private PeriodicGaussianOreConfig(BlockStateDesc blockstate, Set<BiomeDesc> biomes,
+                                          GenerationCondition placeBlockWhen, GenerationCondition generateWhen,
+                                          int spawnSize, int spawnTries,
+                                          float spawnProbability, float heightMean,
+                                          float heightStdDeviation, float heightSpacing, float minHeight, float maxHeight) {
             this.blockstate = blockstate;
             this.biomes = biomes;
-            this.genInBlockstates = genInBlockstates;
+            this.placeBlockWhen = placeBlockWhen;
+            this.generateWhen = generateWhen;
             this.spawnSize = spawnSize;
             this.spawnTries = spawnTries;
             this.spawnProbability = spawnProbability;
@@ -750,7 +740,8 @@ public class CustomGeneratorSettings {
 
             private BlockStateDesc blockstate;
             private Set<BiomeDesc> biomes = null;
-            private Set<BlockStateDesc> genInBlockstates = null;
+            private GenerationCondition placeBlockWhen;
+            private GenerationCondition generateWhen;
             private int spawnSize;
             private int spawnTries;
             private float spawnProbability;
@@ -826,47 +817,24 @@ public class CustomGeneratorSettings {
 
             public Builder genInBlockstates(IBlockState... states) {
                 if (states == null) {
-                    this.genInBlockstates = null;
+                    this.placeBlockWhen = null;
                     return this;
                 }
-                if (this.genInBlockstates == null) {
-                    this.genInBlockstates = new HashSet<>();
-                }
-                for (IBlockState state : states) {
-                    this.genInBlockstates.add(new BlockStateDesc(state));
-                }
+                this.placeBlockWhen = new BlockstateMatchCondition(states);
                 return this;
             }
 
             public Builder genInBlockstates(BlockStateDesc... states) {
                 if (states == null) {
-                    this.genInBlockstates = null;
+                    this.placeBlockWhen = null;
                     return this;
                 }
-                if (this.genInBlockstates == null) {
-                    this.genInBlockstates = new HashSet<>();
-                }
-                this.genInBlockstates.addAll(Arrays.asList(states));
+                this.placeBlockWhen = new BlockstateMatchCondition(0, 0, 0, new HashSet<>(Arrays.asList(states)));
                 return this;
             }
 
-            public Builder fromStandard(StandardOreConfig config) {
-                return minHeight(config.minHeight)
-                        .maxHeight(config.maxHeight)
-                        .probability(config.spawnProbability)
-                        .size(config.spawnSize)
-                        .attempts(config.spawnTries)
-                        .block(config.blockstate.getBlockState())
-                        .biomes(config.biomes == null ? null : config.biomes.stream().map(BiomeDesc::getBiome).toArray(Biome[]::new))
-                        .genInBlockstates(config.genInBlockstates == null ? null :
-                                config.genInBlockstates.stream().map(BlockStateDesc::getBlockState).toArray(IBlockState[]::new))
-                        .heightMean(0)
-                        .heightStdDeviation(1)
-                        .heightSpacing(2);
-            }
-
             public PeriodicGaussianOreConfig create() {
-                return new PeriodicGaussianOreConfig(blockstate, biomes, genInBlockstates, spawnSize, spawnTries, spawnProbability, heightMean,
+                return new PeriodicGaussianOreConfig(blockstate, biomes, placeBlockWhen, generateWhen, spawnSize, spawnTries, spawnProbability, heightMean,
                         heightStdDeviation, heightSpacing, minHeight, maxHeight);
             }
 
@@ -889,18 +857,6 @@ public class CustomGeneratorSettings {
         public int maxY;
         /** The second z coordinate of a bounding box. */
         public int maxZ;
-
-        public IntAABB() {
-        }
-
-        public IntAABB(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
-            this.minX = minX;
-            this.minY = minY;
-            this.minZ = minZ;
-            this.maxX = maxX;
-            this.maxY = maxY;
-            this.maxZ = maxZ;
-        }
 
         @Override public boolean equals(Object o) {
             if (this == o) {
@@ -946,6 +902,137 @@ public class CustomGeneratorSettings {
 
         public boolean contains(int x, int y, int z) {
             return x >= minX && x <= maxX && z >= minZ && z <= maxZ && y >= minY && y <= maxY;
+        }
+    }
+
+    public interface GenerationCondition extends BiPredicate<World, BlockPos> {
+        boolean canGenerate(World world, BlockPos pos);
+
+        @Override default boolean test(World world, BlockPos pos) {
+            return canGenerate(world, pos);
+        }
+    }
+
+    public static class BlockstateMatchCondition implements GenerationCondition {
+        int x, y, z;
+        Set<IBlockState> allowedBlockstates;
+        Set<BlockStateDesc> allAllowedBlockstates;
+
+        public BlockstateMatchCondition() {
+            this.allowedBlockstates = new HashSet<>();
+        }
+
+        public BlockstateMatchCondition(int x, int y, int z, Set<BlockStateDesc> allowedBlockstates) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.allowedBlockstates = allowedBlockstates.stream()
+                    .map(BlockStateDesc::getBlockState)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+            this.allAllowedBlockstates = allowedBlockstates;
+        }
+
+        public BlockstateMatchCondition(IBlockState... states) {
+            Set<BlockStateDesc> set = new HashSet<>();
+            for (IBlockState state : states) {
+                set.add(new BlockStateDesc(state));
+            }
+            allowedBlockstates = new HashSet<>(Arrays.asList(states));
+            allAllowedBlockstates = set;
+        }
+
+        @Override
+        public boolean canGenerate(World world, BlockPos pos) {
+            return allowedBlockstates.contains(world.getBlockState(pos.add(x, y, z)));
+        }
+
+        public int getX() {
+            return x;
+        }
+
+        public int getY() {
+            return y;
+        }
+
+        public int getZ() {
+            return z;
+        }
+
+        public Set<BlockStateDesc> getBlockstates() {
+            return allAllowedBlockstates;
+        }
+    }
+
+    public static abstract class CompositeCondition implements GenerationCondition {
+        List<GenerationCondition> conditions;
+
+        public List<GenerationCondition> getConditions() {
+            return conditions;
+        }
+    }
+
+    public static class AllOfCompositeCondition extends CompositeCondition {
+        List<GenerationCondition> conditions;
+
+        public AllOfCompositeCondition() {
+            this.conditions = new ArrayList<>();
+        }
+
+        public AllOfCompositeCondition(List<GenerationCondition> conditions) {
+            this.conditions = conditions;
+        }
+
+        @Override
+        public boolean canGenerate(World world, BlockPos pos) {
+            for (GenerationCondition condition : conditions) {
+                if (!condition.canGenerate(world, pos)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    public static class AnyOfCompositeCondition extends CompositeCondition {
+        public AnyOfCompositeCondition() {
+            this.conditions = new ArrayList<>();
+        }
+
+        public AnyOfCompositeCondition(List<GenerationCondition> conditions) {
+            this.conditions = conditions;
+        }
+
+        @Override
+        public boolean canGenerate(World world, BlockPos pos) {
+            for (GenerationCondition condition : conditions) {
+                if (condition.canGenerate(world, pos)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    public static class NoneOfCompositeCondition extends CompositeCondition {
+        List<GenerationCondition> conditions;
+
+        public NoneOfCompositeCondition() {
+            this.conditions = new ArrayList<>();
+        }
+
+        public NoneOfCompositeCondition(List<GenerationCondition> conditions) {
+            this.conditions = conditions;
+        }
+
+        @Override
+        public boolean canGenerate(World world, BlockPos pos) {
+            for (GenerationCondition condition : conditions) {
+                if (condition.canGenerate(world, pos)) {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

@@ -1,8 +1,7 @@
 {
-  "waterLevel": -2,
+  "waterLevel": -4096,
   "caves": true,
   "strongholds": true,
-  "alternateStrongholdsPositions": false,
   "villages": true,
   "mineshafts": true,
   "temples": true,
@@ -41,205 +40,205 @@
       "biomeSelect": "EXCLUDE",
       "surfaceProbability": [
         {
-          "y": -203.6999969482422,
+          "y": -45851.80078125,
           "v": 0.002351178554818034
         },
         {
-          "y": -101.30000305175781,
+          "y": -22914.19921875,
           "v": 0.002351178554818034
         },
         {
-          "y": -50.099998474121094,
+          "y": -11445.400390625,
           "v": 0.0023463747929781675
         },
         {
-          "y": -24.5,
+          "y": -5711.0,
           "v": 0.00233658729121089
         },
         {
-          "y": -11.699999809265137,
+          "y": -2843.800048828125,
           "v": 0.002316271886229515
         },
         {
-          "y": -5.300000190734863,
+          "y": -1410.199951171875,
           "v": 0.0022725274320691824
         },
         {
-          "y": -2.0999999046325684,
+          "y": -693.4000244140625,
           "v": 0.0021715527400374413
         },
         {
-          "y": -0.5,
+          "y": -335.0,
           "v": 0.0019150057341903448
         },
         {
-          "y": 0.0,
-          "v": 0.001647691591642797
-        },
-        {
-          "y": 0.30000001192092896,
+          "y": -155.8000030517578,
           "v": 0.001367060700431466
         },
         {
-          "y": 0.699999988079071,
+          "y": -66.19999694824219,
           "v": 9.164340444840491E-4
         },
         {
-          "y": 0.8999999761581421,
+          "y": -21.399999618530273,
           "v": 7.330971420742571E-4
+        },
+        {
+          "y": 0.0,
+          "v": 6.617389735765755E-4
         },
         {
           "y": 1.0,
           "v": 6.58648379612714E-4
         },
         {
-          "y": 1.100000023841858,
+          "y": 2.0,
+          "v": 5.0429138354957104E-5
+        },
+        {
+          "y": 23.399999618530273,
           "v": 4.5746339310426265E-5
         },
         {
-          "y": 1.2999999523162842,
+          "y": 68.19999694824219,
           "v": 3.7921352486591786E-5
         },
         {
-          "y": 1.7000000476837158,
+          "y": 157.8000030517578,
           "v": 2.7739499273593538E-5
         },
         {
-          "y": 2.0,
-          "v": 2.292258977831807E-5
-        },
-        {
-          "y": 2.5,
+          "y": 337.0,
           "v": 1.7683794794720598E-5
         },
         {
-          "y": 4.099999904632568,
+          "y": 695.4000244140625,
           "v": 1.0115311852132436E-5
         },
         {
-          "y": 7.300000190734863,
+          "y": 1412.199951171875,
           "v": 5.418748060037615E-6
         },
         {
-          "y": 13.699999809265137,
+          "y": 2845.800048828125,
           "v": 2.8042966278007952E-6
         },
         {
-          "y": 26.5,
+          "y": 5713.0,
           "v": 1.4263620187193737E-6
         },
         {
-          "y": 52.099998474121094,
+          "y": 11447.400390625,
           "v": 7.192863904492697E-7
         },
         {
-          "y": 103.30000305175781,
+          "y": 22916.19921875,
           "v": 3.6117543800173735E-7
         },
         {
-          "y": 205.6999969482422,
+          "y": 45853.80078125,
           "v": 3.6117543800173735E-7
         }
       ],
       "mainProbability": [
         {
-          "y": -203.6999969482422,
+          "y": -45851.80078125,
           "v": 0.002351178554818034
         },
         {
-          "y": -101.30000305175781,
+          "y": -22914.19921875,
           "v": 0.002351178554818034
         },
         {
-          "y": -50.099998474121094,
+          "y": -11445.400390625,
           "v": 0.0023463747929781675
         },
         {
-          "y": -24.5,
+          "y": -5711.0,
           "v": 0.00233658729121089
         },
         {
-          "y": -11.699999809265137,
+          "y": -2843.800048828125,
           "v": 0.002316271886229515
         },
         {
-          "y": -5.300000190734863,
+          "y": -1410.199951171875,
           "v": 0.0022725274320691824
         },
         {
-          "y": -2.0999999046325684,
+          "y": -693.4000244140625,
           "v": 0.0021715527400374413
         },
         {
-          "y": -0.5,
+          "y": -335.0,
           "v": 0.0019150057341903448
         },
         {
-          "y": 0.0,
-          "v": 0.001647691591642797
-        },
-        {
-          "y": 0.30000001192092896,
+          "y": -155.8000030517578,
           "v": 0.001367060700431466
         },
         {
-          "y": 0.699999988079071,
+          "y": -66.19999694824219,
           "v": 9.164340444840491E-4
         },
         {
-          "y": 0.8999999761581421,
+          "y": -21.399999618530273,
           "v": 7.330971420742571E-4
+        },
+        {
+          "y": 0.0,
+          "v": 6.617389735765755E-4
         },
         {
           "y": 1.0,
           "v": 6.58648379612714E-4
         },
         {
-          "y": 1.100000023841858,
+          "y": 2.0,
+          "v": 5.0429138354957104E-5
+        },
+        {
+          "y": 23.399999618530273,
           "v": 4.5746339310426265E-5
         },
         {
-          "y": 1.2999999523162842,
+          "y": 68.19999694824219,
           "v": 3.7921352486591786E-5
         },
         {
-          "y": 1.7000000476837158,
+          "y": 157.8000030517578,
           "v": 2.7739499273593538E-5
         },
         {
-          "y": 2.0,
-          "v": 2.292258977831807E-5
-        },
-        {
-          "y": 2.5,
+          "y": 337.0,
           "v": 1.7683794794720598E-5
         },
         {
-          "y": 4.099999904632568,
+          "y": 695.4000244140625,
           "v": 1.0115311852132436E-5
         },
         {
-          "y": 7.300000190734863,
+          "y": 1412.199951171875,
           "v": 5.418748060037615E-6
         },
         {
-          "y": 13.699999809265137,
+          "y": 2845.800048828125,
           "v": 2.8042966278007952E-6
         },
         {
-          "y": 26.5,
+          "y": 5713.0,
           "v": 1.4263620187193737E-6
         },
         {
-          "y": 52.099998474121094,
+          "y": 11447.400390625,
           "v": 7.192863904492697E-7
         },
         {
-          "y": 103.30000305175781,
+          "y": 22916.19921875,
           "v": 3.6117543800173735E-7
         },
         {
-          "y": 205.6999969482422,
+          "y": 45853.80078125,
           "v": 3.6117543800173735E-7
         }
       ]
@@ -264,7 +263,8 @@
       "spawnProbability": 0.0625,
       "minHeight": -Infinity,
       "maxHeight": Infinity,
-      "genInBlockstates": null
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -276,7 +276,8 @@
       "spawnProbability": 0.0625,
       "minHeight": -Infinity,
       "maxHeight": Infinity,
-      "genInBlockstates": null
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -291,7 +292,8 @@
       "spawnProbability": 0.2,
       "minHeight": -Infinity,
       "maxHeight": 0.25,
-      "genInBlockstates": null
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -306,7 +308,8 @@
       "spawnProbability": 0.2,
       "minHeight": -Infinity,
       "maxHeight": 0.25,
-      "genInBlockstates": null
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -321,7 +324,8 @@
       "spawnProbability": 0.2,
       "minHeight": -Infinity,
       "maxHeight": 0.25,
-      "genInBlockstates": null
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -330,10 +334,11 @@
       "biomes": null,
       "spawnSize": 17.0,
       "spawnTries": 20.0,
-      "spawnProbability": 0.06355932,
+      "spawnProbability": 0.125,
       "minHeight": -Infinity,
-      "maxHeight": Infinity,
-      "genInBlockstates": null
+      "maxHeight": 1.0,
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -342,10 +347,11 @@
       "biomes": null,
       "spawnSize": 9.0,
       "spawnTries": 20.0,
-      "spawnProbability": 0.097457625,
+      "spawnProbability": 0.25,
       "minHeight": -Infinity,
-      "maxHeight": Infinity,
-      "genInBlockstates": null
+      "maxHeight": 0.0,
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -354,10 +360,11 @@
       "biomes": null,
       "spawnSize": 9.0,
       "spawnTries": 2.0,
-      "spawnProbability": 0.15254237,
+      "spawnProbability": 0.5,
       "minHeight": -Infinity,
-      "maxHeight": Infinity,
-      "genInBlockstates": null
+      "maxHeight": -0.5,
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -366,10 +373,11 @@
       "biomes": null,
       "spawnSize": 8.0,
       "spawnTries": 8.0,
-      "spawnProbability": 0.41525424,
+      "spawnProbability": 1.0,
       "minHeight": -Infinity,
-      "maxHeight": Infinity,
-      "genInBlockstates": null
+      "maxHeight": -0.75,
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -378,10 +386,11 @@
       "biomes": null,
       "spawnSize": 8.0,
       "spawnTries": 1.0,
-      "spawnProbability": 0.4661017,
+      "spawnProbability": 1.0,
       "minHeight": -Infinity,
-      "maxHeight": Infinity,
-      "genInBlockstates": null
+      "maxHeight": -0.75,
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -399,7 +408,8 @@
       "spawnProbability": 0.2857143,
       "minHeight": -Infinity,
       "maxHeight": -0.5,
-      "genInBlockstates": null
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -420,7 +430,8 @@
       "spawnProbability": 0.25,
       "minHeight": -Infinity,
       "maxHeight": 0.0,
-      "genInBlockstates": null
+      "placeBlockWhen": null,
+      "generateWhen": null
     },
     {
       "blockstate": {
@@ -439,7 +450,8 @@
       "spawnProbability": 0.5,
       "minHeight": -0.5,
       "maxHeight": 0.25,
-      "genInBlockstates": null
+      "placeBlockWhen": null,
+      "generateWhen": null
     }
   ],
   "periodicGaussianOres": [
@@ -450,47 +462,49 @@
       "biomes": null,
       "spawnSize": 7.0,
       "spawnTries": 1.0,
-      "spawnProbability": 0.3898305,
+      "spawnProbability": 0.5,
       "minHeight": -Infinity,
-      "maxHeight": Infinity,
-      "heightMean": -0.75,
-      "heightStdDeviation": 0.11231705,
+      "maxHeight": -0.5,
+      "heightMean": 0.25,
+      "heightStdDeviation": 0.125,
       "heightSpacing": 3.0,
-      "genInBlockstates": null
+      "placeBlockWhen": null,
+      "generateWhen": null
     }
   ],
-  "heightVariationFactor": 2816.0,
-  "specialHeightVariationFactorBelowAverageY": 0.0,
-  "heightVariationOffset": 90.0,
-  "heightFactor": 1.125,
-  "heightOffset": 1.125,
-  "depthNoiseFactor": 6.0,
-  "depthNoiseOffset": 1.125,
-  "depthNoiseFrequencyX": 0.0015258789,
-  "depthNoiseFrequencyZ": 0.0015258789,
+  "heightVariationFactor": 64.0,
+  "specialHeightVariationFactorBelowAverageY": 3.5,
+  "heightVariationOffset": 0.3,
+  "heightFactor": 224.0,
+  "heightOffset": 1.0,
+  "depthNoiseFactor": 0.128,
+  "depthNoiseOffset": -768.0,
+  "depthNoiseFrequencyX": 4.359654E-4,
+  "depthNoiseFrequencyZ": 4.6950122E-4,
   "depthNoiseOctaves": 16,
-  "selectorNoiseFactor": 0.0,
-  "selectorNoiseOffset": 0.5,
-  "selectorNoiseFrequencyX": 0.006683711,
-  "selectorNoiseFrequencyY": 0.008354639,
-  "selectorNoiseFrequencyZ": 0.016709277,
-  "selectorNoiseOctaves": 8,
-  "lowNoiseFactor": 9.5,
-  "lowNoiseOffset": 0.0,
-  "lowNoiseFrequencyX": 5.5803574E-4,
-  "lowNoiseFrequencyY": 0.0037297492,
-  "lowNoiseFrequencyZ": 6.0096156E-4,
-  "lowNoiseOctaves": 16,
-  "highNoiseFactor": 1.0,
-  "highNoiseOffset": 0.0,
-  "highNoiseFrequencyX": 0.005221649,
-  "highNoiseFrequencyY": 0.0026108245,
-  "highNoiseFrequencyZ": 0.005221649,
-  "highNoiseOctaves": 16,
+  "selectorNoiseFactor": 5.1,
+  "selectorNoiseOffset": -0.28125,
+  "selectorNoiseFrequencyX": 0.0074263457,
+  "selectorNoiseFrequencyY": 0.008928572,
+  "selectorNoiseFrequencyZ": 0.0069444445,
+  "selectorNoiseOctaves": 4,
+  "lowNoiseFactor": 1.0,
+  "lowNoiseOffset": -9.0,
+  "lowNoiseFrequencyX": 0.030380502,
+  "lowNoiseFrequencyY": 0.027848795,
+  "lowNoiseFrequencyZ": 0.02,
+  "lowNoiseOctaves": 1,
+  "highNoiseFactor": 11.0,
+  "highNoiseOffset": 1.3125,
+  "highNoiseFrequencyX": 8.3333335E-4,
+  "highNoiseFrequencyY": 0.0046296297,
+  "highNoiseFrequencyZ": 6.5270613E-4,
+  "highNoiseOctaves": 16.0,
   "version": 4.0,
-  "expectedBaseHeight": 1.125,
-  "expectedHeightVariation": 1.125,
-  "actualHeight": 272.25,
+  "alternateStrongholdsPositions": false,
+  "expectedBaseHeight": 1.0,
+  "expectedHeightVariation": 224.0,
+  "actualHeight": 449.5999755859375,
   "replacerConfig": {
     "defaults": {
       "cubicgen:biome_fill_noise_octaves": 4.0,
@@ -500,7 +514,7 @@
         },
         "Name": "minecraft:water"
       },
-      "cubicgen:height_scale": 1.125,
+      "cubicgen:height_scale": 224.0,
       "cubicgen:biome_fill_noise_freq": 0.0078125,
       "cubicgen:water_level": 63.0,
       "cubicgen:biome_fill_depth_factor": 2.3333333333333335,
@@ -513,7 +527,7 @@
       "cubicgen:mesa_depth": 16.0,
       "cubicgen:horizontal_gradient_depth_decrease_weight": 1.0,
       "cubicgen:biome_fill_depth_offset": 3.0,
-      "cubicgen:height_offset": 1.125,
+      "cubicgen:height_offset": 1.0,
       "cubicgen:surface_depth_limit": 9.0
     },
     "overrides": {}
