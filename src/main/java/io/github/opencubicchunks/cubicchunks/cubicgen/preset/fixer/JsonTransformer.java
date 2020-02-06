@@ -75,6 +75,10 @@ public class JsonTransformer<CTX> {
                 .build();
     }
 
+    public static EntryTransform<Function<JsonObject, JsonObject>> passthroughEntry(String name) {
+        return (oldRoot, newRoot, ctx) -> newRoot.put(name, oldRoot.get(name), oldRoot.getComment(name));
+    }
+
 
     public JsonObject transform(JsonObject json, CTX context) {
         JsonObject newRoot = new JsonObject();
@@ -304,7 +308,7 @@ public class JsonTransformer<CTX> {
         public Builder<CTX> objectArrayTransform(String name,
                 EntryTransform<CTX> preTransform,
                 JsonTransformer<CombinedContext<CTX>> transformer) {
-            return objectArrayTransform(name, preTransform, transformer);
+            return objectArrayTransform(name, preTransform, transformer, name);
         }
 
         /**

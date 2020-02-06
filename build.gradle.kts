@@ -92,6 +92,8 @@ minecraft {
     mappings = theMappingsVersion
     isUseDepAts = true
 
+    replace("public static final String VERSION = \"0.0.9999.0\"",
+            "public static final String VERSION = \"${project.version}\"")
     replaceIn("io/github/opencubicchunks/cubicchunks/cubicgen/CustomCubicMod.java")
 
     val coremods = if (gradle.includedBuilds.any { it.name == "CubicChunks" })

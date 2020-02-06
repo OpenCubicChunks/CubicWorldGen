@@ -43,7 +43,12 @@
       "spawnTries": 8,
       "spawnProbability": 0.0625,
       "minHeight": -Infinity,
-      "maxHeight": Infinity
+      "maxHeight": Infinity,
+      "genInBlockstates": [
+        {
+          "Name": "minecraft:air"
+        }
+      ]
     },
     {
       "blockstate": {

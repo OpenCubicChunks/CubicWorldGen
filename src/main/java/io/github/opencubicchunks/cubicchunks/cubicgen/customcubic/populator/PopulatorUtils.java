@@ -32,19 +32,21 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenerator;
 
-import java.util.Random;
-
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Random;
+import java.util.function.BiPredicate;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class PopulatorUtils {
 
     public static void genOreUniform(World world, CustomGeneratorSettings cfg, Random random, CubePos pos,
-            int count, double probability, WorldGenerator generator, double minY, double maxY) {
+                                     @Nullable BiPredicate<World, BlockPos> condition,
+                                     int count, double probability, WorldGenerator generator, double minY, double maxY) {
         int minBlockY = Math.round((float) (minY * cfg.expectedHeightVariation + cfg.expectedBaseHeight));
         int maxBlockY = Math.round((float) (maxY * cfg.expectedHeightVariation + cfg.expectedBaseHeight));
-        int offset = ICube.SIZE / 2;
+        final int offset = ICube.SIZE / 2;
         if (pos.getMinBlockY() + offset > maxBlockY || pos.getMaxBlockY() + offset < minBlockY) {
             return;
         }
@@ -57,19 +59,24 @@ public class PopulatorUtils {
             if (blockY > maxBlockY || blockY < minBlockY) {
                 continue;
             }
-            int xOffset = random.nextInt(ICube.SIZE);
-            int zOffset = random.nextInt(ICube.SIZE);
-            generator.generate(world, random, new BlockPos(pos.getMinBlockX() + xOffset, blockY, pos.getMinBlockZ() + zOffset));
+            int xOffset = random.nextInt(ICube.SIZE) + offset;
+            int zOffset = random.nextInt(ICube.SIZE) + offset;
+            BlockPos position = new BlockPos(pos.getMinBlockX() + xOffset, blockY, pos.getMinBlockZ() + zOffset);
+            if (condition == null || condition.test(world, position)) {
+                generator.generate(world, random, position);
+            }
         }
     }
 
-    public static void genOreBellCurve(World world, CustomGeneratorSettings cfg, Random random, CubePos pos, int count,
-                                      double probability, WorldGenerator generator, double mean, double stdDevFactor, double spacing, double minY, double maxY) {
+    public static void genOreBellCurve(World world, CustomGeneratorSettings cfg, Random random, CubePos pos,
+                                       @Nullable BiPredicate<World, BlockPos> condition, int count,
+                                       double probability, WorldGenerator generator, double mean,
+                                       double stdDevFactor, double spacing, double minY, double maxY) {
 
         int minBlockY = Math.round((float) (minY * cfg.expectedHeightVariation + cfg.expectedBaseHeight));
         int maxBlockY = Math.round((float) (maxY * cfg.expectedHeightVariation + cfg.expectedBaseHeight));
         //temporary fix for slider becoming 0 at minimum position
-        if(spacing == 0.0){
+        if (spacing == 0.0) {
             spacing = 0.5;
         }
         int iSpacing = Math.round((float) (spacing * cfg.expectedHeightVariation));
@@ -87,9 +94,12 @@ public class PopulatorUtils {
             if (random.nextDouble() > (probability * modifier)) {
                 continue;
             }
-            int xOffset = random.nextInt(ICube.SIZE);
-            int zOffset = random.nextInt(ICube.SIZE);
-            generator.generate((World) world, random, new BlockPos(pos.getMinBlockX() + xOffset, blockY, pos.getMinBlockZ() + zOffset));
+            int xOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
+            int zOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
+            BlockPos position = new BlockPos(pos.getMinBlockX() + xOffset, blockY, pos.getMinBlockZ() + zOffset);
+            if (condition == null || condition.test(world, position)) {
+                generator.generate(world, random, position);
+            }
         }
     }
 }
