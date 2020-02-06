@@ -500,7 +500,7 @@
   "highNoiseFrequencyY": 0.0046296297,
   "highNoiseFrequencyZ": 6.5270613E-4,
   "highNoiseOctaves": 16.0,
-  "version": 4.0,
+  "version": 5.0,
   "alternateStrongholdsPositions": false,
   "expectedBaseHeight": 1.0,
   "expectedHeightVariation": 224.0,

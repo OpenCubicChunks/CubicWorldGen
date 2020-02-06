@@ -501,7 +501,7 @@
   "highNoiseFrequencyY": 0.0625,
   "highNoiseFrequencyZ": 0.0,
   "highNoiseOctaves": 16.0,
-  "version": 4.0,
+  "version": 5.0,
   "expectedBaseHeight": 60.0,
   "expectedHeightVariation": 1.0,
   "actualHeight": 445.0,

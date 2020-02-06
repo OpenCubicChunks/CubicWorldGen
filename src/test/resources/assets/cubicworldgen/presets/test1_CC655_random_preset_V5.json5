@@ -267,7 +267,7 @@
   "highNoiseFrequencyY": 131.0,
   "highNoiseFrequencyZ": 132.0,
   "highNoiseOctaves": 3,
-  "version": 4,
+  "version": 5,
   "alternateStrongholdsPositions": false,
   "expectedBaseHeight": 110.0,
   "expectedHeightVariation": 109.0,
