@@ -420,10 +420,18 @@ public class V3LegacyFix {
         // biome size and river size have been implemented since CWG 39.
         // presets from before that may have it changed and this has a very significant effect on the world
         boolean hasWorkingBiomeSizes = true;
-        if (lastCwgVersion != null && lastCwgVersion.matches("\\d+\\.\\d+\\.\\d+\\.\\d+(-.*)?")) {
-            String[] split = lastCwgVersion.split("\\.");
-            if (split[0].equals("0") && split[1].equals("0") && Integer.parseInt(split[2]) < 39) {
-                hasWorkingBiomeSizes = false;
+        // regex matching for something like this: 1.12.2-0.0.X.0 for example
+        if (lastCwgVersion != null && lastCwgVersion.matches("1\\.\\d+\\.\\d+-\\d+\\.\\d+\\.\\d+\\.\\d+(-.*)?")) {
+            String[] parts = lastCwgVersion.split("-");
+            String mcVersion = parts[0];
+            String[] split = parts[1].split("\\.");
+            if (split[0].equals("0") && split[1].equals("0")) {
+                int v = Integer.parseInt(split[2]);
+                if ((mcVersion.equals("1.12.2") && v < 39)
+                        || (mcVersion.equals("1.11.2") && v < 49)
+                        || (mcVersion.equals("1.10.2") && v < 60)) {
+                    hasWorkingBiomeSizes = false;
+                }
             }
         } else {
             // if there is no replacer config, then it DEFINITELY didn't work
