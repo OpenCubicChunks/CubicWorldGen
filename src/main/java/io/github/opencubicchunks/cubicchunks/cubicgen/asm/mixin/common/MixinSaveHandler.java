@@ -67,7 +67,8 @@ public class MixinSaveHandler {
             return;
         String generatorOptions = CustomGeneratorSettings.loadJsonStringFromSaveFolder((ISaveHandler) this);
         if (generatorOptions == null)
-            return;
+            generatorOptions = cir.getReturnValue().getGeneratorOptions();
+
         try {
             String lastCwgVersion = getCwgVersionFromLevel(this.worldDirectory.toPath().resolve("level.dat"));
             generatorOptions = CustomGeneratorSettingsFixer.INSTANCE.fixJsonString(generatorOptions, lastCwgVersion);
@@ -99,7 +100,7 @@ public class MixinSaveHandler {
             throw new UncheckedIOException(e);
         }
         // cubicgen wasn't there, so the world had to be loaded with pre-api version
-        return "0.0.0.0";
+        return "1.12.2-0.0.0.0";
     }
 
 
