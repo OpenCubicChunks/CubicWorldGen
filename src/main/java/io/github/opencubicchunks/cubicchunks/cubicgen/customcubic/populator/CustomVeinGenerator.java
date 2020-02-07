@@ -24,7 +24,6 @@
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator;
 
 import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.block.BlockStone;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -51,7 +50,7 @@ public class CustomVeinGenerator extends WorldGenerator {
     public CustomVeinGenerator(IBlockState state, int blockCount) {
         this(state, blockCount, (w, p) -> {
             IBlockState s = w.getBlockState(p);
-            return s.getBlock() == Blocks.STONE && s.getValue(BlockStone.VARIANT).isNatural();
+            return s.getBlock() == Blocks.STONE;
         });
     }
 
