@@ -23,16 +23,8 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui;
 
-import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_INSETS;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_PADDING;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.VERTICAL_INSETS;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.WIDTH_2_COL;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeBiomeList;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeCheckbox;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeExponentialSlider;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeIntSlider;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.malisisText;
-
+import blue.endless.jankson.JsonObject;
+import blue.endless.jankson.JsonPrimitive;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.BiomeOption;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIVerticalTableLayout;
@@ -42,6 +34,9 @@ import net.malisis.core.client.gui.component.interaction.UICheckBox;
 import net.malisis.core.client.gui.component.interaction.UISelect;
 import net.malisis.core.client.gui.component.interaction.UISlider;
 import net.minecraft.world.biome.Biome;
+
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.*;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.*;
 
 class BasicSettingsTab {
 
@@ -143,7 +138,15 @@ class BasicSettingsTab {
         conf.put("riverSize", riverSize.getValue());
         conf.put("waterLevel", Math.round(waterLevel.getValue()));
 
+        String liquidName = lavaOceans.isChecked() ? "minecraft:lava" : "minecraft:water";
+        JsonObject liquid = new JsonObject();
+        JsonObject liquidProp = new JsonObject();
+        liquidProp.put("level", new JsonPrimitive(0.0));
+        liquid.put("Properties", liquidProp);
+        liquid.put("Name", new JsonPrimitive(liquidName));
+
         conf.object("replacerConfig").object("defaults").put("cubicgen:water_level", waterLevel.getValue());
+        conf.object("replacerConfig").object("defaults").put("cubicgen:ocean_block", liquid);
     }
 
     public double getWaterLevel() {
