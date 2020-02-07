@@ -278,6 +278,10 @@ public class V3Preprocessor {
                 while (in.hasNext()) {
                     arr.add(loadForPreprocess(in));
                 }
+                // trailing comma results in null at the end of an array, remove it
+                if (!arr.isEmpty() && arr.get(arr.size() - 1).value == null) {
+                    arr.remove(arr.size() - 1);
+                }
                 in.endArray();
                 return new ParsedJson(arr.toArray(new ParsedJson[0]));
             case BEGIN_OBJECT:
