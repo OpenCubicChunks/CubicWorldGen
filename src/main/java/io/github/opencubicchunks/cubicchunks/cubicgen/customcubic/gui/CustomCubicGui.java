@@ -30,6 +30,7 @@ import blue.endless.jankson.JsonGrammar;
 import blue.endless.jankson.JsonObject;
 import com.google.common.eventbus.Subscribe;
 import com.google.gson.JsonSyntaxException;
+import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.GuiOverlay;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.NoTranslationFont;
@@ -197,7 +198,8 @@ public class CustomCubicGui extends ExtraGui {
                                 JsonObject jsonConf = CustomGeneratorSettings.asJsonObject(event.getNewValue());
                                 textExpanded.setText(getFormattedJson(jsonConf));
                                 textExpanded.setOffsetY(scroll, 0);// delta doesn't appear to be used
-                            } catch (JsonSyntaxException | NumberFormatException ex) {
+                            } catch (Exception ex) {
+                                CustomCubicMod.LOGGER.catching(ex);
                                 textExpanded.setText(I18n.format("cubicgen.gui.cubicgen.presets.invalid_json"));
                             }
                         }
@@ -209,7 +211,8 @@ public class CustomCubicGui extends ExtraGui {
                             try {
                                 JsonObject jsonConf = CustomGeneratorSettings.asJsonObject(event.getNewValue());
                                 textMinified.setText(getSettingsJson(jsonConf));
-                            } catch (JsonSyntaxException | NumberFormatException ex) {
+                            } catch (Exception ex) {
+                                CustomCubicMod.LOGGER.catching(ex);
                                 textMinified.setText(I18n.format("cubicgen.gui.cubicgen.presets.invalid_json"));
                             }
                         }
@@ -235,7 +238,8 @@ public class CustomCubicGui extends ExtraGui {
                                 JsonObject settings = CustomGeneratorSettings.asJsonObject(textMinified.getText());
                                 CustomCubicGui.this.reinit(settings);
                                 mc.displayGuiScreen(CustomCubicGui.this);
-                            } catch (JsonSyntaxException | NumberFormatException ex) {
+                            } catch (Exception ex) {
+                                CustomCubicMod.LOGGER.catching(ex);
                                 done.setFontOptions(FontOptions.builder().color(0x00FF2222).build());
                             }
                         }
