@@ -456,7 +456,16 @@ public class V3LegacyFix {
             transformed.put("biomeSize", new JsonPrimitive(4));
             transformed.put("riverSize", new JsonPrimitive(4));
         }
-        JsonArray cubeAreas = (JsonArray) transformed.get("cubeAreas");
+
+        JsonElement cubeAreasElem = transformed.get("cubeAreas");
+        if (!(cubeAreasElem instanceof JsonArray)) {
+            // in old versions, empty cubeAreas was sometimes serialized to "{}" (empty object)
+            // instead of "[]" (empty array)
+            transformed.put("cubeAreas", new JsonArray(), transformed.getComment("cubeAreas") +
+                    "\nOld unknown value: " + cubeAreasElem.toJson());
+            return transformed;
+        }
+        JsonArray cubeAreas = (JsonArray) cubeAreasElem;
 
         assert cubeAreas != null;
         for (JsonElement cubeArea : cubeAreas) {
