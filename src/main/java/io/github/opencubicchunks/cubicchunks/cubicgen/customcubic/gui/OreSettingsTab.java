@@ -23,17 +23,6 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui;
 
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.label;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeCheckbox;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeFloatSlider;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeIntSlider;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeOreHeightSlider;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makePositiveExponentialSlider;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeUISelect;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.malisisText;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.vanillaText;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_PADDING;
-
 import blue.endless.jankson.JsonArray;
 import blue.endless.jankson.JsonNull;
 import blue.endless.jankson.JsonObject;
@@ -72,6 +61,9 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.*;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_PADDING;
+
 class OreSettingsTab {
 
     private static final JsonTransformer<Void> STANDARD_TO_PERIODIC_TRANSFORM =
@@ -79,7 +71,8 @@ class OreSettingsTab {
             .passthroughFor(
                     "blockstate",
                     "biomes",
-                    "genInBlockstates",
+                    "generateWhen",
+                    "placeBlockWhen",
                     "spawnSize",
                     "spawnTries",
                     "spawnProbability",
@@ -96,7 +89,8 @@ class OreSettingsTab {
                     .passthroughFor(
                             "blockstate",
                             "biomes",
-                            "genInBlockstates",
+                            "generateWhen",
+                            "placeBlockWhen",
                             "spawnSize",
                             "spawnTries",
                             "spawnProbability",
@@ -137,7 +131,8 @@ class OreSettingsTab {
     private static final JsonObject DEFAULT_STANDARD_ORE = JsonObjectView.empty()
             .put("blockstate", JsonObjectView.empty().put("Name", "minecraft:tnt"))
             .putNull("biomes")
-            .putNull("genInBlockstates")
+            .putNull("generateWhen")
+            .putNull("placeBlockWhen")
             .put("spawnSize", 8)
             .put("spawnTries", 4)
             .put("spawnProbability", 1.0)
@@ -207,10 +202,10 @@ class OreSettingsTab {
         JsonArray newStandard = new JsonArray();
         JsonArray newPeriodic = new JsonArray();
 
-        for (int i = 0; i < existStandard.size(); i++) {
+        for (int i : existStandard) {
             newStandard.add(oldStandard.value(i).object(), oldStandard.comment(i));
         }
-        for (int i = 0; i < existPeriodic.size(); i++) {
+        for (int i : existPeriodic) {
             newPeriodic.add(oldPeriodic.value(i).object(), oldPeriodic.comment(i));
         }
         json.put("standardOres", newStandard);
