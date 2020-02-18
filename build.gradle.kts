@@ -180,9 +180,8 @@ testCompile.extendsFrom(forgeGradleMcDeps)
 
 dependencies {
 
-    //deobfCompile("io.github.opencubicchunks:cubicchunks:1.12.2-0.0-SNAPSHOT")
     // provided by cubicchunks implementation
-    compile("org.spongepowered:mixin:0.7.10-SNAPSHOT") {
+    compile("org.spongepowered:mixin:0.8.1-SNAPSHOT") {
         isTransitive = false
     }
 
