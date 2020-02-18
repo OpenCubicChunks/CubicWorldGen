@@ -50,6 +50,7 @@ apply {
 
 mcGitVersion {
     isSnapshot = true
+    setCommitVersion("tags/v0.0", "0.0")
 }
 
 // TODO: Reduce duplication of buildscript code between CC projects?
