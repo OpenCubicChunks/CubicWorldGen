@@ -80,6 +80,7 @@ val minecraft = the<ForgeExtension>()
 
 val shadowJar: ShadowJar by tasks
 val build by tasks
+val compileJava: JavaCompile by tasls
 
 
 base {
@@ -88,6 +89,11 @@ base {
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
+}
+
+compileJava.apply {
+    options.isDeprecation = true
+    options.compilerArgs.add("-Xlint:unchecked")
 }
 
 minecraft {
