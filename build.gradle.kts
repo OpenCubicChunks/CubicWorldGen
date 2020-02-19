@@ -80,7 +80,7 @@ val minecraft = the<ForgeExtension>()
 
 val shadowJar: ShadowJar by tasks
 val build by tasks
-val compileJava: JavaCompile by tasls
+val compileJava: JavaCompile by tasks
 
 
 base {
