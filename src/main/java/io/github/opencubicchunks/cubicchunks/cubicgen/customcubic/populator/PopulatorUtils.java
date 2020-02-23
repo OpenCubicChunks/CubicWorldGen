@@ -42,7 +42,7 @@ import java.util.function.BiPredicate;
 public class PopulatorUtils {
 
     public static void genOreUniform(World world, CustomGeneratorSettings cfg, Random random, CubePos pos,
-                                     @Nullable BiPredicate<World, BlockPos> condition,
+                                     @Nullable CustomGeneratorSettings.GenerationCondition condition,
                                      int count, double probability, WorldGenerator generator, double minY, double maxY) {
         int minBlockY = Math.round((float) (minY * cfg.expectedHeightVariation + cfg.expectedBaseHeight));
         int maxBlockY = Math.round((float) (maxY * cfg.expectedHeightVariation + cfg.expectedBaseHeight));
@@ -62,14 +62,14 @@ public class PopulatorUtils {
             int xOffset = random.nextInt(ICube.SIZE) + offset;
             int zOffset = random.nextInt(ICube.SIZE) + offset;
             BlockPos position = new BlockPos(pos.getMinBlockX() + xOffset, blockY, pos.getMinBlockZ() + zOffset);
-            if (condition == null || condition.test(world, position)) {
+            if (condition == null || condition.canGenerate(random, world, position)) {
                 generator.generate(world, random, position);
             }
         }
     }
 
     public static void genOreBellCurve(World world, CustomGeneratorSettings cfg, Random random, CubePos pos,
-                                       @Nullable BiPredicate<World, BlockPos> condition, int count,
+                                       @Nullable CustomGeneratorSettings.GenerationCondition condition, int count,
                                        double probability, WorldGenerator generator, double mean,
                                        double stdDevFactor, double spacing, double minY, double maxY) {
 
@@ -97,7 +97,7 @@ public class PopulatorUtils {
             int xOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
             int zOffset = random.nextInt(ICube.SIZE) + ICube.SIZE / 2;
             BlockPos position = new BlockPos(pos.getMinBlockX() + xOffset, blockY, pos.getMinBlockZ() + zOffset);
-            if (condition == null || condition.test(world, position)) {
+            if (condition == null || condition.canGenerate(random, world, position)) {
                 generator.generate(world, random, position);
             }
         }

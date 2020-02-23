@@ -23,6 +23,7 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator;
 
+import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.BlockStone;
 import net.minecraft.block.state.IBlockState;
@@ -46,16 +47,16 @@ public class CustomVeinGenerator extends WorldGenerator {
 
     private final IBlockState oreBlock;
     private final int stepCount;
-    private final BiPredicate<World, BlockPos> blockPlaceCondition;
+    private final CustomGeneratorSettings.GenerationCondition blockPlaceCondition;
 
     public CustomVeinGenerator(IBlockState state, int blockCount) {
-        this(state, blockCount, (w, p) -> {
+        this(state, blockCount, (r, w, p) -> {
             IBlockState s = w.getBlockState(p);
             return s.getBlock() == Blocks.STONE && s.getValue(BlockStone.VARIANT).isNatural();
         });
     }
 
-    public CustomVeinGenerator(IBlockState state, int stepCount, BiPredicate<World, BlockPos> blockPlaceCondition) {
+    public CustomVeinGenerator(IBlockState state, int stepCount, CustomGeneratorSettings.GenerationCondition blockPlaceCondition) {
         this.oreBlock = state;
         this.stepCount = stepCount;
         this.blockPlaceCondition = blockPlaceCondition;
@@ -80,14 +81,14 @@ public class CustomVeinGenerator extends WorldGenerator {
             double xzDiameter = (sin((float) Math.PI * progress) + 1.0F) * sizeFactor + 1.0D;
             double yDiameter = (sin((float) Math.PI * progress) + 1.0F) * sizeFactor + 1.0D;
 
-            generateEllipsoid(world, this.oreBlock, this.blockPlaceCondition,
+            generateEllipsoid(rand, world, this.oreBlock, this.blockPlaceCondition,
                     stepX, stepY, stepZ, xzDiameter, yDiameter);
         }
         return true;
     }
 
-    private static void generateEllipsoid(World world, IBlockState blockState,
-                                          BiPredicate<World, BlockPos> placeCondition,
+    private static void generateEllipsoid(Random rand, World world, IBlockState blockState,
+                                          CustomGeneratorSettings.GenerationCondition placeCondition,
                                           double centerX, double centerY, double centerZ,
                                           double xzDiameter, double yDiameter) {
 
@@ -111,7 +112,7 @@ public class CustomVeinGenerator extends WorldGenerator {
                     if (dxNorm * dxNorm + dyNorm * dyNorm + dzNorm * dzNorm > 1.0D) continue;
 
                     BlockPos position = new BlockPos(x, y, z);
-                    if (placeCondition.test(world, position)) {
+                    if (placeCondition.canGenerate(rand, world, position)) {
                         world.setBlockState(position, blockState, 2);
                     }
                 }
