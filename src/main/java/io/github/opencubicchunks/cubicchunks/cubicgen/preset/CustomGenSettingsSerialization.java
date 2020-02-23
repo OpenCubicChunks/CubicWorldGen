@@ -320,6 +320,12 @@ public class CustomGenSettingsSerialization {
                 conditionList.add(marshaller.marshallCarefully(CustomGeneratorSettings.GenerationCondition.class, element));
             }
             return new CustomGeneratorSettings.NoneOfCompositeCondition(conditionList);
+        } else if (obj.containsKey("rand")) {
+            Object chance = ((JsonPrimitive) obj.get("rand")).getValue();
+            return new CustomGeneratorSettings.RandomCondition(((Number) chance).doubleValue());
+        } else if (obj.containsKey("posRand")) {
+            Object chance = ((JsonPrimitive) obj.get("posRand")).getValue();
+            return new CustomGeneratorSettings.PosRandomCondition(((Number) chance).doubleValue());
         } else {
             int x = obj.getInt("x", 0);
             int y = obj.getInt("y", 0);
@@ -360,6 +366,14 @@ public class CustomGenSettingsSerialization {
             obj.put("y", y);
             obj.put("z", z);
             obj.put("blocks", blocks);
+            return obj;
+        } else if (value instanceof CustomGeneratorSettings.RandomCondition) {
+            JsonObject obj = new JsonObject();
+            obj.put("rand", new JsonPrimitive(((CustomGeneratorSettings.RandomCondition) value).chance));
+            return obj;
+        } else if (value instanceof CustomGeneratorSettings.PosRandomCondition) {
+            JsonObject obj = new JsonObject();
+            obj.put("posRand", new JsonPrimitive(((CustomGeneratorSettings.PosRandomCondition) value).chance));
             return obj;
         } else {
             String name;

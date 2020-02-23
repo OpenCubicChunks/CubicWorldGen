@@ -58,17 +58,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.BiPredicate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod.MODID;
@@ -208,7 +198,7 @@ public class CustomGeneratorSettings {
         //  throw new RuntimeException(message, err);
         // }
     }
-    
+
     @Nullable
     public static String loadJsonStringFromSaveFolder(ISaveHandler saveHandler) {
         File externalGeneratorPresetFile = getPresetFile(saveHandler);
@@ -905,11 +895,54 @@ public class CustomGeneratorSettings {
         }
     }
 
-    public interface GenerationCondition extends BiPredicate<World, BlockPos> {
-        boolean canGenerate(World world, BlockPos pos);
+    public interface GenerationCondition {
+        boolean canGenerate(Random rand, World world, BlockPos pos);
+    }
 
-        @Override default boolean test(World world, BlockPos pos) {
-            return canGenerate(world, pos);
+    public static class RandomCondition implements GenerationCondition {
+
+        public double chance;
+
+        public RandomCondition() {
+        }
+
+        public RandomCondition(double chance) {
+            this.chance = chance;
+        }
+
+        @Override
+        public boolean canGenerate(Random rand, World world, BlockPos pos) {
+            return rand.nextFloat() < chance;
+        }
+    }
+
+    public static class PosRandomCondition implements GenerationCondition {
+
+        public double chance;
+
+        public PosRandomCondition() {
+        }
+
+        public PosRandomCondition(double chance) {
+            this.chance = chance;
+        }
+
+        @Override
+        public boolean canGenerate(Random rand, World world, BlockPos pos) {
+            // idea from LCG PRNG, multiplier same as java.util.Random, increment = coordinates
+            // the result is then interpreted as 48-bit unsigned integer, we take the most significant 24 bits of it
+            // and compare with chance scaled to be between 0 and 2^24
+            long r = world.getSeed();
+            r *= 0x5DEECE66DL;
+            r += pos.getX();
+            r *= 0x5DEECE66DL;
+            r += pos.getY();
+            r *= 0x5DEECE66DL;
+            r += pos.getZ();
+            r *= 0x5DEECE66DL;
+            r >>>= 24;
+            r &= (1L << 24) - 1L;
+            return r < chance * (1 << 24);
         }
     }
 
@@ -943,7 +976,7 @@ public class CustomGeneratorSettings {
         }
 
         @Override
-        public boolean canGenerate(World world, BlockPos pos) {
+        public boolean canGenerate(Random rand, World world, BlockPos pos) {
             return allowedBlockstates.contains(world.getBlockState(pos.add(x, y, z)));
         }
 
@@ -984,9 +1017,9 @@ public class CustomGeneratorSettings {
         }
 
         @Override
-        public boolean canGenerate(World world, BlockPos pos) {
+        public boolean canGenerate(Random rand, World world, BlockPos pos) {
             for (GenerationCondition condition : conditions) {
-                if (!condition.canGenerate(world, pos)) {
+                if (!condition.canGenerate(rand, world, pos)) {
                     return false;
                 }
             }
@@ -1004,9 +1037,9 @@ public class CustomGeneratorSettings {
         }
 
         @Override
-        public boolean canGenerate(World world, BlockPos pos) {
+        public boolean canGenerate(Random rand, World world, BlockPos pos) {
             for (GenerationCondition condition : conditions) {
-                if (condition.canGenerate(world, pos)) {
+                if (condition.canGenerate(rand, world, pos)) {
                     return true;
                 }
             }
@@ -1026,9 +1059,9 @@ public class CustomGeneratorSettings {
         }
 
         @Override
-        public boolean canGenerate(World world, BlockPos pos) {
+        public boolean canGenerate(Random rand, World world, BlockPos pos) {
             for (GenerationCondition condition : conditions) {
-                if (condition.canGenerate(world, pos)) {
+                if (condition.canGenerate(rand, world, pos)) {
                     return false;
                 }
             }
