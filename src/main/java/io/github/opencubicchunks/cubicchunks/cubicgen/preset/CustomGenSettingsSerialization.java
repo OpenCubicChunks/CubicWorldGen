@@ -326,6 +326,11 @@ public class CustomGenSettingsSerialization {
         } else if (obj.containsKey("posRand")) {
             Object chance = ((JsonPrimitive) obj.get("posRand")).getValue();
             return new CustomGeneratorSettings.PosRandomCondition(((Number) chance).doubleValue());
+        } else if (obj.containsKey("posRandSeed")) {
+            Object chance = ((JsonPrimitive) obj.get("posRandSeed")).getValue();
+            Object seed = ((JsonPrimitive) obj.get("seed")).getValue();
+            return new CustomGeneratorSettings.PosRandomWithSeedCondition(((Number) chance).doubleValue(),
+                    ((Number) seed).longValue());
         } else {
             int x = obj.getInt("x", 0);
             int y = obj.getInt("y", 0);
@@ -374,6 +379,11 @@ public class CustomGenSettingsSerialization {
         } else if (value instanceof CustomGeneratorSettings.PosRandomCondition) {
             JsonObject obj = new JsonObject();
             obj.put("posRand", new JsonPrimitive(((CustomGeneratorSettings.PosRandomCondition) value).chance));
+            return obj;
+        } else if (value instanceof CustomGeneratorSettings.PosRandomWithSeedCondition) {
+            JsonObject obj = new JsonObject();
+            obj.put("posRandSeed", new JsonPrimitive(((CustomGeneratorSettings.PosRandomWithSeedCondition) value).chance));
+            obj.put("seed", new JsonPrimitive(((CustomGeneratorSettings.PosRandomWithSeedCondition) value).seed));
             return obj;
         } else {
             String name;

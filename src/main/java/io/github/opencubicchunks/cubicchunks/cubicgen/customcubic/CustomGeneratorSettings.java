@@ -30,6 +30,7 @@ import io.github.opencubicchunks.cubicchunks.api.util.MathUtil;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
+import io.github.opencubicchunks.cubicchunks.cubicgen.XxHash;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.BiomeBlockReplacerConfig;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.world.storage.IWorldInfoAccess;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.CustomGenSettingsSerialization;
@@ -518,7 +519,8 @@ public class CustomGeneratorSettings {
                 this.v = value;
             }
 
-            @Override public boolean equals(Object o) {
+            @Override
+            public boolean equals(Object o) {
                 if (this == o) {
                     return true;
                 }
@@ -529,11 +531,13 @@ public class CustomGeneratorSettings {
                 return Float.compare(entry.y, y) == 0;
             }
 
-            @Override public int hashCode() {
+            @Override
+            public int hashCode() {
                 return Objects.hash(y);
             }
 
-            @Override public String toString() {
+            @Override
+            public String toString() {
                 return "Entry{" +
                         "y=" + y +
                         ", v=" + v +
@@ -548,7 +552,8 @@ public class CustomGeneratorSettings {
 
         public final List<StandardOreConfig> list = new ArrayList<>();
 
-        @Override public Iterator<StandardOreConfig> iterator() {
+        @Override
+        public Iterator<StandardOreConfig> iterator() {
             return list.iterator();
         }
     }
@@ -557,7 +562,8 @@ public class CustomGeneratorSettings {
 
         public final List<PeriodicGaussianOreConfig> list = new ArrayList<>();
 
-        @Override public Iterator<PeriodicGaussianOreConfig> iterator() {
+        @Override
+        public Iterator<PeriodicGaussianOreConfig> iterator() {
             return list.iterator();
         }
     }
@@ -835,20 +841,33 @@ public class CustomGeneratorSettings {
     // and for vanilla classes they do change because of obfuscation
     public static class IntAABB {
 
-        /** The first x coordinate of a bounding box. */
+        /**
+         * The first x coordinate of a bounding box.
+         */
         public int minX;
-        /** The first y coordinate of a bounding box. */
+        /**
+         * The first y coordinate of a bounding box.
+         */
         public int minY;
-        /** The first z coordinate of a bounding box. */
+        /**
+         * The first z coordinate of a bounding box.
+         */
         public int minZ;
-        /** The second x coordinate of a bounding box. */
+        /**
+         * The second x coordinate of a bounding box.
+         */
         public int maxX;
-        /** The second y coordinate of a bounding box. */
+        /**
+         * The second y coordinate of a bounding box.
+         */
         public int maxY;
-        /** The second z coordinate of a bounding box. */
+        /**
+         * The second z coordinate of a bounding box.
+         */
         public int maxZ;
 
-        @Override public boolean equals(Object o) {
+        @Override
+        public boolean equals(Object o) {
             if (this == o) {
                 return true;
             }
@@ -880,7 +899,8 @@ public class CustomGeneratorSettings {
             return true;
         }
 
-        @Override public int hashCode() {
+        @Override
+        public int hashCode() {
             int result = minX;
             result = 31 * result + minY;
             result = 31 * result + minZ;
@@ -896,6 +916,9 @@ public class CustomGeneratorSettings {
     }
 
     public interface GenerationCondition {
+        default void beforeGenerate(Random rand) {
+        }
+
         boolean canGenerate(Random rand, World world, BlockPos pos);
     }
 
@@ -927,19 +950,32 @@ public class CustomGeneratorSettings {
             this.chance = chance;
         }
 
+
         @Override
         public boolean canGenerate(Random rand, World world, BlockPos pos) {
-            // idea from LCG PRNG, multiplier same as java.util.Random, increment = coordinates
-            // the result is then interpreted as 48-bit unsigned integer, we take the most significant 24 bits of it
-            // and compare with chance scaled to be between 0 and 2^24
-            long r = world.getSeed();
-            r *= 0x5DEECE66DL;
-            r += pos.getX();
-            r *= 0x5DEECE66DL;
-            r += pos.getY();
-            r *= 0x5DEECE66DL;
-            r += pos.getZ();
-            r *= 0x5DEECE66DL;
+            long r = XxHash.xxHash64(world.getSeed(), 0, pos.getX(), pos.getY(), pos.getZ());
+            r >>>= 24;
+            r &= (1L << 24) - 1L;
+            return r < chance * (1 << 24);
+        }
+    }
+
+    public static class PosRandomWithSeedCondition implements GenerationCondition {
+
+        public double chance;
+        public long seed;
+
+        public PosRandomWithSeedCondition() {
+        }
+
+        public PosRandomWithSeedCondition(double chance, long seed) {
+            this.chance = chance;
+            this.seed = seed;
+        }
+
+        @Override
+        public boolean canGenerate(Random rand, World world, BlockPos pos) {
+            long r = XxHash.xxHash64(world.getSeed(), (int) seed, pos.getX(), pos.getY(), pos.getZ());
             r >>>= 24;
             r &= (1L << 24) - 1L;
             return r < chance * (1 << 24);

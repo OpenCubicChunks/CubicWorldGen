@@ -135,6 +135,7 @@ license {
     exclude("**/*.json")
     exclude("**/*.xml")
     exclude("assets/*")
+    exclude("io/github/opencubicchunks/cubicchunks/cubicgen/XxHash.java")
     header = file("HEADER.txt")
     ignoreFailures = false
     strictCheck = true
