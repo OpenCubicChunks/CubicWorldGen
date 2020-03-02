@@ -75,6 +75,8 @@ cubicgen.gui.cubicgen.mean_height=Center of first belt: %s%%%% (blocks: %s)
 cubicgen.gui.cubicgen.height_std_dev=Height Std. Dev. Factor: %s%%%% (blocks: %s)
 cubicgen.gui.cubicgen.spacing_height=Height Spacing: %s%%%% (blocks: %s)
 
+cubicgen.gui.cubicgen.select_biomes=Restrict to biomes...
+
 #################################
 ######### lake settings #########
 #################################
