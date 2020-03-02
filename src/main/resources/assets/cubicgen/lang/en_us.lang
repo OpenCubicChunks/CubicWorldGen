@@ -53,32 +53,19 @@ cubicgen.gui.cubicgen.caves=Caves
 cubicgen.gui.cubicgen.ravines=Ravines
 
 cubicgen.gui.cubicgen.mineshafts=Mineshafts*
-cubicgen.gui.cubicgen.mineshaftChance=Mineshaft Chance*
 
 cubicgen.gui.cubicgen.dungeons=Dungeons
 cubicgen.gui.cubicgen.dungeonCount=Dungeon Count
 
 cubicgen.gui.cubicgen.strongholds=Strongholds
-cubicgen.gui.cubicgen.strongholdDistance=Stronghold Distance*
-cubicgen.gui.cubicgen.strongholdCount=Stronghold Count*
-cubicgen.gui.cubicgen.strongholdSpread=Stronghold Spread*
 
 cubicgen.gui.cubicgen.villages=Villages*
-cubicgen.gui.cubicgen.villageSize=Village Size*
-cubicgen.gui.cubicgen.villageDistance=Village Distance*
 
 cubicgen.gui.cubicgen.temples=Temples*
-cubicgen.gui.cubicgen.desertPyramids=Desert Pyramids*
-cubicgen.gui.cubicgen.junglePyramids=Jungle Pyramids*
-cubicgen.gui.cubicgen.swampHuts=Swamp Huts*
-cubicgen.gui.cubicgen.igloos=Igloos*
 
 cubicgen.gui.cubicgen.oceanMonuments=Ocean Monuments*
-cubicgen.gui.cubicgen.oceanMonumentSpacing=Ocean Monument Spacing*
-cubicgen.gui.cubicgen.oceanMonumentSeparation=Ocean Monument Separation*
 
 cubicgen.gui.cubicgen.woodlandMansions=Woodland Mansions*
-cubicgen.gui.cubicgen.woodlandMansionDistance=Woodland Mansion Distance*
 
 #################################
 ###  ore generation settings  ###
