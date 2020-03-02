@@ -13,10 +13,10 @@ cubicgen.gui.cubicgen.done=Done
 cubicgen.gui.cubicgen.cancel=Cancel
 cubicgen.gui.cubicgen.presets=Presets
 
-cubicgen.gui.cubicgen.basic_tab_title=Customize World Settings%nPage 1 of 4%nBasic Settings
-cubicgen.gui.cubicgen.ores_tab_title=Customize World Settings%nPage 2 of 4%nOre Settings
-cubicgen.gui.cubicgen.lake_tab_title=Customize World Settings%nPage 3 of 4%nLake Settings
-cubicgen.gui.cubicgen.advanced_tab_title=Customize World Settings%nPage 4 of 4%nAdvanced Settings
+cubicgen.gui.cubicgen.basic_tab_title=Customize World Settings%nPage 1 of 4%nBasic settings (Structures marked * not yet implemented)
+cubicgen.gui.cubicgen.ores_tab_title=Customize World Settings%nPage 2 of 4%nOre settings
+cubicgen.gui.cubicgen.lake_tab_title=Customize World Settings%nPage 3 of 4%nLake settings
+cubicgen.gui.cubicgen.advanced_tab_title=Customize World Settings%nPage 4 of 4%nAdvanced settings
 
 cubicgen.gui.cubicgen.layers_title=Customize World Settings%nPage 1 of 1%nLayers
 
@@ -42,21 +42,43 @@ cubicgen.gui.cubicgen.from=From:
 ###   basic terrain settings  ###
 #################################
 
-cubicgen.gui.cubicgen.water_level=Ocean Level
-cubicgen.gui.cubicgen.caves=Caves
-cubicgen.gui.cubicgen.strongholds=Strongholds
-cubicgen.gui.cubicgen.villages=Villages
-cubicgen.gui.cubicgen.mineshafts=Mineshafts
-cubicgen.gui.cubicgen.temples=Temples
-cubicgen.gui.cubicgen.oceanMonuments=Ocean Monuments
-cubicgen.gui.cubicgen.woodlandMansions=Woodland Mansions
-cubicgen.gui.cubicgen.ravines=Ravines
-cubicgen.gui.cubicgen.dungeons=Dungeons
-cubicgen.gui.cubicgen.dungeonCount=Dungeon Count
-cubicgen.gui.cubicgen.lavaOceans=Lava Oceans
 cubicgen.gui.cubicgen.biome=Biome
 cubicgen.gui.cubicgen.biomeSize=Biome Size
 cubicgen.gui.cubicgen.riverSize=River Size
+
+cubicgen.gui.cubicgen.water_level=Ocean Level
+cubicgen.gui.cubicgen.lavaOceans=Lava Oceans
+
+cubicgen.gui.cubicgen.caves=Caves
+cubicgen.gui.cubicgen.ravines=Ravines
+
+cubicgen.gui.cubicgen.mineshafts=Mineshafts*
+cubicgen.gui.cubicgen.mineshaftChance=Mineshaft Chance*
+
+cubicgen.gui.cubicgen.dungeons=Dungeons
+cubicgen.gui.cubicgen.dungeonCount=Dungeon Count
+
+cubicgen.gui.cubicgen.strongholds=Strongholds
+cubicgen.gui.cubicgen.strongholdDistance=Stronghold Distance*
+cubicgen.gui.cubicgen.strongholdCount=Stronghold Count*
+cubicgen.gui.cubicgen.strongholdSpread=Stronghold Spread*
+
+cubicgen.gui.cubicgen.villages=Villages*
+cubicgen.gui.cubicgen.villageSize=Village Size*
+cubicgen.gui.cubicgen.villageDistance=Village Distance*
+
+cubicgen.gui.cubicgen.temples=Temples*
+cubicgen.gui.cubicgen.desertPyramids=Desert Pyramids*
+cubicgen.gui.cubicgen.junglePyramids=Jungle Pyramids*
+cubicgen.gui.cubicgen.swampHuts=Swamp Huts*
+cubicgen.gui.cubicgen.igloos=Igloos*
+
+cubicgen.gui.cubicgen.oceanMonuments=Ocean Monuments*
+cubicgen.gui.cubicgen.oceanMonumentSpacing=Ocean Monument Spacing*
+cubicgen.gui.cubicgen.oceanMonumentSeparation=Ocean Monument Separation*
+
+cubicgen.gui.cubicgen.woodlandMansions=Woodland Mansions*
+cubicgen.gui.cubicgen.woodlandMansionDistance=Woodland Mansion Distance*
 
 #################################
 ###  ore generation settings  ###
@@ -64,6 +86,8 @@ cubicgen.gui.cubicgen.riverSize=River Size
 
 cubicgen.gui.cubicgen.add_ore=Add ore
 cubicgen.gui.cubicgen.delete=Delete
+
+cubicgen.gui.cubicgen.select_biomes=Restrict to biomes...
 
 cubicgen.gui.cubicgen.spawn_size=Spawn Size:
 cubicgen.gui.cubicgen.spawn_tries=Spawn Tries:
@@ -75,11 +99,10 @@ cubicgen.gui.cubicgen.mean_height=Center of first belt: %s%%%% (blocks: %s)
 cubicgen.gui.cubicgen.height_std_dev=Height Std. Dev. Factor: %s%%%% (blocks: %s)
 cubicgen.gui.cubicgen.spacing_height=Height Spacing: %s%%%% (blocks: %s)
 
-cubicgen.gui.cubicgen.select_biomes=Restrict to biomes...
-
 #################################
 ######### lake settings #########
 #################################
+
 cubicgen.gui.cubicgen.select_all=Select all
 cubicgen.gui.cubicgen.invert_selection=Invert selection
 cubicgen.gui.cubicgen.select_biomes_label=Select biomes
