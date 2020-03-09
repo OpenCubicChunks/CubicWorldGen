@@ -39,6 +39,7 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.BasicCubeGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.IBiomeBlockReplacer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.world.storage.IWorldInfoAccess;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.BiomeSource;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.IBuilder;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.NoiseSource;
@@ -54,6 +55,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeProvider;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.terraingen.InitMapGenEvent;
 import net.minecraftforge.event.terraingen.InitMapGenEvent.EventType;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
@@ -84,8 +86,8 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
     private final Map<CustomGeneratorSettings.IntAABB, CustomTerrainGenerator> areaGenerators = new HashMap<>();
     // Number of octaves for the noise function
     private IBuilder terrainBuilder;
-    private final BiomeSource biomeSource;
-    private final CustomGeneratorSettings conf;
+    private BiomeSource biomeSource;
+    private CustomGeneratorSettings conf;
     private final Map<Biome, ICubicPopulator> populators = new HashMap<>();
 
     private boolean fillCubeBiomes;
@@ -105,7 +107,19 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
 
     private CustomTerrainGenerator(World world, BiomeProvider biomeProvider, CustomGeneratorSettings settings, final long seed, boolean isMainLayer) {
         super(world);
+        init(world, biomeProvider, settings, seed, isMainLayer);
+    }
+
+    public void reloadPreset(String settings) {
+        ((IWorldInfoAccess) world.getWorldInfo()).setGeneratorOptions(settings);
+        world.provider.setWorld(world);// this re-creates biome provider
+        init(world, world.getBiomeProvider(), CustomGeneratorSettings.getFromWorld(world), world.getSeed(), true);
+    }
+
+    private void init(World world, BiomeProvider biomeProvider, CustomGeneratorSettings settings, long seed, boolean isMainLayer) {
         this.conf = settings;
+
+        this.populators.clear();
 
         for (Biome biome : ForgeRegistries.BIOMES) {
             CubicBiome cubicBiome = CubicBiome.getCubic(biome);
@@ -113,13 +127,13 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         }
 
         InitCubicStructureGeneratorEvent caveEvent = new InitCubicStructureGeneratorEvent(EventType.CAVE, new CubicCaveGenerator());
-        InitCubicStructureGeneratorEvent strongholdsEvent = new InitCubicStructureGeneratorEvent(EventType.STRONGHOLD, new CubicStrongholdGenerator(conf));
+        InitCubicStructureGeneratorEvent strongholdsEvent = new InitCubicStructureGeneratorEvent(EventType.STRONGHOLD, new CubicStrongholdGenerator(conf, isMainLayer));
         InitCubicStructureGeneratorEvent ravineEvent = new InitCubicStructureGeneratorEvent(EventType.RAVINE, new CubicRavineGenerator(conf));
 
         MinecraftForge.TERRAIN_GEN_BUS.post(caveEvent);
         MinecraftForge.TERRAIN_GEN_BUS.post(strongholdsEvent);
         MinecraftForge.TERRAIN_GEN_BUS.post(ravineEvent);
-        
+
         this.caveGenerator = caveEvent.getNewGen();
         this.strongholds = (CubicFeatureGenerator) strongholdsEvent.getNewGen();
         this.ravineGenerator = ravineEvent.getNewGen();
@@ -127,6 +141,8 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         this.fillCubeBiomes = !isMainLayer;
         this.biomeSource = new BiomeSource(world, conf.createBiomeBlockReplacerConfig(), biomeProvider, 2);
         initGenerator(seed);
+
+        this.areaGenerators.clear();
 
         if (settings.cubeAreas != null) {
             for (Map.Entry<CustomGeneratorSettings.IntAABB, CustomGeneratorSettings> entry : settings.cubeAreas.map) {

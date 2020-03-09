@@ -26,12 +26,17 @@ package io.github.opencubicchunks.cubicchunks.cubicgen;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome.oceanWaterReplacer;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome.terrainShapeReplacer;
 
+import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld;
+import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorldServer;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.ICubeGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer.MesaSurfaceReplacer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer.MutatedSavannaSurfaceReplacer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer.SwampWaterWithLilypadReplacer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer.TaigaSurfaceReplacer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomCubicWorldType;
+import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
+import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomTerrainGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.DefaultDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.DesertDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.ForestDecorator;
@@ -43,7 +48,14 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.Swam
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.TaigaDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.flat.FlatCubicWorldType;
 import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeBeach;
 import net.minecraft.world.biome.BiomeDesert;
@@ -62,12 +74,16 @@ import net.minecraft.world.biome.BiomeSnow;
 import net.minecraft.world.biome.BiomeStoneBeach;
 import net.minecraft.world.biome.BiomeSwamp;
 import net.minecraft.world.biome.BiomeTaiga;
+import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.server.permission.DefaultPermissionLevel;
+import net.minecraftforge.server.permission.PermissionAPI;
 import org.apache.logging.log4j.Logger;
 
 import java.util.function.Consumer;
@@ -99,6 +115,54 @@ public class CustomCubicMod {
         FlatCubicWorldType.create();
         CustomCubicWorldType.create();
         DebugWorldType.create();
+
+    }
+
+    @Mod.EventHandler
+    public void serverStarting(FMLServerStartingEvent evt)
+    {
+        PermissionAPI.registerNode(MODID + ".command.reload_preset", DefaultPermissionLevel.OP, "Allows to run the /customcubic_reload command");
+
+        evt.registerServerCommand(new CommandBase() {
+            @Override
+            public String getName() {
+                return "customcubic_reload";
+            }
+
+            @Override
+            public String getUsage(ICommandSender sender) {
+                return "/customcubic_reload";
+            }
+
+            @Override
+            public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+                for (WorldServer world : DimensionManager.getWorlds()) {
+                    if (world == null || !((ICubicWorld) world).isCubicWorld()) {
+                        continue;
+                    }
+                    ICubeGenerator cubeGenerator = ((ICubicWorldServer) world).getCubeGenerator();
+                    if (!(cubeGenerator instanceof CustomTerrainGenerator)) {
+                        continue;
+                    }
+                    String settings = CustomGeneratorSettings.loadJsonStringFromSaveFolder(world.getSaveHandler());
+                    if (settings == null) {
+                        sender.sendMessage(new TextComponentString("ERROR: loading preset failed (does the file exist?). Not reloading preset."));
+                        continue;
+                    }
+                    ((CustomTerrainGenerator) cubeGenerator).reloadPreset(settings);
+                    sender.sendMessage(new TextComponentString("Preset for dimension " + world.provider.getDimension() + " has been reloaded. Note that this may cause issues with mods."));
+                }
+            }
+
+            @Override
+            public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
+                if (sender instanceof EntityPlayer) {
+                    return PermissionAPI.hasPermission((EntityPlayer) sender, MODID + ".command.reload_preset");
+                } else {
+                    return super.checkPermission(server, sender);
+                }
+            }
+        });
     }
 
     @Mod.EventHandler
