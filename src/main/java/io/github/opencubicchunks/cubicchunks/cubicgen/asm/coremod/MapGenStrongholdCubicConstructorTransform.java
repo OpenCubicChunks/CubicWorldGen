@@ -33,7 +33,6 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.util.List;
@@ -66,8 +65,6 @@ public class MapGenStrongholdCubicConstructorTransform implements IClassTransfor
 
         String structureStart = "net/minecraft/world/gen/structure/StructureStart";
         String structureBoundingBoxDesc = "Lnet/minecraft/world/gen/structure/StructureBoundingBox;";
-        node.fields.add(new FieldNode(Opcodes.ACC_PRIVATE | Opcodes.ACC_SYNTHETIC,
-                "cubicchunks$baseY", Type.getDescriptor(int.class), null, 0));
 
         MethodNode createdMethod = null;
         for (MethodNode method : node.methods) {
@@ -100,14 +97,15 @@ public class MapGenStrongholdCubicConstructorTransform implements IClassTransfor
                             super.visitInsn(Opcodes.ACONST_NULL);
                             super.visitFieldInsn(Opcodes.PUTFIELD, structureStart, boundingBox, structureBoundingBoxDesc);
                         } else if (opcode == Opcodes.INVOKEVIRTUAL && name.equals(markAvailableHeight)) {
-                            LOGGER.debug("Replacing constant argument for markAvailableHeight with GETFIELD cubicchunks$baseY");
-                            // pop constant 10
-                            super.visitInsn(Opcodes.POP);
-                            // load value from field
-                            super.visitVarInsn(Opcodes.ALOAD, 0);
-                            super.visitFieldInsn(Opcodes.GETFIELD, owner, "cubicchunks$baseY", Type.getDescriptor(int.class));
-                            // call method with modified value
-                            super.visitMethodInsn(opcode, owner, name, desc, itf);
+                            LOGGER.debug("Removing markAvailableHeight call");
+                            for (Type argumentType : Type.getArgumentTypes(desc)) {
+                                if (argumentType.getSize() == 1) {
+                                    super.visitInsn(Opcodes.POP);
+                                } else {
+                                    assert argumentType.getSize() == 2;
+                                    super.visitInsn(Opcodes.POP2);
+                                }
+                            }
                         } else {
                             super.visitMethodInsn(opcode, owner, name, desc, itf);
                         }

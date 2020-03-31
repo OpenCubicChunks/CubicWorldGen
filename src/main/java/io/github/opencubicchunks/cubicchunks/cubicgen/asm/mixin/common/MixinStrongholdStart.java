@@ -23,10 +23,13 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common;
 
+import io.github.opencubicchunks.cubicchunks.api.util.Coords;
+import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.feature.CubicStrongholdGenerator;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.MapGenStronghold;
+import net.minecraft.world.gen.structure.StructureComponent;
 import net.minecraft.world.gen.structure.StructureStart;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
@@ -47,8 +50,6 @@ public abstract class MixinStrongholdStart extends StructureStart implements Cub
 
     // added by class transformer (MapGenStrongholdCubicConstructorTransform)
 
-    @Dynamic @Shadow(remap = false) private int cubicchunks$baseY;
-
     @Dynamic @Shadow(remap = false) private void reinitCubicStronghold(World world, Random random, int chunkX, int chunkZ) {
         throw new AssertionError();
     }
@@ -58,10 +59,25 @@ public abstract class MixinStrongholdStart extends StructureStart implements Cub
         this.constructorRandom = random;
     }
 
-    @Override public void initCubicStronghold(World world, int cubeY, int baseY) {
-        cubicchunks$baseY = baseY;
+    @Override
+    public void initCubicStronghold(World world, int cubeY, int maxTopY) {
         this.initCubic(world, cubeY);
         this.reinitCubicStronghold(world, constructorRandom, getChunkPosX(), getChunkPosZ());
-        this.markAvailableHeight(world, constructorRandom, baseY);
+
+        int currCenterY = this.boundingBox.getYSize() / 2;
+        int targetCenterY = Coords.localToBlock(cubeY, constructorRandom.nextInt(ICube.SIZE));
+        int dy = targetCenterY - currCenterY;
+
+        {
+            int movedTopY = this.boundingBox.getYSize() + 1 + dy;
+            if (movedTopY > maxTopY) {
+                dy -= movedTopY - maxTopY;
+            }
+        }
+        this.boundingBox.offset(0, dy, 0);
+
+        for (StructureComponent structurecomponent : this.components) {
+            structurecomponent.offset(0, dy, 0);
+        }
     }
 }

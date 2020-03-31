@@ -30,6 +30,10 @@ import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.feature.Cubi
 import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.feature.ICubicFeatureStart;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -62,7 +66,10 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
     private final CustomGeneratorSettings conf;
 
     public CubicStrongholdGenerator(CustomGeneratorSettings conf) {
-        super(2, 0);
+        this(conf, true);
+    }
+    public CubicStrongholdGenerator(CustomGeneratorSettings conf, boolean syncToStrongholdsDat) {
+        super(2, 0, syncToStrongholdsDat);
         this.conf = conf;
         this.structureCoords = new CubePos[128];
         this.distance = 32.0D;
@@ -78,24 +85,6 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
         for (Biome biome : BiomeManager.strongHoldBiomes) {
             if (!this.allowedBiomes.contains(biome)) {
                 this.allowedBiomes.add(biome);
-            }
-        }
-    }
-
-    public CubicStrongholdGenerator(CustomGeneratorSettings conf, Map<String, String> data) {
-        this(conf);
-
-        for (Map.Entry<String, String> entry : data.entrySet()) {
-            switch (entry.getKey()) {
-                case "distance":
-                    this.distance = MathHelper.getDouble(entry.getValue(), this.distance, 1.0D);
-                    break;
-                case "count":
-                    this.structureCoords = new CubePos[MathHelper.getInt(entry.getValue(), this.structureCoords.length, 1)];
-                    break;
-                case "spread":
-                    this.spread = MathHelper.getInt(entry.getValue(), this.spread, 1);
-                    break;
             }
         }
     }
@@ -139,7 +128,7 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
         do {
             start = new MapGenStronghold.Start(world, rand, chunkX, chunkZ);
             @SuppressWarnings("ConstantConditions") CubicStart cubic = (CubicStart) start;
-            cubic.initCubicStronghold(world, chunkY, MathHelper.floor(conf.expectedBaseHeight) + 10);
+            cubic.initCubicStronghold(world, chunkY, MathHelper.floor(conf.expectedBaseHeight - 10));
         } while (start.getComponents().isEmpty() || ((StructureStrongholdPieces.Stairs2) start.getComponents().get(0)).strongholdPortalRoom == null);
         return start;
     }
