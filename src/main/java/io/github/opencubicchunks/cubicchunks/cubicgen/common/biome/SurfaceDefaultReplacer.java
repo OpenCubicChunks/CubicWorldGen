@@ -26,6 +26,7 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.common.biome;
 import static java.lang.Math.abs;
 
 import com.google.common.collect.Sets;
+import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.IBuilder;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.NoiseSource;
@@ -51,19 +52,21 @@ public class SurfaceDefaultReplacer implements IBiomeBlockReplacer {
 
     private final IBuilder depthNoise;
     private final int maxPossibleDepth;
+    private final int bedrockY;
     private IBlockState topBlock;
     private IBlockState fillerBlock;
     private final double horizontalGradientDepthDecreaseWeight;
     private final double oceanHeight;
 
     public SurfaceDefaultReplacer(IBlockState topBlock, IBlockState fillerBlock, IBuilder depthNoise,
-            double horizontalGradientDepthDecreaseWeight, double oceanHeight, int surfaceDepthLimit) {
+            double horizontalGradientDepthDecreaseWeight, double oceanHeight, int surfaceDepthLimit, int bedrockY) {
         this.topBlock = topBlock;
         this.fillerBlock = fillerBlock;
         this.depthNoise = depthNoise;
         this.horizontalGradientDepthDecreaseWeight = horizontalGradientDepthDecreaseWeight;
         this.oceanHeight = oceanHeight;
         this.maxPossibleDepth = 9;
+        this.bedrockY = bedrockY;
     }
 
     /**
@@ -72,12 +75,19 @@ public class SurfaceDefaultReplacer implements IBiomeBlockReplacer {
     @Override
     public IBlockState getReplacedBlock(IBlockState previousBlock, int x, int y, int z, double dx, double dy, double dz, double density) {
         // skip everything below if there is no chance it will actually do something
-        if (density > maxPossibleDepth * abs(dy) || density < 0) {
-            return previousBlock;
-        }
         if (previousBlock.getBlock() == Blocks.AIR) {
             return previousBlock;
         }
+        if (y <= bedrockY) {
+            if (y < bedrockY) {
+                return Blocks.AIR.getDefaultState();
+            }
+            return Blocks.BEDROCK.getDefaultState();
+        }
+        if (density > maxPossibleDepth * abs(dy) || density < 0) {
+            return previousBlock;
+        }
+
         double depth = depthNoise.get(x, 0, z);
         double densityAdjusted = density / abs(dy);
         if (density + dy <= 0) { // if air above
@@ -142,13 +152,14 @@ public class SurfaceDefaultReplacer implements IBiomeBlockReplacer {
                 double freq = conf.getDouble(DEPTH_NOISE_FREQUENCY);
                 int octaves = (int) conf.getDouble(DEPTH_NOISE_OCTAVES);
                 int maxDepth = (int) conf.getDouble(SURFACE_BLOCK_DEPTH_LIMIT);
+                int bedrockY = ((ICubicWorld) world).getMinHeight();
                 Biome biome = cubicBiome.getBiome();
 
                 IBuilder builder = NoiseSource.perlin()
                         .frequency(freq).octaves(octaves).create()
                         .mul(factor).add(offset)
                         .cached2d(256, v -> v.getX() + v.getZ() * 16);
-                return new SurfaceDefaultReplacer(biome.topBlock, biome.fillerBlock, builder, gradientDec, oceanY, maxDepth);
+                return new SurfaceDefaultReplacer(biome.topBlock, biome.fillerBlock, builder, gradientDec, oceanY, maxDepth, bedrockY);
             }
 
             @Override public Set<ConfigOptionInfo> getPossibleConfigOptions() {
