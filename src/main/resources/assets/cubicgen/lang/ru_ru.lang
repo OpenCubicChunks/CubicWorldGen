@@ -1,0 +1,159 @@
+#PARSE_ESCAPES
+generator.VanillaCubic=Vanilla кубы
+generator.FlatCubic=Плоские кубы
+generator.CustomCubic=Пользовательские кубы
+
+#################################
+###        general gui        ###
+#################################
+
+cubicgen.gui.cubicgen.previous_page=Предыдущий
+cubicgen.gui.cubicgen.next_page=Следующий
+cubicgen.gui.cubicgen.done=Готово
+cubicgen.gui.cubicgen.cancel=Отмена
+cubicgen.gui.cubicgen.presets=Наборы
+
+cubicgen.gui.cubicgen.basic_tab_title=Настройка параметров мира%nСтраница 1 из 4%nБазовые настройки (Отмеченные структуры * ещё не реализовано)
+cubicgen.gui.cubicgen.ores_tab_title=Настройка параметров мира%nСтраница 2 из 4%nНастройки руды
+cubicgen.gui.cubicgen.lake_tab_title=Настройка параметров мира%nСтраница 3 из 4%nНастройки озер
+cubicgen.gui.cubicgen.advanced_tab_title=Настройка параметров мира%nСтраница 4 из 4%nРасширенные настройки
+
+cubicgen.gui.cubicgen.layers_title=Настройка параметров мира%nСтраница 1 из 1%nСлои
+
+#################################
+###          presets          ###
+#################################
+
+cubicgen.gui.cubicgen.presets.done=Готово
+cubicgen.gui.cubicgen.presets.cancel=Отмена
+cubicgen.gui.cubicgen.presets.invalid_json=НЕДЕЙСТВИТЕЛЬНЫЙ JSON
+
+#################################
+###   flat terrain layers     ###
+#################################
+
+cubicgen.gui.cubicgen.select_block=Выберите блок
+cubicgen.gui.cubicgen.add_layer=Добавить слой ^
+cubicgen.gui.cubicgen.remove_layer=Удалить слой
+cubicgen.gui.cubicgen.to_exclusively=В (исключительно):
+cubicgen.gui.cubicgen.from=От:
+
+#################################
+###   basic terrain settings  ###
+#################################
+
+cubicgen.gui.cubicgen.biome=Биом
+cubicgen.gui.cubicgen.biomeSize=Размер Биома
+cubicgen.gui.cubicgen.riverSize=Размер реки
+
+cubicgen.gui.cubicgen.water_level=Уровень океана
+cubicgen.gui.cubicgen.lavaOceans=Лавовые океаны
+
+cubicgen.gui.cubicgen.caves=Пещеры
+cubicgen.gui.cubicgen.ravines=Овраги
+
+cubicgen.gui.cubicgen.mineshafts=Шахты*
+
+cubicgen.gui.cubicgen.dungeons=Подземелья
+cubicgen.gui.cubicgen.dungeonCount=Кол-во подземелий
+
+cubicgen.gui.cubicgen.strongholds=Крепости
+
+cubicgen.gui.cubicgen.villages=Деревни*
+
+cubicgen.gui.cubicgen.temples=Храмы*
+
+cubicgen.gui.cubicgen.oceanMonuments=Океанские Манументы*
+
+cubicgen.gui.cubicgen.woodlandMansions=Лесные Особняки*
+
+#################################
+###  ore generation settings  ###
+#################################
+
+cubicgen.gui.cubicgen.add_ore=Добавить руду
+cubicgen.gui.cubicgen.delete=Удалить
+
+cubicgen.gui.cubicgen.select_biomes=Ограничить биомами...
+
+cubicgen.gui.cubicgen.spawn_size=Размер появления:
+cubicgen.gui.cubicgen.spawn_tries=Попыток появления:
+cubicgen.gui.cubicgen.spawn_probability=Вероятность:
+cubicgen.gui.cubicgen.spawn_maxprobability=Макс. Вероятность:
+cubicgen.gui.cubicgen.spawn_range=Высота %s%%%% на %s%%%% (блоков: %s на %s)
+
+cubicgen.gui.cubicgen.mean_height=Центр первого пояса: %s%%%% (блоков: %s)
+cubicgen.gui.cubicgen.height_std_dev=Высота фактора Std. Dev.: %s%%%% (блоков: %s)
+cubicgen.gui.cubicgen.spacing_height=Интервал высоты: %s%%%% (блоков: %s)
+
+#################################
+######### lake settings #########
+#################################
+
+cubicgen.gui.cubicgen.select_all=Выбрать всё
+cubicgen.gui.cubicgen.invert_selection=Наоборот
+cubicgen.gui.cubicgen.select_biomes_label=Выбрать биомы
+cubicgen.gui.cubicgen.lakes.main_probability=Вероятность подземных вод
+cubicgen.gui.cubicgen.lakes.surface_probability=Вероятность поверхности озера
+cubicgen.gui.cubicgen.add_lake=Добавить озеро
+cubicgen.gui.cubicgen.reset=Сброс
+cubicgen.gui.cubicgen.reset_view=Сбросить взгляд
+cubicgen.gui.cubicgen.make_flat_edges=Сделать плоские края
+
+#################################
+### advanced terrain settings ###
+#################################
+
+cubicgen.gui.cubicgen.expected_heights_group=Ожидаемая высота
+cubicgen.gui.cubicgen.lock_expected_heights=Закрепление ожидаемой высоты
+cubicgen.gui.cubicgen.actual_height=Действительная высота
+cubicgen.gui.cubicgen.expected_base_height=Ожидаемая базовая высота
+cubicgen.gui.cubicgen.expected_height_variation=Ожидаемое изменение высоты
+
+cubicgen.gui.cubicgen.keep_preview_visible=Держите предварительный просмотр видимым
+cubicgen.gui.cubicgen.biome_scale=Предпоказ размера биома
+cubicgen.gui.cubicgen.biome_offset=Предпоказ смещения биома
+cubicgen.gui.cubicgen.lock_xz_together=Установить период Z=X
+cubicgen.gui.cubicgen.preview_horizontal_axis=Показать горизонтальную ось
+cubicgen.gui.cubicgen.preview_disabled=(предпоказ отключен)
+cubicgen.gui.cubicgen.show_preview=Показать предпоказ
+
+cubicgen.gui.cubicgen.height_variation_group=Изменение высоты:
+cubicgen.gui.cubicgen.height_variation_factor_slider=Фактор
+cubicgen.gui.cubicgen.height_variation_offset_slider=Смещение
+cubicgen.gui.cubicgen.height_variation_special_factor_slider=Специальный
+
+cubicgen.gui.cubicgen.height_group=Высота:
+cubicgen.gui.cubicgen.height_factor=Фактор
+cubicgen.gui.cubicgen.height_offset=Смещение
+
+cubicgen.gui.cubicgen.depth_noise_group=Глубинный шум:
+cubicgen.gui.cubicgen.depth_noise_factor=Фактор
+cubicgen.gui.cubicgen.depth_noise_offset=Смещение
+cubicgen.gui.cubicgen.depth_noise_period_x=Период X:
+cubicgen.gui.cubicgen.depth_noise_period_z=Период Z:
+cubicgen.gui.cubicgen.depth_noise_octaves=Октавы
+
+cubicgen.gui.cubicgen.selector_noise_group=Шум селектора:
+cubicgen.gui.cubicgen.selector_noise_factor=Фактор
+cubicgen.gui.cubicgen.selector_noise_offset=Смещение
+cubicgen.gui.cubicgen.selector_noise_period_x=Период X:
+cubicgen.gui.cubicgen.selector_noise_period_y=Период Y:
+cubicgen.gui.cubicgen.selector_noise_period_z=Период Z:
+cubicgen.gui.cubicgen.selector_noise_octaves=Октавы
+
+cubicgen.gui.cubicgen.low_noise_group=Низкий шум:
+cubicgen.gui.cubicgen.low_noise_factor=Фактор
+cubicgen.gui.cubicgen.low_noise_offset=Смещение
+cubicgen.gui.cubicgen.low_noise_period_x=Период X:
+cubicgen.gui.cubicgen.low_noise_period_y=Период Y:
+cubicgen.gui.cubicgen.low_noise_period_z=Период Z:
+cubicgen.gui.cubicgen.low_noise_octaves=Октавы
+
+cubicgen.gui.cubicgen.high_noise_group=Высокий шум:
+cubicgen.gui.cubicgen.high_noise_factor=Фактор
+cubicgen.gui.cubicgen.high_noise_offset=Смещение
+cubicgen.gui.cubicgen.high_noise_period_x=Период X:
+cubicgen.gui.cubicgen.high_noise_period_y=Период Y:
+cubicgen.gui.cubicgen.high_noise_period_z=Период Z:
+cubicgen.gui.cubicgen.high_noise_octaves=Октавы
