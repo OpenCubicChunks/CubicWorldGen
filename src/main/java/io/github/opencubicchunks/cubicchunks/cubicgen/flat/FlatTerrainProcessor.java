@@ -60,8 +60,12 @@ public class FlatTerrainProcessor extends BasicCubeGenerator {
     }
 
     @Override
-    public CubePrimer generateCube(int cubeX, int cubeY, int cubeZ) {
-        CubePrimer primer = new CubePrimer();
+    public CubePrimer generateCube(int cubeX, int cubeY, int cubeZ) { // legacy method
+        return this.generateCube(cubeX, cubeY, cubeZ, new CubePrimer());
+    }
+
+    @Override
+    public CubePrimer generateCube(int cubeX, int cubeY, int cubeZ, CubePrimer primer) {
         int floorY = Coords.cubeToMinBlock(cubeY);
         int topY = Coords.cubeToMaxBlock(cubeY);
         int floorKeyI = floorY;

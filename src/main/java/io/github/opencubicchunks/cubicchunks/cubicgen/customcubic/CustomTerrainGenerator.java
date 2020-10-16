@@ -207,16 +207,21 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
                 .cached(CACHE_SIZE_3D, HASH_3D);
     }
 
-    @Override public CubePrimer generateCube(int cubeX, int cubeY, int cubeZ) {
+    @Override
+    public CubePrimer generateCube(int cubeX, int cubeY, int cubeZ) { // legacy method
+        return this.generateCube(cubeX, cubeY, cubeZ, new CubePrimer());
+    }
+
+    @Override
+    public CubePrimer generateCube(int cubeX, int cubeY, int cubeZ, CubePrimer primer) {
         if (!areaGenerators.isEmpty()) {
             for (CustomGeneratorSettings.IntAABB aabb : areaGenerators.keySet()) {
                 if (!aabb.contains(cubeX, cubeY, cubeZ)) {
                     continue;
                 }
-                return areaGenerators.get(aabb).generateCube(cubeX, cubeY, cubeZ);
+                return areaGenerators.get(aabb).generateCube(cubeX, cubeY, cubeZ, primer);
             }
         }
-        CubePrimer primer = new CubePrimer();
         generate(primer, cubeX, cubeY, cubeZ);
         generateStructures(primer, new CubePos(cubeX, cubeY, cubeZ));
         if (fillCubeBiomes) {
