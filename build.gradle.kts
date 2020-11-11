@@ -253,8 +253,8 @@ reobf {
 build.dependsOn("reobfShadowJar", devShadowJar)
 
 publishing {
-    val ghpUser = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
-    val ghpPassword = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
+    val ghpUser = (project.findProperty("gpr.user") ?: System.getenv("USERNAME")) as String?
+    val ghpPassword = (project.findProperty("gpr.key") ?: System.getenv("TOKEN")) as String?
 
     val sonatypeUser = (project.properties["sonatypeUsername"] ?: System.getenv("sonatypeUsername")) as String?
     val sonatypePass = (project.properties["sonatypePassword"] ?: System.getenv("sonatypePassword")) as String?
