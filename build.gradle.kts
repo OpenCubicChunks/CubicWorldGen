@@ -282,11 +282,15 @@ publishing {
                     password = sonatypePass
                 }
             }
+        } else {
+            maven {
+                setUrl("$buildDir/mvnrepo")
+            }
         }
     }
     (publications) {
         "mod"(MavenPublication::class) {
-            version = ghPackagesPublish ? project.version.toString() : project.ext["mavenProjectVersion"]!!.toString()
+            version = if (ghPackagesPublish) project.version.toString() else project.ext["mavenProjectVersion"]!!.toString()
             artifactId = base.archivesBaseName.toLowerCase()
             from(components["java"])
             artifacts.clear()
