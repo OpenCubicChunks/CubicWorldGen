@@ -262,29 +262,32 @@ publishing {
     val ghPackagesPublish = ghpUser != null && ghpPassword != null
     val sonatypePublish = sonatypeUser != null && sonatypePass != null
     repositories {
-        if (ghPackagesPublish) {
-            maven {
-                name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/OpenCubicChunks/CubicWorldGen")
-                credentials {
-                    username = ghpUser
-                    password = ghpPassword
+        when {
+            ghPackagesPublish -> {
+                maven {
+                    url = uri("https://maven.pkg.github.com/OpenCubicChunks/CubicWorldGen")
+                    credentials {
+                        username = ghpUser
+                        password = ghpPassword
+                    }
                 }
             }
-        } else if (sonatypePublish) {
-            maven {
-                val releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
-                val snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+            sonatypePublish -> {
+                maven {
+                    val releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+                    val snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
 
-                setUrl(if (release.toBoolean()) releasesRepoUrl else snapshotsRepoUrl)
-                credentials {
-                    username = sonatypeUser
-                    password = sonatypePass
+                    setUrl(if (release.toBoolean()) releasesRepoUrl else snapshotsRepoUrl)
+                    credentials {
+                        username = sonatypeUser
+                        password = sonatypePass
+                    }
                 }
             }
-        } else {
-            maven {
-                setUrl("$buildDir/mvnrepo")
+            else -> {
+                maven {
+                    setUrl("$buildDir/mvnrepo")
+                }
             }
         }
     }
