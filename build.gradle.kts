@@ -253,30 +253,40 @@ reobf {
 build.dependsOn("reobfShadowJar", devShadowJar)
 
 publishing {
-    repositories {
-        maven {
-            val user = (project.properties["sonatypeUsername"] ?: System.getenv("sonatypeUsername")) as String?
-            val pass = (project.properties["sonatypePassword"] ?: System.getenv("sonatypePassword")) as String?
-            val local = user == null || pass == null
-            if (local) {
-                logger.warn("Username or password not set, publishing to local repository in build/mvnrepo/")
-            }
-            val localUrl = "$buildDir/mvnrepo"
-            val releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
-            val snapshotsRepoUrl =  "https://oss.sonatype.org/content/repositories/snapshots"
+    val ghpUser = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+    val ghpPassword = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
 
-            setUrl(if (local) localUrl else if (release.toBoolean()) releasesRepoUrl else snapshotsRepoUrl)
-            if (!local) {
+    val sonatypeUser = (project.properties["sonatypeUsername"] ?: System.getenv("sonatypeUsername")) as String?
+    val sonatypePass = (project.properties["sonatypePassword"] ?: System.getenv("sonatypePassword")) as String?
+
+    val ghPackagesPublish = ghpUser != null && ghpPassword != null
+    val sonatypePublish = sonatypeUser != null && sonatypePass != null
+    repositories {
+        if (ghPackagesPublish) {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/OpenCubicChunks/CubicWorldGen")
                 credentials {
-                    username = user
-                    password = pass
+                    username = ghpUser
+                    password = ghpPassword
+                }
+            }
+        } else if (sonatypePublish) {
+            maven {
+                val releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+                val snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+
+                setUrl(if (release.toBoolean()) releasesRepoUrl else snapshotsRepoUrl)
+                credentials {
+                    username = sonatypeUser
+                    password = sonatypePass
                 }
             }
         }
     }
     (publications) {
         "mod"(MavenPublication::class) {
-            version = project.ext["mavenProjectVersion"]!!.toString()
+            version = ghPackagesPublish ? project.version.toString() : project.ext["mavenProjectVersion"]!!.toString()
             artifactId = base.archivesBaseName.toLowerCase()
             from(components["java"])
             artifacts.clear()
