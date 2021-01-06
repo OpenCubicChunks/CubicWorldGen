@@ -332,7 +332,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         return block;
     }
 
-    private void generateStructures(CubePrimer cube, CubePos cubePos) {
+    protected void generateStructures(CubePrimer cube, CubePos cubePos) {
         // generate world populator
         if (this.conf.caves) {
             this.caveGenerator.generate(world, cube, cubePos);
