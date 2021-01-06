@@ -34,7 +34,6 @@ import static net.minecraft.util.math.MathHelper.sin;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
-import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.ICubicStructureGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.StructureGenUtil;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.state.IBlockState;
@@ -54,7 +53,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 //TODO: Fix code duplication beterrn cave and cave generators
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class CubicCaveGenerator implements ICubicStructureGenerator {
+public class CubicCaveGenerator extends CaveCommonBaseStructureGenerator {
 
     //=============================================
     //Possibly configurable values
@@ -147,17 +146,11 @@ public class CubicCaveGenerator implements ICubicStructureGenerator {
      */
     private static final double CAVE_FLOOR_DEPTH = -0.7;
 
-    private static final int RANGE = 8;
-
     /**
      * Controls which blocks can be replaced by cave
      */
     private static final Predicate<IBlockState> isBlockReplaceable = (state ->
             state.getBlock() == Blocks.STONE || state.getBlock() == Blocks.DIRT || state.getBlock() == Blocks.GRASS);
-
-    @Override public void generate(World world, CubePrimer cube, CubePos cubePos) {
-        this.generate(world, cube, cubePos, this::generate, RANGE, RANGE, 1, 1);
-    }
 
     protected void generate(World world, Random rand, CubePrimer cube,
             int cubeXOrigin, int cubeYOrigin, int cubeZOrigin, CubePos generatedCubePos) {

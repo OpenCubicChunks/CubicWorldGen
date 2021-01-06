@@ -33,7 +33,6 @@ import io.github.opencubicchunks.cubicchunks.api.util.Coords;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
-import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.ICubicStructureGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.StructureGenUtil;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import mcp.MethodsReturnNonnullByDefault;
@@ -50,7 +49,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class CubicRavineGenerator implements ICubicStructureGenerator {
+public class CubicRavineGenerator extends CaveCommonBaseStructureGenerator {
 
     /**
      * Vanilla value: 50
@@ -139,15 +138,8 @@ public class CubicRavineGenerator implements ICubicStructureGenerator {
      */
     @Nonnull private float[] widthDecreaseFactors = new float[1024];
 
-    private final int range = 8;
-
     public CubicRavineGenerator(CustomGeneratorSettings cfg) {
         this.maxCubeY = Coords.blockToCube(cfg.expectedBaseHeight);
-    }
-
-
-    @Override public void generate(World world, CubePrimer cube, CubePos cubePos) {
-        this.generate(world, cube, cubePos, this::generate, range, range, 1, 1);
     }
 
     protected void generate(World world, Random rand, CubePrimer cube, int structureX, int structureY, int structureZ,
@@ -187,7 +179,7 @@ public class CubicRavineGenerator implements ICubicStructureGenerator {
         float vertDirChange = 0.0F;
 
         if (maxWalkedDistance <= 0) {
-            int maxBlockRadius = cubeToMinBlock(this.range - 1);
+            int maxBlockRadius = cubeToMinBlock(RANGE - 1);
             maxWalkedDistance = maxBlockRadius - rand.nextInt(maxBlockRadius / 4);
         }
 
