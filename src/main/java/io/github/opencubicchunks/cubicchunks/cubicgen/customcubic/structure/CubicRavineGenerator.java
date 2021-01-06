@@ -33,6 +33,7 @@ import io.github.opencubicchunks.cubicchunks.api.util.Coords;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.ICubicStructureGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.StructureGenUtil;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import mcp.MethodsReturnNonnullByDefault;
@@ -49,7 +50,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class CubicRavineGenerator extends CaveCommonBaseStructureGenerator {
+public class CubicRavineGenerator implements IFlexHandlerStructureGenerator {
 
     /**
      * Vanilla value: 50
@@ -142,6 +143,11 @@ public class CubicRavineGenerator extends CaveCommonBaseStructureGenerator {
         this.maxCubeY = Coords.blockToCube(cfg.expectedBaseHeight);
     }
 
+    @Override
+    public ICubicStructureGenerator.Handler getHandler() {
+        return this::generate;
+    }
+
     protected void generate(World world, Random rand, CubePrimer cube, int structureX, int structureY, int structureZ,
             CubePos generatedCubePos) {
         if (rand.nextInt(RAVINE_RARITY) != 0 || structureY > maxCubeY) {
@@ -179,7 +185,7 @@ public class CubicRavineGenerator extends CaveCommonBaseStructureGenerator {
         float vertDirChange = 0.0F;
 
         if (maxWalkedDistance <= 0) {
-            int maxBlockRadius = cubeToMinBlock(RANGE - 1);
+            int maxBlockRadius = cubeToMinBlock(IFlexHandlerStructureGenerator.RANGE - 1);
             maxWalkedDistance = maxBlockRadius - rand.nextInt(maxBlockRadius / 4);
         }
 

@@ -53,7 +53,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 //TODO: Fix code duplication beterrn cave and cave generators
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class CubicCaveGenerator extends CaveCommonBaseStructureGenerator {
+public class CubicCaveGenerator implements IFlexHandlerStructureGenerator {
 
     //=============================================
     //Possibly configurable values
@@ -152,8 +152,13 @@ public class CubicCaveGenerator extends CaveCommonBaseStructureGenerator {
     private static final Predicate<IBlockState> isBlockReplaceable = (state ->
             state.getBlock() == Blocks.STONE || state.getBlock() == Blocks.DIRT || state.getBlock() == Blocks.GRASS);
 
+    @Override
+    public Handler getHandler() {
+        return this::generate;
+    }
+
     protected void generate(World world, Random rand, CubePrimer cube,
-            int cubeXOrigin, int cubeYOrigin, int cubeZOrigin, CubePos generatedCubePos) {
+                            int cubeXOrigin, int cubeYOrigin, int cubeZOrigin, CubePos generatedCubePos) {
         if (rand.nextInt(CAVE_RARITY) != 0) {
             return;
         }

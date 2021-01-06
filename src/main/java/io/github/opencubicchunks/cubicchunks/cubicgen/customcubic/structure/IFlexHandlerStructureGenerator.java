@@ -30,16 +30,16 @@ import net.minecraft.world.World;
 
 import java.util.Random;
 
-public abstract class CaveCommonBaseStructureGenerator implements ICubicStructureGenerator {
+public interface IFlexHandlerStructureGenerator extends ICubicStructureGenerator {
 
-    public static final int RANGE = 8;
+    int RANGE = 8;
 
     @Override
-    public void generate(World world, CubePrimer cube, CubePos cubePos) {
-        this.generate(world, cube, cubePos, this::generate, RANGE, RANGE, 1, 1);
+    default void generate(World world, CubePrimer cube, CubePos cubePos) {
+        this.generate(world, cube, cubePos, getHandler(), RANGE, RANGE, 1, 1);
     }
 
-    protected abstract void generate(World world, Random rand, CubePrimer cube, int structureX, int structureY, int structureZ,
-                            CubePos generatedCubePos);
+    ICubicStructureGenerator.Handler getHandler();
+
 
 }
