@@ -332,7 +332,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         return block;
     }
 
-    protected void generateStructures(CubePrimer cube, CubePos cubePos) {
+    public void generateStructures(CubePrimer cube, CubePos cubePos) {
         // generate world populator
         if (this.conf.caves) {
             this.caveGenerator.generate(world, cube, cubePos);
@@ -343,5 +343,25 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         if (this.conf.strongholds) {
             this.strongholds.generate(world, cube, cubePos);
         }
+    }
+
+    public final ICubicStructureGenerator getCaveGenerator() {
+        return caveGenerator;
+    }
+
+    public final ICubicFeatureGenerator getStrongholds() {
+        return strongholds;
+    }
+
+    public final ICubicStructureGenerator getRavineGenerator() {
+        return ravineGenerator;
+    }
+
+    public CustomGeneratorSettings getConfig() {
+        return conf;
+    }
+
+    public Map<Biome, ICubicPopulator> getPopulators() {
+        return populators;
     }
 }

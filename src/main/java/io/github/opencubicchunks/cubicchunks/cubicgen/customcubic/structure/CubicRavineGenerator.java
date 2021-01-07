@@ -50,7 +50,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class CubicRavineGenerator implements ICubicStructureGenerator {
+public class CubicRavineGenerator implements IFlexHandlerStructureGenerator {
 
     /**
      * Vanilla value: 50
@@ -139,15 +139,13 @@ public class CubicRavineGenerator implements ICubicStructureGenerator {
      */
     @Nonnull private float[] widthDecreaseFactors = new float[1024];
 
-    private final int range = 8;
-
     public CubicRavineGenerator(CustomGeneratorSettings cfg) {
         this.maxCubeY = Coords.blockToCube(cfg.expectedBaseHeight);
     }
 
-
-    @Override public void generate(World world, CubePrimer cube, CubePos cubePos) {
-        this.generate(world, cube, cubePos, this::generate, range, range, 1, 1);
+    @Override
+    public ICubicStructureGenerator.Handler getHandler() {
+        return this::generate;
     }
 
     protected void generate(World world, Random rand, CubePrimer cube, int structureX, int structureY, int structureZ,
@@ -187,7 +185,7 @@ public class CubicRavineGenerator implements ICubicStructureGenerator {
         float vertDirChange = 0.0F;
 
         if (maxWalkedDistance <= 0) {
-            int maxBlockRadius = cubeToMinBlock(this.range - 1);
+            int maxBlockRadius = cubeToMinBlock(IFlexHandlerStructureGenerator.RANGE - 1);
             maxWalkedDistance = maxBlockRadius - rand.nextInt(maxBlockRadius / 4);
         }
 
