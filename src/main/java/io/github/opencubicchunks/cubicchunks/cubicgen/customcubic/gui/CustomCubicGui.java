@@ -28,8 +28,8 @@ import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisG
 
 import blue.endless.jankson.JsonGrammar;
 import blue.endless.jankson.JsonObject;
+import blue.endless.jankson.api.DeserializationException;
 import com.google.common.eventbus.Subscribe;
-import com.google.gson.JsonSyntaxException;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.GuiOverlay;
@@ -300,8 +300,8 @@ public class CustomCubicGui extends ExtraGui {
     }
 
     @Deprecated // should use JsonObject directly
-    public CustomGeneratorSettings getConfig() {
+    public CustomGeneratorSettings getConfig() throws DeserializationException {
         updateConfig();
-        return CustomGenSettingsSerialization.jankson().fromJson(jsonConf, CustomGeneratorSettings.class);
+        return CustomGenSettingsSerialization.jankson().fromJsonCarefully(jsonConf, CustomGeneratorSettings.class);
     }
 }

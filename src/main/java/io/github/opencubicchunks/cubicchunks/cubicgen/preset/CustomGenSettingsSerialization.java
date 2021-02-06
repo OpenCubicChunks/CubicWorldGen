@@ -68,7 +68,7 @@ public class CustomGenSettingsSerialization {
 
     public static final Marshaller MARSHALLER = jankson().getMarshaller();
 
-    private static BiomeBlockReplacerConfig deserializeReplacerConfig(JsonObject obj, Marshaller marshaller) {
+    private static BiomeBlockReplacerConfig deserializeReplacerConfig(JsonObject obj, Marshaller marshaller) throws DeserializationException {
         JsonObject defaults = (JsonObject) obj.get("defaults");
         JsonObject overrides = (JsonObject) obj.get("overrides");
 
@@ -110,13 +110,13 @@ public class CustomGenSettingsSerialization {
         return root;
     }
 
-    private static Object getObject(Map.Entry<String, JsonElement> e, Marshaller marshaller) {
+    private static Object getObject(Map.Entry<String, JsonElement> e, Marshaller marshaller) throws DeserializationException {
         Object value;
         if (e.getValue() instanceof JsonPrimitive) {
             value = ((JsonPrimitive) e.getValue()).asDouble(0.0);
         } else {
             // currently the only object suppoorted is blockstate
-            value = marshaller.marshall(BlockStateDesc.class, e.getValue());
+            value = marshaller.marshallCarefully(BlockStateDesc.class, e.getValue());
         }
         return value;
     }
@@ -197,15 +197,15 @@ public class CustomGenSettingsSerialization {
         return json;
     }
 
-    private static CubeAreas deserializeCubeAreas(JsonArray arr, Marshaller marshaller) {
+    private static CubeAreas deserializeCubeAreas(JsonArray arr, Marshaller marshaller) throws DeserializationException {
         List<Map.Entry<IntAABB, CustomGeneratorSettings>> map = new ArrayList<>();
         for (int i = 0; i < arr.size(); i++) {
             JsonArray entry = (JsonArray) arr.get(i);
             JsonObject key = (JsonObject) entry.get(0);
             JsonObject value = (JsonObject) entry.get(1);
 
-            IntAABB aabb = marshaller.marshall(IntAABB.class, key);
-            CustomGeneratorSettings conf = marshaller.marshall(CustomGeneratorSettings.class, value);
+            IntAABB aabb = marshaller.marshallCarefully(IntAABB.class, key);
+            CustomGeneratorSettings conf = marshaller.marshallCarefully(CustomGeneratorSettings.class, value);
             map.add(new AbstractMap.SimpleEntry<>(aabb, conf));
         }
         return new CubeAreas(map);
@@ -230,13 +230,13 @@ public class CustomGenSettingsSerialization {
         return json;
     }
 
-    private static TreeMap<Integer, FlatLayer> deserializeFlatCubicLayers(JsonObject obj, Marshaller marshaller) {
+    private static TreeMap<Integer, FlatLayer> deserializeFlatCubicLayers(JsonObject obj, Marshaller marshaller) throws DeserializationException {
         TreeMap<Integer, FlatLayer> map = new TreeMap<>();
 
         for (String yStr : obj.keySet()) {
             JsonObject value = (JsonObject) obj.get(yStr);
             int y = Integer.parseInt(yStr);
-            FlatLayer layer = marshaller.marshall(FlatLayer.class, value);
+            FlatLayer layer = marshaller.marshallCarefully(FlatLayer.class, value);
             map.put(y, layer);
         }
         return map;
@@ -338,11 +338,11 @@ public class CustomGenSettingsSerialization {
             Set<BlockStateDesc> blockstates = new HashSet<>();
             JsonElement blocks = obj.get("blocks");
             if (blocks instanceof JsonObject) {
-                blockstates.add(marshaller.marshall(BlockStateDesc.class, blocks));
+                blockstates.add(marshaller.marshallCarefully(BlockStateDesc.class, blocks));
             } else {
                 JsonArray blockArray = (JsonArray) blocks;
                 for (JsonElement jsonElement : blockArray) {
-                    blockstates.add(marshaller.marshall(BlockStateDesc.class, jsonElement));
+                    blockstates.add(marshaller.marshallCarefully(BlockStateDesc.class, jsonElement));
                 }
             }
             return new CustomGeneratorSettings.BlockstateMatchCondition(x, y, z, blockstates);
