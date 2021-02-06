@@ -167,7 +167,7 @@ repositories {
     // Note: sponge repository needs to be the second one because flow-noise is both in sponge and sonatype repository
     // but sponge has older one, and we need the newer one from sonatype
     // currently gradle seems to resolve dependencies from repositories in the order they are defined here
-    maven { setUrl("http://repo.spongepowered.org/maven") }
+    maven { setUrl("https://repo.spongepowered.org/maven") }
     maven { setUrl("https://minecraft.curseforge.com/api/maven/") }
     maven { setUrl("https://repo.elytradev.com") } // jankson snapshot
 }
