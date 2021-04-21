@@ -10,17 +10,15 @@ import org.spongepowered.asm.gradle.plugins.MixinGradlePlugin
 buildscript {
     repositories {
         mavenCentral()
-        jcenter()
-        maven {
-            setUrl("https://files.minecraftforge.net/maven")
-        }
         maven {
             setUrl("https://repo.spongepowered.org/maven")
         }
         maven {
             setUrl("https://plugins.gradle.org/m2/")
         }
-
+        maven {
+            setUrl("https://files.minecraftforge.net/maven")
+        }
     }
     dependencies {
         classpath("org.spongepowered:mixingradle:0.6-SNAPSHOT")
@@ -36,16 +34,29 @@ plugins {
     maven
     `maven-publish`
     idea
-    id("io.github.opencubicchunks.gradle.fg2fixed")
-    id("io.github.opencubicchunks.gradle.mixingen")
-    id("io.github.opencubicchunks.gradle.remapper")
-    id("io.github.opencubicchunks.gradle.mcGitVersion")
+
+}
+
+// seems like malisiscore fails to resolve after forge maven migration when repositories{} block is defined after applying FG plugin?
+repositories {
+    mavenCentral()
+    maven { setUrl("https://oss.sonatype.org/content/repositories/public/") }
+    // Note: sponge repository needs to be the second one because flow-noise is both in sponge and sonatype repository
+    // but sponge has older one, and we need the newer one from sonatype
+    // currently gradle seems to resolve dependencies from repositories in the order they are defined here
+    maven { setUrl("https://repo.spongepowered.org/maven") }
+    maven { setUrl("https://minecraft.curseforge.com/api/maven/") }
+    maven { setUrl("https://repo.elytradev.com") } // jankson snapshot
 }
 
 apply {
     plugin<ShadowPlugin>()
-    plugin<MixinGradlePlugin>()
     plugin<LicensePlugin>()
+    plugin("io.github.opencubicchunks.gradle.fg2fixed")
+    plugin("io.github.opencubicchunks.gradle.mixingen")
+    plugin("io.github.opencubicchunks.gradle.remapper")
+    plugin("io.github.opencubicchunks.gradle.mcGitVersion")
+    plugin<MixinGradlePlugin>()
 }
 
 mcGitVersion {
@@ -159,17 +170,6 @@ mixinGen {
         injectorsDefaultRequire = 1
         configurationPlugin = "io.github.opencubicchunks.cubicchunks.cubicgen.asm.CubicGenMixinConfig"
     }
-}
-
-repositories {
-    mavenCentral()
-    maven { setUrl("https://oss.sonatype.org/content/repositories/public/") }
-    // Note: sponge repository needs to be the second one because flow-noise is both in sponge and sonatype repository
-    // but sponge has older one, and we need the newer one from sonatype
-    // currently gradle seems to resolve dependencies from repositories in the order they are defined here
-    maven { setUrl("https://repo.spongepowered.org/maven") }
-    maven { setUrl("https://minecraft.curseforge.com/api/maven/") }
-    maven { setUrl("https://repo.elytradev.com") } // jankson snapshot
 }
 
 val deobfCompile by configurations
