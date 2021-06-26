@@ -23,20 +23,24 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common;
 
+import java.util.Random;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.feature.CubicStrongholdGenerator;
 import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.world.World;
-import net.minecraft.world.gen.structure.MapGenStronghold;
-import net.minecraft.world.gen.structure.StructureStart;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.Random;
+import net.minecraft.world.World;
+import net.minecraft.world.gen.structure.MapGenStronghold;
+import net.minecraft.world.gen.structure.StructureComponent;
+import net.minecraft.world.gen.structure.StructureStart;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
@@ -47,9 +51,13 @@ public abstract class MixinStrongholdStart extends StructureStart implements Cub
 
     // added by class transformer (MapGenStrongholdCubicConstructorTransform)
 
-    @Dynamic @Shadow(remap = false) private int cubicchunks$baseY;
+    @Dynamic
+    @Shadow(remap = false)
+    private int cubicchunks$baseY;
 
-    @Dynamic @Shadow(remap = false) private void reinitCubicStronghold(World world, Random random, int chunkX, int chunkZ) {
+    @Dynamic
+    @Shadow(remap = false)
+    private void reinitCubicStronghold(World world, Random random, int chunkX, int chunkZ) {
         throw new AssertionError();
     }
 
@@ -58,10 +66,22 @@ public abstract class MixinStrongholdStart extends StructureStart implements Cub
         this.constructorRandom = random;
     }
 
-    @Override public void initCubicStronghold(World world, int cubeY, int baseY) {
+    @SuppressWarnings("UnresolvedMixinReference")
+    @Redirect(method = "reinitCubicStronghold", at = @At(value = "INVOKE", target =
+            "Lnet/minecraft/world/gen/structure/MapGenStronghold$Start;markAvailableHeight(Lnet/minecraft/world/World;Ljava/util/Random;I)V"))
+    protected void offsetTo(MapGenStronghold.Start self, World worldIn, Random rand, int targetY) {
+        int offset = targetY - (this.boundingBox.minY + this.boundingBox.maxY) / 2 ;
+        this.boundingBox.offset(0, offset, 0);
+
+        for (StructureComponent structurecomponent : this.components) {
+            structurecomponent.offset(0, offset, 0);
+        }
+    }
+
+    @Override
+    public void initCubicStronghold(World world, int cubeY, int baseY) {
         cubicchunks$baseY = baseY;
         this.initCubic(world, cubeY);
         this.reinitCubicStronghold(world, constructorRandom, getChunkPosX(), getChunkPosZ());
-        this.markAvailableHeight(world, constructorRandom, baseY);
     }
 }
