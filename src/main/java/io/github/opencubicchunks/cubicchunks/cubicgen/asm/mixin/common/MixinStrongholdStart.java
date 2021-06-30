@@ -33,6 +33,7 @@ import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Group;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -51,10 +52,12 @@ public abstract class MixinStrongholdStart extends StructureStart implements Cub
 
     // added by class transformer (MapGenStrongholdCubicConstructorTransform)
 
+    @SuppressWarnings("ShadowTarget")
     @Dynamic
     @Shadow(remap = false)
     private int cubicchunks$baseY;
 
+    @SuppressWarnings("ShadowTarget")
     @Dynamic
     @Shadow(remap = false)
     private void reinitCubicStronghold(World world, Random random, int chunkX, int chunkZ) {
@@ -66,16 +69,29 @@ public abstract class MixinStrongholdStart extends StructureStart implements Cub
         this.constructorRandom = random;
     }
 
-    @SuppressWarnings("UnresolvedMixinReference")
-    @Redirect(method = "reinitCubicStronghold", at = @At(value = "INVOKE", target =
-            "Lnet/minecraft/world/gen/structure/MapGenStronghold$Start;markAvailableHeight(Lnet/minecraft/world/World;Ljava/util/Random;I)V"))
-    protected void offsetTo(MapGenStronghold.Start self, World worldIn, Random rand, int targetY) {
-        int offset = targetY - (this.boundingBox.minY + this.boundingBox.maxY) / 2 ;
+    @Group(name = "CC_StrongholdStart_reinit_markAvailableHeight", min = 1)
+    @Dynamic
+    @Redirect(method = "reinitCubicStronghold", remap = false, require = 0,
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/world/gen/structure/MapGenStronghold$Start;markAvailableHeight(Lnet/minecraft/world/World;Ljava/util/Random;I)V"))
+    private void offsetTo(MapGenStronghold.Start self, World worldIn, Random rand, int targetY) {
+        int offset = targetY - (this.boundingBox.minY + this.boundingBox.maxY) / 2;
         this.boundingBox.offset(0, offset, 0);
 
         for (StructureComponent structurecomponent : this.components) {
             structurecomponent.offset(0, offset, 0);
         }
+    }
+
+    // Mixin AP doesn't generate a refmap entry here because the target method doesn't exist at compile time
+    // as a workaround, here is a second version of the redirect with SRG target
+    @Group(name = "CC_StrongholdStart_reinit_markAvailableHeight", min = 1)
+    @Dynamic
+    @Redirect(method = "reinitCubicStronghold", remap = false, require = 0,
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/world/gen/structure/MapGenStronghold$Start;func_75067_a(Lnet/minecraft/world/World;Ljava/util/Random;I)V"))
+    private void offsetTo_Obf(MapGenStronghold.Start self, World worldIn, Random rand, int targetY) {
+        offsetTo(self, worldIn, rand, targetY);
     }
 
     @Override
