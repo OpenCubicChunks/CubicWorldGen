@@ -149,7 +149,7 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
             CubicStart cubic = (CubicStart) start;
             cubic.initCubicStronghold(world, chunkY,
                     conf.alternateStrongholdsPositions ?
-                    Coords.localToBlock(chunkY, 8) : MathHelper.floor(conf.expectedBaseHeight) + 10);
+                    Coords.localToBlock(chunkY, 8) : MathHelper.floor(conf.expectedBaseHeight - conf.expectedHeightVariation) + 10);
         } while (start.getComponents().isEmpty() || ((StructureStrongholdPieces.Stairs2) start.getComponents().get(0)).strongholdPortalRoom == null);
         return start;
     }
@@ -183,7 +183,6 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
 
         double angle = rand.nextDouble() * Math.PI * 2.0D;
 
-        int minCubeY = blockToCube(conf.expectedBaseHeight - conf.expectedHeightVariation);
         int maxCubeY = blockCeilToCube(MathHelper.ceil(conf.expectedBaseHeight));
 
         int distFactor = 0;
@@ -200,7 +199,7 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
                 chunkZ = (int) round(sin(angle) * cos(yAngle) * distance);
             } else {
                 chunkX = (int) round(cos(angle) * distance);
-                chunkY = Coords.blockToCube(MathHelper.floor(conf.expectedBaseHeight) + 10);
+                chunkY = Coords.blockToCube(MathHelper.floor(conf.expectedBaseHeight - conf.expectedHeightVariation) + 10);
                 chunkZ = (int) round(sin(angle) * distance);
             }
             BlockPos blockPos = world.getBiomeProvider().findBiomePosition(
