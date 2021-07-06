@@ -1,0 +1,708 @@
+{
+  "waterLevel": 63,
+  "caves": true,
+  "strongholds": true,
+  "alternateStrongholdsPositions": false,
+  "villages": true,
+  "mineshafts": true,
+  "temples": true,
+  "oceanMonuments": true,
+  "woodlandMansions": true,
+  "ravines": true,
+  "dungeons": true,
+  "dungeonCount": 7,
+  "lakes": [
+    {
+      "block": "minecraft:water",
+      "biomes": [
+        "minecraft:desert",
+        "minecraft:desert_hills"
+      ],
+      "biomeSelect": "EXCLUDE",
+      "surfaceProbability": [
+        {
+          "y": 0.0,
+          "v": 0.2
+        }
+      ],
+      "mainProbability": [
+        {
+          "y": 0.0,
+          "v": 0.2
+        }
+      ],
+      "generateWhen": null
+    },
+    {
+      "block": "minecraft:lava",
+      "biomes": [
+        "minecraft:desert",
+        "minecraft:desert_hills"
+      ],
+      "biomeSelect": "EXCLUDE",
+      "surfaceProbability": [
+        {
+          "y": -2.13594928E8,
+          "v": 0.002351178554818034
+        },
+        {
+          "y": -1.06220752E8,
+          "v": 0.002351178554818034
+        },
+        {
+          "y": -5.2533656E7,
+          "v": 0.0023463747929781675
+        },
+        {
+          "y": -2.5690112E7,
+          "v": 0.00233658729121089
+        },
+        {
+          "y": -1.2268339E7,
+          "v": 0.002316271886229515
+        },
+        {
+          "y": -5557453.0,
+          "v": 0.0022725274320691824
+        },
+        {
+          "y": -2202009.5,
+          "v": 0.0021715527400374413
+        },
+        {
+          "y": -524288.0,
+          "v": 0.0019150057341903448
+        },
+        {
+          "y": 314572.8125,
+          "v": 0.001367060700431466
+        },
+        {
+          "y": 734003.1875,
+          "v": 9.164340444840491E-4
+        },
+        {
+          "y": 943718.375,
+          "v": 7.330971420742571E-4
+        },
+        {
+          "y": 1048575.0,
+          "v": 6.58649078104645E-4
+        },
+        {
+          "y": 1048576.0,
+          "v": 6.58648379612714E-4
+        },
+        {
+          "y": 1048577.0,
+          "v": 5.066521043772809E-5
+        },
+        {
+          "y": 1153433.625,
+          "v": 4.5746339310426265E-5
+        },
+        {
+          "y": 1363148.75,
+          "v": 3.7921352486591786E-5
+        },
+        {
+          "y": 1782579.25,
+          "v": 2.7739499273593538E-5
+        },
+        {
+          "y": 2621440.0,
+          "v": 1.7683794794720598E-5
+        },
+        {
+          "y": 4299161.5,
+          "v": 1.0115311852132436E-5
+        },
+        {
+          "y": 7654605.0,
+          "v": 5.418748060037615E-6
+        },
+        {
+          "y": 1.4365491E7,
+          "v": 2.8042966278007952E-6
+        },
+        {
+          "y": 2.7787264E7,
+          "v": 1.4263620187193737E-6
+        },
+        {
+          "y": 5.4630808E7,
+          "v": 7.192863904492697E-7
+        },
+        {
+          "y": 1.08317904E8,
+          "v": 3.6117543800173735E-7
+        },
+        {
+          "y": 2.1569208E8,
+          "v": 3.6117543800173735E-7
+        }
+      ],
+      "mainProbability": [
+        {
+          "y": -2.13594928E8,
+          "v": 0.002351178554818034
+        },
+        {
+          "y": -1.06220752E8,
+          "v": 0.002351178554818034
+        },
+        {
+          "y": -5.2533656E7,
+          "v": 0.0023463747929781675
+        },
+        {
+          "y": -2.5690112E7,
+          "v": 0.00233658729121089
+        },
+        {
+          "y": -1.2268339E7,
+          "v": 0.002316271886229515
+        },
+        {
+          "y": -5557453.0,
+          "v": 0.0022725274320691824
+        },
+        {
+          "y": -2202009.5,
+          "v": 0.0021715527400374413
+        },
+        {
+          "y": -524288.0,
+          "v": 0.0019150057341903448
+        },
+        {
+          "y": 314572.8125,
+          "v": 0.001367060700431466
+        },
+        {
+          "y": 734003.1875,
+          "v": 9.164340444840491E-4
+        },
+        {
+          "y": 943718.375,
+          "v": 7.330971420742571E-4
+        },
+        {
+          "y": 1048575.0,
+          "v": 6.58649078104645E-4
+        },
+        {
+          "y": 1048576.0,
+          "v": 6.58648379612714E-4
+        },
+        {
+          "y": 1048577.0,
+          "v": 5.066521043772809E-5
+        },
+        {
+          "y": 1153433.625,
+          "v": 4.5746339310426265E-5
+        },
+        {
+          "y": 1363148.75,
+          "v": 3.7921352486591786E-5
+        },
+        {
+          "y": 1782579.25,
+          "v": 2.7739499273593538E-5
+        },
+        {
+          "y": 2621440.0,
+          "v": 1.7683794794720598E-5
+        },
+        {
+          "y": 4299161.5,
+          "v": 1.0115311852132436E-5
+        },
+        {
+          "y": 7654605.0,
+          "v": 5.418748060037615E-6
+        },
+        {
+          "y": 1.4365491E7,
+          "v": 2.8042966278007952E-6
+        },
+        {
+          "y": 2.7787264E7,
+          "v": 1.4263620187193737E-6
+        },
+        {
+          "y": 5.4630808E7,
+          "v": 7.192863904492697E-7
+        },
+        {
+          "y": 1.08317904E8,
+          "v": 3.6117543800173735E-7
+        },
+        {
+          "y": 2.1569208E8,
+          "v": 3.6117543800173735E-7
+        }
+      ],
+      "generateWhen": null
+    }
+  ],
+  "lavaOceans": false,
+  "biome": -1,
+  "biomeSize": 4,
+  "riverSize": 4,
+  "standardOres": [
+    {
+      "blockstate": {
+        "Properties": {
+          "variant": "dirt",
+          "snowy": "false"
+        },
+        "Name": "minecraft:dirt"
+      },
+      "spawnSize": 33,
+      "spawnTries": 10,
+      "spawnProbability": 0.0625,
+      "minHeight": -Infinity,
+      "maxHeight": Infinity,
+      "biomes": null,
+      "placeBlockWhen": null,
+      "generateWhen": null
+    },
+    {
+      "blockstate": {
+        "Name": "minecraft:gravel"
+      },
+      "spawnSize": 33,
+      "spawnTries": 8,
+      "spawnProbability": 0.0625,
+      "minHeight": -Infinity,
+      "maxHeight": Infinity,
+      "biomes": null,
+      "placeBlockWhen": null,
+      "generateWhen": null
+    },
+    {
+      "blockstate": {
+        "Properties": {
+          "variant": "granite"
+        },
+        "Name": "minecraft:stone"
+      },
+      "spawnSize": 33,
+      "spawnTries": 10,
+      "spawnProbability": 0.2,
+      "minHeight": -Infinity,
+      "maxHeight": 0.25,
+      "biomes": null,
+      "placeBlockWhen": null,
+      "generateWhen": null
+    },
+    {
+      "blockstate": {
+        "Properties": {
+          "variant": "diorite"
+        },
+        "Name": "minecraft:stone"
+      },
+      "spawnSize": 33,
+      "spawnTries": 10,
+      "spawnProbability": 0.2,
+      "minHeight": -Infinity,
+      "maxHeight": 0.25,
+      "biomes": null,
+      "placeBlockWhen": null,
+      "generateWhen": null
+    },
+    {
+      "blockstate": {
+        "Properties": {
+          "variant": "andesite"
+        },
+        "Name": "minecraft:stone"
+      },
+      "spawnSize": 33,
+      "spawnTries": 10,
+      "spawnProbability": 0.2,
+      "minHeight": -Infinity,
+      "maxHeight": 0.25,
+      "biomes": null,
+      "placeBlockWhen": null,
+      "generateWhen": null
+    },
+    {
+      "blockstate": {
+        "Name": "minecraft:coal_ore"
+      },
+      "spawnSize": 17,
+      "spawnTries": 20,
+      "spawnProbability": 0.125,
+      "minHeight": -Infinity,
+      "maxHeight": 1.0,
+      "biomes": null,
+      "placeBlockWhen": null,
+      "generateWhen": null
+    },
+    {
+      "blockstate": {
+        "Name": "minecraft:iron_ore"
+      },
+      "spawnSize": 33,
+      "spawnTries": 10,
+      "spawnProbability": 0.25,
+      "minHeight": -Infinity,
+      "maxHeight": 0.0,
+      "biomes": null,
+      "placeBlockWhen": null,
+      "generateWhen": null
+    },
+    {
+      "blockstate": {
+        "Name": "minecraft:gold_ore"
+      },
+      "spawnSize": 9,
+      "spawnTries": 2,
+      "spawnProbability": 0.5,
+      "minHeight": -Infinity,
+      "maxHeight": -0.5,
+      "biomes": null,
+      "placeBlockWhen": null,
+      "generateWhen": null
+    },
+    {
+      "blockstate": {
+        "Name": "minecraft:redstone_ore"
+      },
+      "spawnSize": 8,
+      "spawnTries": 8,
+      "spawnProbability": 1.0,
+      "minHeight": -Infinity,
+      "maxHeight": -0.75,
+      "biomes": null,
+      "placeBlockWhen": null,
+      "generateWhen": null
+    },
+    {
+      "blockstate": {
+        "Name": "minecraft:diamond_ore"
+      },
+      "spawnSize": 8,
+      "spawnTries": 1,
+      "spawnProbability": 1.0,
+      "minHeight": -Infinity,
+      "maxHeight": -0.75,
+      "biomes": null,
+      "placeBlockWhen": null,
+      "generateWhen": null
+    },
+    {
+      "blockstate": {
+        "Name": "minecraft:emerald_ore"
+      },
+      "biomes": [
+        "minecraft:ocean",
+        "minecraft:mutated_extreme_hills",
+        "minecraft:river",
+        "minecraft:mutated_savanna",
+        "minecraft:mutated_redwood_taiga",
+        "minecraft:ice_mountains",
+        "minecraft:taiga_hills",
+        "minecraft:extreme_hills",
+        "minecraft:mutated_plains",
+        "minecraft:mutated_extreme_hills_with_trees",
+        "minecraft:mutated_taiga_cold",
+        "minecraft:deep_ocean",
+        "minecraft:forest_hills",
+        "minecraft:cold_beach",
+        "minecraft:taiga",
+        "minecraft:birch_forest",
+        "minecraft:ice_flats",
+        "minecraft:mutated_mesa_clear_rock",
+        "minecraft:jungle",
+        "minecraft:mutated_mesa_rock",
+        "minecraft:mutated_roofed_forest",
+        "minecraft:mutated_savanna_rock",
+        "minecraft:redwood_taiga_hills",
+        "minecraft:mutated_ice_flats",
+        "minecraft:mutated_mesa",
+        "minecraft:mutated_taiga",
+        "minecraft:extreme_hills_with_trees",
+        "minecraft:desert",
+        "minecraft:redwood_taiga",
+        "minecraft:mutated_jungle",
+        "minecraft:swampland",
+        "minecraft:plains",
+        "minecraft:stone_beach",
+        "minecraft:void",
+        "minecraft:mutated_jungle_edge",
+        "minecraft:mutated_redwood_taiga_hills",
+        "minecraft:hell",
+        "minecraft:mutated_swampland",
+        "minecraft:beaches",
+        "minecraft:savanna_rock",
+        "minecraft:mesa_clear_rock",
+        "minecraft:mesa",
+        "minecraft:taiga_cold_hills",
+        "minecraft:mutated_desert",
+        "minecraft:roofed_forest",
+        "minecraft:mutated_forest",
+        "minecraft:mutated_birch_forest",
+        "minecraft:frozen_river",
+        "minecraft:mushroom_island_shore",
+        "minecraft:mesa_rock",
+        "minecraft:frozen_ocean",
+        "minecraft:jungle_hills",
+        "minecraft:forest",
+        "minecraft:birch_forest_hills",
+        "minecraft:smaller_extreme_hills",
+        "minecraft:jungle_edge",
+        "minecraft:taiga_cold",
+        "minecraft:mushroom_island",
+        "minecraft:desert_hills",
+        "minecraft:savanna",
+        "minecraft:mutated_birch_forest_hills",
+        "minecraft:sky"
+      ],
+      "spawnSize": 1,
+      "spawnTries": 11,
+      "spawnProbability": 0.2857143,
+      "minHeight": -Infinity,
+      "maxHeight": 0.0,
+      "placeBlockWhen": null,
+      "generateWhen": null
+    },
+    {
+      "blockstate": {
+        "Properties": {
+          "variant": "stone"
+        },
+        "Name": "minecraft:monster_egg"
+      },
+      "biomes": [
+        "minecraft:ocean",
+        "minecraft:mutated_extreme_hills",
+        "minecraft:river",
+        "minecraft:mutated_savanna",
+        "minecraft:mutated_redwood_taiga",
+        "minecraft:ice_mountains",
+        "minecraft:taiga_hills",
+        "minecraft:extreme_hills",
+        "minecraft:mutated_plains",
+        "minecraft:mutated_extreme_hills_with_trees",
+        "minecraft:mutated_taiga_cold",
+        "minecraft:deep_ocean",
+        "minecraft:forest_hills",
+        "minecraft:cold_beach",
+        "minecraft:taiga",
+        "minecraft:birch_forest",
+        "minecraft:ice_flats",
+        "minecraft:mutated_mesa_clear_rock",
+        "minecraft:jungle",
+        "minecraft:mutated_mesa_rock",
+        "minecraft:mutated_roofed_forest",
+        "minecraft:mutated_savanna_rock",
+        "minecraft:redwood_taiga_hills",
+        "minecraft:mutated_ice_flats",
+        "minecraft:mutated_mesa",
+        "minecraft:mutated_taiga",
+        "minecraft:extreme_hills_with_trees",
+        "minecraft:desert",
+        "minecraft:redwood_taiga",
+        "minecraft:mutated_jungle",
+        "minecraft:swampland",
+        "minecraft:plains",
+        "minecraft:stone_beach",
+        "minecraft:void",
+        "minecraft:mutated_jungle_edge",
+        "minecraft:mutated_redwood_taiga_hills",
+        "minecraft:hell",
+        "minecraft:mutated_swampland",
+        "minecraft:beaches",
+        "minecraft:savanna_rock",
+        "minecraft:mesa_clear_rock",
+        "minecraft:mesa",
+        "minecraft:taiga_cold_hills",
+        "minecraft:mutated_desert",
+        "minecraft:roofed_forest",
+        "minecraft:mutated_forest",
+        "minecraft:mutated_birch_forest",
+        "minecraft:frozen_river",
+        "minecraft:mushroom_island_shore",
+        "minecraft:mesa_rock",
+        "minecraft:frozen_ocean",
+        "minecraft:jungle_hills",
+        "minecraft:forest",
+        "minecraft:birch_forest_hills",
+        "minecraft:smaller_extreme_hills",
+        "minecraft:jungle_edge",
+        "minecraft:taiga_cold",
+        "minecraft:mushroom_island",
+        "minecraft:desert_hills",
+        "minecraft:savanna",
+        "minecraft:mutated_birch_forest_hills",
+        "minecraft:sky"
+      ],
+      "spawnSize": 7,
+      "spawnTries": 7,
+      "spawnProbability": 0.25,
+      "minHeight": -Infinity,
+      "maxHeight": -0.5,
+      "placeBlockWhen": null,
+      "generateWhen": null
+    },
+    {
+      "blockstate": {
+        "Name": "minecraft:gold_ore"
+      },
+      "biomes": [
+        "minecraft:ocean",
+        "minecraft:mutated_extreme_hills",
+        "minecraft:river",
+        "minecraft:mutated_savanna",
+        "minecraft:mutated_redwood_taiga",
+        "minecraft:ice_mountains",
+        "minecraft:taiga_hills",
+        "minecraft:extreme_hills",
+        "minecraft:mutated_plains",
+        "minecraft:mutated_extreme_hills_with_trees",
+        "minecraft:mutated_taiga_cold",
+        "minecraft:deep_ocean",
+        "minecraft:forest_hills",
+        "minecraft:cold_beach",
+        "minecraft:taiga",
+        "minecraft:birch_forest",
+        "minecraft:ice_flats",
+        "minecraft:mutated_mesa_clear_rock",
+        "minecraft:jungle",
+        "minecraft:mutated_mesa_rock",
+        "minecraft:mutated_roofed_forest",
+        "minecraft:mutated_savanna_rock",
+        "minecraft:redwood_taiga_hills",
+        "minecraft:mutated_ice_flats",
+        "minecraft:mutated_mesa",
+        "minecraft:mutated_taiga",
+        "minecraft:extreme_hills_with_trees",
+        "minecraft:desert",
+        "minecraft:redwood_taiga",
+        "minecraft:mutated_jungle",
+        "minecraft:swampland",
+        "minecraft:plains",
+        "minecraft:stone_beach",
+        "minecraft:void",
+        "minecraft:mutated_jungle_edge",
+        "minecraft:mutated_redwood_taiga_hills",
+        "minecraft:hell",
+        "minecraft:mutated_swampland",
+        "minecraft:beaches",
+        "minecraft:savanna_rock",
+        "minecraft:mesa_clear_rock",
+        "minecraft:mesa",
+        "minecraft:taiga_cold_hills",
+        "minecraft:mutated_desert",
+        "minecraft:roofed_forest",
+        "minecraft:mutated_forest",
+        "minecraft:mutated_birch_forest",
+        "minecraft:frozen_river",
+        "minecraft:mushroom_island_shore",
+        "minecraft:mesa_rock",
+        "minecraft:frozen_ocean",
+        "minecraft:jungle_hills",
+        "minecraft:forest",
+        "minecraft:birch_forest_hills",
+        "minecraft:smaller_extreme_hills",
+        "minecraft:jungle_edge",
+        "minecraft:taiga_cold",
+        "minecraft:mushroom_island",
+        "minecraft:desert_hills",
+        "minecraft:savanna",
+        "minecraft:mutated_birch_forest_hills",
+        "minecraft:sky"
+      ],
+      "spawnSize": 20,
+      "spawnTries": 2,
+      "spawnProbability": 0.5,
+      "minHeight": -0.5,
+      "maxHeight": 0.25,
+      "placeBlockWhen": null,
+      "generateWhen": null
+    }
+  ],
+  "periodicGaussianOres": [
+    {
+      "blockstate": {
+        "Name": "minecraft:lapis_ore"
+      },
+      "spawnSize": 7,
+      "spawnTries": 1,
+      "spawnProbability": 0.93330777,
+      "heightMean": -0.75,
+      "heightStdDeviation": 0.11231705,
+      "heightSpacing": 3.0,
+      "minHeight": -Infinity,
+      "maxHeight": -0.5,
+      "biomes": null,
+      "placeBlockWhen": null,
+      "generateWhen": null
+    }
+  ],
+  "heightVariationFactor": 1048576.0,
+  "specialHeightVariationFactorBelowAverageY": 5.25,
+  "heightVariationOffset": -1048576.0,
+  "heightFactor": 1048576.0,
+  "heightOffset": 1048576.0,
+  "depthNoiseFactor": 1.024,
+  "depthNoiseOffset": 640.0,
+  "depthNoiseFrequencyX": 1.3020834E-4,
+  "depthNoiseFrequencyZ": 1.3020834E-4,
+  "depthNoiseOctaves": 3,
+  "selectorNoiseFactor": 816.0,
+  "selectorNoiseOffset": -28.0,
+  "selectorNoiseFrequencyX": 3.0517578E-5,
+  "selectorNoiseFrequencyY": 0.035714287,
+  "selectorNoiseFrequencyZ": 3.0517578E-5,
+  "selectorNoiseOctaves": 8,
+  "lowNoiseFactor": 1.0,
+  "lowNoiseOffset": 0.0,
+  "lowNoiseFrequencyX": 0.005221649,
+  "lowNoiseFrequencyY": 0.0026108245,
+  "lowNoiseFrequencyZ": 0.005221649,
+  "lowNoiseOctaves": 16,
+  "highNoiseFactor": 1024.0,
+  "highNoiseOffset": -32.0,
+  "highNoiseFrequencyX": 0.005221649,
+  "highNoiseFrequencyY": 0.0,
+  "highNoiseFrequencyZ": 0.005221649,
+  "highNoiseOctaves": 15,
+  "version": 6,
+  "expectedBaseHeight": 1048576.0,
+  "expectedHeightVariation": 1048576.0,
+  "actualHeight": 1048576.0,
+  "replacerConfig": {
+    "defaults": {
+      "cubicgen:biome_fill_noise_octaves": 4.0,
+      "cubicgen:ocean_block": {
+        "Properties": {
+          "level": 0.0
+        },
+        "Name": "minecraft:water"
+      },
+      "cubicgen:height_scale": 1048576.0,
+      "cubicgen:biome_fill_noise_freq": 0.0078125,
+      "cubicgen:water_level": 63.0,
+      "cubicgen:biome_fill_depth_factor": 2.3333333333333335,
+      "cubicgen:terrain_fill_block": {
+        "Name": "minecraft:stone",
+        "Properties": {
+          "variant": "stone"
+        }
+      },
+      "cubicgen:mesa_depth": 16.0,
+      "cubicgen:horizontal_gradient_depth_decrease_weight": 1.0,
+      "cubicgen:biome_fill_depth_offset": 3.0,
+      "cubicgen:height_offset": 1048576.0,
+      "cubicgen:surface_depth_limit": 9.0
+    },
+    "overrides": { }
+  },
+  "cubeAreas": []
+}

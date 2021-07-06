@@ -392,6 +392,7 @@ public class CustomGeneratorSettings {
 
         public UserFunction surfaceProbability;
         public UserFunction mainProbability;
+        public GenerationCondition generateWhen;
 
         public static Builder builder() {
             return new Builder();
@@ -438,6 +439,11 @@ public class CustomGeneratorSettings {
 
             public Builder setMainProbability(UserFunction mainProbability) {
                 config.mainProbability = mainProbability;
+                return this;
+            }
+
+            public Builder setGenerateWhen(GenerationCondition condition) {
+                config.generateWhen = condition;
                 return this;
             }
 

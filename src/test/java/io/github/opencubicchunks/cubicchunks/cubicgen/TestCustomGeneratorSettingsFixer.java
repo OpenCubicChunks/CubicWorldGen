@@ -23,6 +23,16 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.CharBuffer;
+import java.util.ArrayList;
+import java.util.Map;
+
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import blue.endless.jankson.Jankson;
 import blue.endless.jankson.JsonArray;
 import blue.endless.jankson.JsonElement;
@@ -37,20 +47,12 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.V3LegacyFix;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.V3Preprocessor;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.V4Fix;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.V5Fix;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.V6Fix;
 import io.github.opencubicchunks.cubicchunks.cubicgen.testutil.MinecraftEnvironment;
 import mcp.MethodsReturnNonnullByDefault;
 import org.apache.logging.log4j.LogManager;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.CharBuffer;
-import java.util.ArrayList;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -62,43 +64,49 @@ public class TestCustomGeneratorSettingsFixer {
     private static final String test1v3 = "/assets/cubicworldgen/presets/test1_CC655_random_preset_V3.json5";
     private static final String test1v4 = "/assets/cubicworldgen/presets/test1_CC655_random_preset_V4.json5";
     private static final String test1v5 = "/assets/cubicworldgen/presets/test1_CC655_random_preset_V5.json5";
-    private static final String test1latest = test1v5;
+    private static final String test1v6 = "/assets/cubicworldgen/presets/test1_CC655_random_preset_V6.json5";
 
     // Multi-layer CubicChunks v0.0.854 example preset
     private static final String test2oldv3 = "/assets/cubicworldgen/presets/test2_CC854_MineCrakLayersExample_OldV3.json5";
     private static final String test2v3 = "/assets/cubicworldgen/presets/test2_CC854_MineCrakLayersExample_V3.json5";
     private static final String test2v4 = "/assets/cubicworldgen/presets/test2_CC854_MineCrakLayersExample_V4.json5";
     private static final String test2v5 = "/assets/cubicworldgen/presets/test2_CC854_MineCrakLayersExample_V5.json5";
+    private static final String test2v6 = "/assets/cubicworldgen/presets/test2_CC854_MineCrakLayersExample_V6.json5";
 
     // Zekkens Honeycombed underground world - CC809
     private static final String test3oldv3 = "/assets/cubicworldgen/presets/test3_CC808_ZekkensHoneycombUnderground_OldV3.json5";
     private static final String test3v3 = "/assets/cubicworldgen/presets/test3_CC808_ZekkensHoneycombUnderground_V3.json5";
     private static final String test3v4 = "/assets/cubicworldgen/presets/test3_CC808_ZekkensHoneycombUnderground_V4.json5";
     private static final String test3v5 = "/assets/cubicworldgen/presets/test3_CC808_ZekkensHoneycombUnderground_V5.json5";
+    private static final String test3v6 = "/assets/cubicworldgen/presets/test3_CC808_ZekkensHoneycombUnderground_V6.json5";
 
     // IslandsOre preset - CC80X
     private static final String test4oldv3 = "/assets/cubicworldgen/presets/test4_CC80X_IslandsOre_OldV3.json5";
     private static final String test4v3 = "/assets/cubicworldgen/presets/test4_CC80X_IslandsOre_V3.json5";
     private static final String test4v4 = "/assets/cubicworldgen/presets/test4_CC80X_IslandsOre_V4.json5";
     private static final String test4v5 = "/assets/cubicworldgen/presets/test4_CC80X_IslandsOre_V5.json5";
+    private static final String test4v6 = "/assets/cubicworldgen/presets/test4_CC80X_IslandsOre_V6.json5";
 
     // Wozat's Realistic Mountain preset - CC77X
     private static final String test5oldv3 = "/assets/cubicworldgen/presets/test5_CC77X_WozatRealisticMountains_OldV3.json5";
     private static final String test5v3 = "/assets/cubicworldgen/presets/test5_CC77X_WozatRealisticMountains_V3.json5";
     private static final String test5v4 = "/assets/cubicworldgen/presets/test5_CC77X_WozatRealisticMountains_V4.json5";
     private static final String test5v5 = "/assets/cubicworldgen/presets/test5_CC77X_WozatRealisticMountains_V5.json5";
+    private static final String test5v6 = "/assets/cubicworldgen/presets/test5_CC77X_WozatRealisticMountains_V6.json5";
 
     // First test server preset - CC6XX
     private static final String test6oldv3 = "/assets/cubicworldgen/presets/test6_CC6XX_FirstTestServer_OldV3.json5";
     private static final String test6v3 = "/assets/cubicworldgen/presets/test6_CC6XX_FirstTestServer_V3.json5";
     private static final String test6v4 = "/assets/cubicworldgen/presets/test6_CC6XX_FirstTestServer_V4.json5";
     private static final String test6v5 = "/assets/cubicworldgen/presets/test6_CC6XX_FirstTestServer_V5.json5";
+    private static final String test6v6 = "/assets/cubicworldgen/presets/test6_CC6XX_FirstTestServer_V6.json5";
 
     // MineCrak layers example - CC843
     private static final String test7oldv3 = "/assets/cubicworldgen/presets/test7_CC843_MineCrakLayersExample_OldV3.json5";
     private static final String test7v3 = "/assets/cubicworldgen/presets/test7_CC843_MineCrakLayersExample_V3.json5";
     private static final String test7v4 = "/assets/cubicworldgen/presets/test7_CC843_MineCrakLayersExample_V4.json5";
     private static final String test7v5 = "/assets/cubicworldgen/presets/test7_CC843_MineCrakLayersExample_V5.json5";
+    private static final String test7v6 = "/assets/cubicworldgen/presets/test7_CC843_MineCrakLayersExample_V6.json5";
 
     @BeforeClass
     public static void setUp() {
@@ -116,20 +124,6 @@ public class TestCustomGeneratorSettingsFixer {
             cb.flip();
             return cb.toString();
         }
-    }
-
-    private void runAll(String start, String latest) throws IOException, SyntaxError {
-        String testCaseString = getTestCaseString(start);
-        String expectedString = getTestCaseString(latest);
-
-        JsonObject fixed = removeExpectedDifferences(CustomGeneratorSettingsFixer.INSTANCE.fixJson(testCaseString));
-        JsonObject expected = removeExpectedDifferences(CustomGenSettingsSerialization.jankson().load(expectedString));
-        assertEquals(expected, fixed);
-
-        // make sure that it also matches the second time (test that there is no internal state that changes results)
-        fixed = removeExpectedDifferences(CustomGeneratorSettingsFixer.INSTANCE.fixJson(testCaseString));
-        expected = removeExpectedDifferences(CustomGenSettingsSerialization.jankson().load(expectedString));
-        assertEquals(expected, fixed);
     }
 
     private void runToV3(String examplePath, String resutPath) throws IOException, SyntaxError {
@@ -157,10 +151,29 @@ public class TestCustomGeneratorSettingsFixer {
         runWithFixer(example, result, new V5Fix());
     }
 
+    private void runToV6(String example, String result) throws IOException, SyntaxError {
+        runWithFixer(example, result, new V6Fix());
+    }
+
     private void runWithFixer(String example, String result, IJsonFix fixer) throws IOException, SyntaxError {
         String testCaseString = getTestCaseString(example);
         JsonObject fixed = removeExpectedDifferences(applyFixer(fixer, (Jankson.builder().build().load(testCaseString))));
         JsonObject expected = removeExpectedDifferences(CustomGenSettingsSerialization.jankson().load(getTestCaseString(result)));
+        if (fixer.getClass() == V6Fix.class) {
+            System.out.println("_____________________________");
+            System.out.println("_____________________________");
+            System.out.println("_____________________________");
+            System.out.println("_____________________________");
+            System.out.println("_____________________________");
+            System.out.println(example);
+            System.out.println("_____________________________");
+            System.out.println("_____________________________");
+            System.out.println("_____________________________");
+            System.out.println("_____________________________");
+            System.out.println("_____________________________");
+            System.out.println();
+            System.out.println(applyFixer(fixer, (Jankson.builder().build().load(testCaseString))).toJson(CustomGenSettingsSerialization.OUT_GRAMMAR));
+        }
         assertEquals(expected, fixed);
 
         fixed = removeExpectedDifferences(applyFixer(fixer, (Jankson.builder().build().load(testCaseString))));
@@ -255,8 +268,8 @@ public class TestCustomGeneratorSettingsFixer {
     }
 
     @Test
-    public void testAllFixersCC655() throws IOException, SyntaxError {
-        runAll(test1v0, test1latest);
+    public void testV6FixerCC655() throws IOException, SyntaxError {
+        runToV6(test1v5, test1v6);
     }
 
     // MineCrak layers example - CC854
@@ -278,6 +291,11 @@ public class TestCustomGeneratorSettingsFixer {
     @Test
     public void testV5FixerCC854MultiLayer() throws IOException, SyntaxError {
         runToV5(test2v4, test2v5);
+    }
+
+    @Test
+    public void testV6FixerCC854MultiLayer() throws IOException, SyntaxError {
+        runToV6(test2v5, test2v6);
     }
 
     // Honeycombed Underground by Zekken - CC808
@@ -302,6 +320,11 @@ public class TestCustomGeneratorSettingsFixer {
         runToV5(test3v4, test3v5);
     }
 
+    @Test
+    public void testV6FixerCC808ZekkensHoneycombUnderground() throws IOException, SyntaxError {
+        runToV6(test3v5, test3v6);
+    }
+
     // IslandsOre - CC80X
 
     @Test
@@ -322,6 +345,11 @@ public class TestCustomGeneratorSettingsFixer {
     @Test
     public void testV5FixerCC80XIslandsOre() throws IOException, SyntaxError {
         runToV5(test4v4, test4v5);
+    }
+
+    @Test
+    public void testV6FixerCC80XIslandsOre() throws IOException, SyntaxError {
+        runToV6(test4v5, test4v6);
     }
 
     // Wozat's realistic mountain - CC77X
@@ -346,6 +374,11 @@ public class TestCustomGeneratorSettingsFixer {
         runToV5(test5v4, test5v5);
     }
 
+    @Test
+    public void testV6FixerCC8XXRealisticMountains() throws IOException, SyntaxError {
+        runToV6(test5v5, test5v6);
+    }
+
     // First test server - CC6XX
 
     @Test
@@ -368,6 +401,11 @@ public class TestCustomGeneratorSettingsFixer {
         runToV5(test6v4, test6v5);
     }
 
+    @Test
+    public void testV6FixerCC6XXFirstTestServer() throws IOException, SyntaxError {
+        runToV6(test6v5, test6v6);
+    }
+
     // MineCrak layers example - CC843
 
     @Test
@@ -388,5 +426,10 @@ public class TestCustomGeneratorSettingsFixer {
     @Test
     public void testV5FixerCC843MineCrakLayersExample() throws IOException, SyntaxError {
         runToV5(test7v4, test7v5);
+    }
+
+    @Test
+    public void testV6FixerCC843MineCrakLayersExample() throws IOException, SyntaxError {
+        runToV6(test7v5, test7v6);
     }
 }

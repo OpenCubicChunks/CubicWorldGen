@@ -70,12 +70,12 @@ public class PrePopulator implements ICubicPopulator {
                     0, (p, s) -> !s.getBlock().isAir(s, world, p));
             if (surface != null) {
                 float prob = lake.surfaceProbability.getValue(surface.getY());
-                if (random.nextFloat() < prob) {
+                if (random.nextFloat() < prob && (lake.generateWhen == null || lake.generateWhen.canGenerate(random, world, surface))) {
                     new WorldGenLakes(lake.block.getBlock()).generate(world, random, surface);
                 }
             } else  {
                 float prob = lake.mainProbability.getValue(populationPos.getY());
-                if (random.nextFloat() < prob) {
+                if (random.nextFloat() < prob && (lake.generateWhen == null || lake.generateWhen.canGenerate(random, world, populationPos))) {
                     new WorldGenLakes(lake.block.getBlock()).generate(world, random, populationPos);
                 }
             }
