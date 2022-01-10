@@ -53,7 +53,6 @@ apply {
     plugin<LicensePlugin>()
     plugin("io.github.opencubicchunks.gradle.fg2fixed")
     plugin("io.github.opencubicchunks.gradle.mixingen")
-    plugin("io.github.opencubicchunks.gradle.remapper")
     plugin("io.github.opencubicchunks.gradle.mcGitVersion")
     plugin<MixinGradlePlugin>()
 }
