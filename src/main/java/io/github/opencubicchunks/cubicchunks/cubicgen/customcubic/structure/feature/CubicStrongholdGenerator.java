@@ -23,10 +23,12 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.feature;
 
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -62,6 +64,7 @@ import static java.lang.Math.sin;
 public class CubicStrongholdGenerator extends CubicFeatureGenerator {
 
     private CubePos[] structureCoords;
+    private Set<CubePos> structureCoordsSet = new HashSet<>();
     private double distance;
     private int spread;
     private List<Biome> allowedBiomes;
@@ -136,9 +139,7 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
 
     @Override protected boolean canSpawnStructureAtCoords(World world, Random rand, int chunkX, int chunkY, int chunkZ) {
         checkPositionsGenerated(world);
-
-        return Arrays.stream(this.structureCoords)
-                .anyMatch(cubePos -> chunkX == cubePos.getX() && chunkY == cubePos.getY() && chunkZ == cubePos.getZ());
+        return structureCoordsSet.contains(new CubePos(chunkX, chunkY, chunkZ));
     }
 
     @Override protected StructureStart getStructureStart(World world, Random rand, int chunkX, int chunkY, int chunkZ) {
@@ -232,6 +233,7 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
                 angle += rand.nextDouble() * Math.PI * 2.0D;
             }
         }
+        Collections.addAll(structureCoordsSet, structureCoords);
     }
 
     public interface CubicStart extends ICubicFeatureStart {
