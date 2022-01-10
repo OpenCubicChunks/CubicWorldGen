@@ -110,6 +110,36 @@
                 "name": "ext"
             },
             {
+                "type": "com.github.jengelman.gradle.plugins.shadow.ShadowExtension",
+                "target": "org.gradle.api.Project",
+                "name": "shadow"
+            },
+            {
+                "type": "org.gradle.api.plugins.ExtraPropertiesExtension",
+                "target": "com.github.jengelman.gradle.plugins.shadow.ShadowExtension",
+                "name": "ext"
+            },
+            {
+                "type": "nl.javadude.gradle.plugins.license.LicenseExtension",
+                "target": "org.gradle.api.Project",
+                "name": "license"
+            },
+            {
+                "type": "org.gradle.api.plugins.ExtraPropertiesExtension",
+                "target": "nl.javadude.gradle.plugins.license.LicenseExtension",
+                "name": "ext"
+            },
+            {
+                "type": "nl.javadude.gradle.plugins.license.DownloadLicensesExtension",
+                "target": "org.gradle.api.Project",
+                "name": "downloadLicenses"
+            },
+            {
+                "type": "org.gradle.api.plugins.ExtraPropertiesExtension",
+                "target": "nl.javadude.gradle.plugins.license.DownloadLicensesExtension",
+                "name": "ext"
+            },
+            {
                 "type": "net.minecraftforge.gradle.user.patcherUser.forge.ForgeExtension",
                 "target": "org.gradle.api.Project",
                 "name": "minecraft"
@@ -150,16 +180,6 @@
                 "name": "mcGitVersion"
             },
             {
-                "type": "com.github.jengelman.gradle.plugins.shadow.ShadowExtension",
-                "target": "org.gradle.api.Project",
-                "name": "shadow"
-            },
-            {
-                "type": "org.gradle.api.plugins.ExtraPropertiesExtension",
-                "target": "com.github.jengelman.gradle.plugins.shadow.ShadowExtension",
-                "name": "ext"
-            },
-            {
                 "type": "org.spongepowered.asm.gradle.plugins.MixinExtension",
                 "target": "org.gradle.api.Project",
                 "name": "mixin"
@@ -167,26 +187,6 @@
             {
                 "type": "org.gradle.api.plugins.ExtraPropertiesExtension",
                 "target": "org.spongepowered.asm.gradle.plugins.MixinExtension",
-                "name": "ext"
-            },
-            {
-                "type": "nl.javadude.gradle.plugins.license.LicenseExtension",
-                "target": "org.gradle.api.Project",
-                "name": "license"
-            },
-            {
-                "type": "org.gradle.api.plugins.ExtraPropertiesExtension",
-                "target": "nl.javadude.gradle.plugins.license.LicenseExtension",
-                "name": "ext"
-            },
-            {
-                "type": "nl.javadude.gradle.plugins.license.DownloadLicensesExtension",
-                "target": "org.gradle.api.Project",
-                "name": "downloadLicenses"
-            },
-            {
-                "type": "org.gradle.api.plugins.ExtraPropertiesExtension",
-                "target": "nl.javadude.gradle.plugins.license.DownloadLicensesExtension",
                 "name": "ext"
             },
             {

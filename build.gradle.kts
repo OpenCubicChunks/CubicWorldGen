@@ -216,7 +216,6 @@ fun Jar.setupManifest() {
     manifest {
         attributes["FMLCorePluginContainsFMLMod"] = "true"
         attributes["FMLCorePlugin"] = "io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.CubicGenCoreMod"
-        attributes["ForceLoadAsMod"] = "true"
         attributes["Maven-Version"] = "${project.group}:${project.base.archivesBaseName}:${project.version.toString()}:core"
     }
 }

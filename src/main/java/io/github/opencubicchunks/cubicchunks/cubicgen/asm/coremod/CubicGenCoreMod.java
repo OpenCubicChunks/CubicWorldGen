@@ -26,7 +26,6 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraftforge.common.ForgeVersion;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
-import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.Mixins;
 
 import javax.annotation.Nullable;
@@ -40,12 +39,17 @@ import java.util.Map;
 @IFMLLoadingPlugin.SortingIndex(value = 5000)
 public class CubicGenCoreMod implements IFMLLoadingPlugin {
 
-    public CubicGenCoreMod() {
-        initMixin();
-    }
-
     @Override
     public String[] getASMTransformerClass() {
+        // normally mixin would be initialized in constructor
+        // but we don't actually have mixin in our jar, and depend on CubicChunks containing mixin
+        // which means that according to FML, we are not a tweaker
+        // so our coremod is loaded normally by FML instead of mixin
+        // if CWG initialized Mixin in constructor, it would initialize mixin too early
+        // which breaks ViveCraft.
+        // we also can't just declare mixin tweaker and specify mixin config in manifest
+        // because of a mixin bug where it will inject the transformers before FML deobf transformer.
+        Mixins.addConfiguration("cubicgen.mixins.json");
         return new String[]{"io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.MapGenStrongholdCubicConstructorTransform"};
     }
 
@@ -66,16 +70,5 @@ public class CubicGenCoreMod implements IFMLLoadingPlugin {
     @Nullable @Override
     public String getAccessTransformerClass() {
         return null;
-    }
-
-    public static void initMixin() {
-        try {
-            Class.forName("org.spongepowered.asm.launch.MixinBootstrap");
-            MixinBootstrap.init();
-            Mixins.addConfiguration("cubicgen.mixins.json");
-        } catch (ClassNotFoundException ignored) {
-            // this means cubic chunks isn't there, let forge show missing dependency screen
-        }
-
     }
 }
