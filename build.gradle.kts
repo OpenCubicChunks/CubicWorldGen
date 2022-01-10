@@ -46,7 +46,6 @@ repositories {
     // currently gradle seems to resolve dependencies from repositories in the order they are defined here
     maven { setUrl("https://repo.spongepowered.org/maven") }
     maven { setUrl("https://minecraft.curseforge.com/api/maven/") }
-    maven { setUrl("https://repo.elytradev.com") } // jankson snapshot
 }
 
 apply {
@@ -198,7 +197,7 @@ dependencies {
     }
 
     shade("com.flowpowered:flow-noise:1.0.1-SNAPSHOT")
-    shade("blue.endless:jankson:1.2.0-75")
+    shade("blue.endless:jankson:1.2.1")
 
     testCompile("junit:junit:4.11")
     testCompile("org.hamcrest:hamcrest-junit:2.0.0.0")
