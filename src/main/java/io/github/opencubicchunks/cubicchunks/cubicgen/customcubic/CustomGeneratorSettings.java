@@ -39,6 +39,8 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.PresetLoadErr
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BiomeDesc;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockDesc;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
+import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockSilverfish;
 import net.minecraft.block.BlockStone;
@@ -989,32 +991,41 @@ public class CustomGeneratorSettings {
     }
 
     public static class BlockstateMatchCondition implements GenerationCondition {
+        private static final Hash.Strategy<IBlockState> IDENTITY_STRATEGY = new Hash.Strategy<IBlockState>() {
+            @Override public int hashCode(IBlockState o) {
+                return System.identityHashCode(o);
+            }
+
+            @Override public boolean equals(IBlockState a, IBlockState b) {
+                return a == b;
+            }
+        };
         int x, y, z;
-        Set<IBlockState> allowedBlockstates;
-        Set<BlockStateDesc> allAllowedBlockstates;
+        ObjectOpenCustomHashSet<IBlockState> allowedBlockstates = new ObjectOpenCustomHashSet<>(2, IDENTITY_STRATEGY);
+        Set<BlockStateDesc> allAllowedBlockstates = new HashSet<>();;
 
         public BlockstateMatchCondition() {
-            this.allowedBlockstates = new HashSet<>();
         }
 
         public BlockstateMatchCondition(int x, int y, int z, Set<BlockStateDesc> allowedBlockstates) {
             this.x = x;
             this.y = y;
             this.z = z;
-            this.allowedBlockstates = allowedBlockstates.stream()
-                    .map(BlockStateDesc::getBlockState)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toSet());
+            for (BlockStateDesc allowedBlockstate : allowedBlockstates) {
+                IBlockState blockState = allowedBlockstate.getBlockState();
+                if (blockState != null) {
+                    this.allowedBlockstates.add(blockState);
+                }
+            }
             this.allAllowedBlockstates = allowedBlockstates;
         }
 
         public BlockstateMatchCondition(IBlockState... states) {
             Set<BlockStateDesc> set = new HashSet<>();
             for (IBlockState state : states) {
-                set.add(new BlockStateDesc(state));
+                this.allAllowedBlockstates.add(new BlockStateDesc(state));
+                this.allowedBlockstates.add(state);
             }
-            allowedBlockstates = new HashSet<>(Arrays.asList(states));
-            allAllowedBlockstates = set;
         }
 
         @Override
