@@ -126,9 +126,10 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
             populators.put(biome, cubicBiome.getDecorator(conf));
         }
 
-        InitCubicStructureGeneratorEvent caveEvent = new InitCubicStructureGeneratorEvent(EventType.CAVE, new CubicCaveGenerator());
-        InitCubicStructureGeneratorEvent strongholdsEvent = new InitCubicStructureGeneratorEvent(EventType.STRONGHOLD, new CubicStrongholdGenerator(conf));
-        InitCubicStructureGeneratorEvent ravineEvent = new InitCubicStructureGeneratorEvent(EventType.RAVINE, new CubicRavineGenerator(conf));
+        InitCubicStructureGeneratorEvent caveEvent = new InitCubicStructureGeneratorEvent(EventType.CAVE, new CubicCaveGenerator(), world);
+        InitCubicStructureGeneratorEvent strongholdsEvent = new InitCubicStructureGeneratorEvent(
+                EventType.STRONGHOLD, new CubicStrongholdGenerator(conf), world);
+        InitCubicStructureGeneratorEvent ravineEvent = new InitCubicStructureGeneratorEvent(EventType.RAVINE, new CubicRavineGenerator(conf), world);
 
         MinecraftForge.TERRAIN_GEN_BUS.post(caveEvent);
         MinecraftForge.TERRAIN_GEN_BUS.post(strongholdsEvent);
