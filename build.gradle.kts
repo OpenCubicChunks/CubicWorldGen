@@ -100,6 +100,10 @@ java {
     sourceCompatibility = JavaVersion.VERSION_1_8
 }
 
+if (JavaVersion.current() != java.sourceCompatibility) {
+    throw GradleException("This project must be compiled with java ${java.sourceCompatibility} but current java version is ${JavaVersion.current()}")
+}
+
 compileJava.apply {
     options.isDeprecation = true
     options.compilerArgs.add("-Xlint:unchecked")
