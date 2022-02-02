@@ -202,9 +202,6 @@ tasks {
     compileJava {
         options.isDeprecation = true
         options.compilerArgs.add("-Xlint:unchecked")
-        if (gradle.includedBuilds.any { it.name == "CubicChunks" }) {
-            dependsOn(gradle.includedBuild("CubicChunks").task(":reobfJar"))
-        }
     }
 
     fun substituteVersion(jar: Jar) {
