@@ -50,7 +50,17 @@ public class CubicGenCoreMod implements IFMLLoadingPlugin {
         // we also can't just declare mixin tweaker and specify mixin config in manifest
         // because of a mixin bug where it will inject the transformers before FML deobf transformer.
         Mixins.addConfiguration("cubicgen.mixins.json");
-        return new String[]{"io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.MapGenStrongholdCubicConstructorTransform"};
+        if (System.getProperty("net.minecraftforge.gradle.GradleStart.srg.srg-mcp") != null) {
+            return new String[]{
+                    "io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.MapGenStrongholdCubicConstructorTransform",
+                    // hack for FG5 dev environment - dependency ATs aren't applied at runtime
+                    "io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.MalisisCoreAT"
+            };
+        } else {
+            return new String[]{
+                    "io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.MapGenStrongholdCubicConstructorTransform"
+            };
+        }
     }
 
     @Nullable @Override

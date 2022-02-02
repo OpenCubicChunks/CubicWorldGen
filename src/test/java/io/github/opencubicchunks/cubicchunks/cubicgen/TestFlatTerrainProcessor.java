@@ -46,6 +46,9 @@ import net.minecraft.init.Blocks;
 import net.minecraft.world.storage.WorldInfo;
 import org.mockito.Mockito;
 
+import java.net.URL;
+import java.net.URLClassLoader;
+
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class TestFlatTerrainProcessor {

@@ -3,8 +3,8 @@
         "modid": "cubicgen",
         "name": "CubicGen",
         "description": "Additional CubicChunks world generators",
-        "version": "${version}",
-        "mcversion": "${mcversion}",
+        "version": "%%VERSION%%",
+        "mcversion": "1.12.2",
         "url": "",
         "updateUrl": "",
         "authorList": [
@@ -12,6 +12,9 @@
         ],
         "logoFile": "/assets/cubicchunks/logo.png",
         "screenshots": [],
-        "dependencies": []
+        "dependencies": [
+            "required:cubicchunks@[1.12.2-0.0.1231.0,)",
+            "required:forge@[14.23.5.2860,)"
+        ]
     }
 ]

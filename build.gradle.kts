@@ -1,60 +1,37 @@
-import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import net.minecraftforge.gradle.user.ReobfMappingType
-import net.minecraftforge.gradle.user.patcherUser.forge.ForgeExtension
-import nl.javadude.gradle.plugins.license.LicensePlugin
-import org.gradle.api.internal.HasConvention
-import org.spongepowered.asm.gradle.plugins.MixinGradlePlugin
-
-// Gradle repositories and dependencies
-buildscript {
-    repositories {
-        mavenCentral()
-        maven {
-            setUrl("https://repo.spongepowered.org/maven")
-        }
-        maven {
-            setUrl("https://plugins.gradle.org/m2/")
-        }
-        maven {
-            setUrl("https://files.minecraftforge.net/maven")
-        }
-    }
-    dependencies {
-        classpath("org.spongepowered:mixingradle:0.6-SNAPSHOT")
-        classpath("com.github.jengelman.gradle.plugins:shadow:2.0.4")
-        classpath("gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0")
-        classpath("net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT")
-    }
-}
+import java.nio.charset.StandardCharsets
+import java.nio.file.FileSystems
+import java.nio.file.Files
+import java.nio.file.StandardOpenOption
+import java.time.Instant
+import java.time.format.DateTimeFormatter
 
 plugins {
-    base
     java
-    maven
     `maven-publish`
+    signing
     idea
-
+    id("net.minecraftforge.gradle").version("5.1.27")
+    id("org.spongepowered.mixin").version("0.7-SNAPSHOT")
+    id("com.github.johnrengelman.shadow").version("7.1.2")
+    id("com.github.hierynomus.license").version("0.16.1")
+    id("io.github.opencubicchunks.gradle.mcGitVersion")
+    id("io.github.opencubicchunks.gradle.mixingen")
 }
 
-// seems like malisiscore fails to resolve after forge maven migration when repositories{} block is defined after applying FG plugin?
-repositories {
-    mavenCentral()
-    maven { setUrl("https://oss.sonatype.org/content/repositories/public/") }
-    // Note: sponge repository needs to be the second one because flow-noise is both in sponge and sonatype repository
-    // but sponge has older one, and we need the newer one from sonatype
-    // currently gradle seems to resolve dependencies from repositories in the order they are defined here
-    maven { setUrl("https://repo.spongepowered.org/maven") }
-    maven { setUrl("https://minecraft.curseforge.com/api/maven/") }
-}
+// TODO: update to gradle 7.3+, currently blocked by https://youtrack.jetbrains.com/issue/IDEA-276738
+val hasCubicChunksBuild = gradle.includedBuilds.any { it.name == "CubicChunks" || it.name == "1.12" }
+val cubicChunksBuildProject = gradle.includedBuilds.find { it.name == "CubicChunks" || it.name == "1.12" }
+val licenseYear: String by project
+val projectName: String by project
+val doRelease: String by project
+val theForgeVersion: String by project
+val malisisCoreVersion: String by project
 
-apply {
-    plugin<ShadowPlugin>()
-    plugin<LicensePlugin>()
-    plugin("io.github.opencubicchunks.gradle.fg2fixed")
-    plugin("io.github.opencubicchunks.gradle.mixingen")
-    plugin("io.github.opencubicchunks.gradle.mcGitVersion")
-    plugin<MixinGradlePlugin>()
+group = "io.github.opencubicchunks"
+
+base {
+    archivesName.set("CubicWorldGen")
 }
 
 mcGitVersion {
@@ -62,66 +39,14 @@ mcGitVersion {
     setCommitVersion("tags/v0.0", "0.0")
 }
 
-// TODO: Reduce duplication of buildscript code between CC projects?
-group = "io.github.opencubicchunks"
-
-if (gradle.includedBuilds.any { it.name == "CubicChunks" }) {
-    tasks["clean"].dependsOn(gradle.includedBuild("CubicChunksAPI").task(":clean"))
-    tasks["clean"].dependsOn(gradle.includedBuild("CubicChunks").task(":clean"))
-}
-
-val theForgeVersion: String by project
-val versionSuffix: String  by project
-val theMappingsVersion: String by project
-
-val licenseYear: String by project
-val projectName: String by project
-
-val malisisCoreVersion: String by project
-val malisisCoreMinVersion: String by project
-
-val release: String by project
-
-val sourceSets = the<JavaPluginConvention>().sourceSets
-val mainSourceSet = sourceSets["main"]
-
-val minecraft = the<ForgeExtension>()
-
-val shadowJar: ShadowJar by tasks
-val build by tasks
-val compileJava: JavaCompile by tasks
-
-
-base {
-    archivesBaseName = "CubicWorldGen"
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-}
-
-if (JavaVersion.current() != java.sourceCompatibility) {
-    throw GradleException("This project must be compiled with java ${java.sourceCompatibility} but current java version is ${JavaVersion.current()}")
-}
-
-compileJava.apply {
-    options.isDeprecation = true
-    options.compilerArgs.add("-Xlint:unchecked")
-}
+java.toolchain.languageVersion.set(JavaLanguageVersion.of(8))
 
 minecraft {
-    version = theForgeVersion
-    runDir = "run"
-    mappings = theMappingsVersion
+    mappings("stable", "39-1.12")
 
-    replace("public static final String VERSION = \"0.0.9999.0\"",
-            "public static final String VERSION = \"${project.version}\"")
-    replace("@@MALISIS_VERSION@@", malisisCoreMinVersion)
-    replaceIn("io/github/opencubicchunks/cubicchunks/cubicgen/CustomCubicMod.java")
-
-    val coremods = if (gradle.includedBuilds.any { it.name == "CubicChunks" })
+    val coremods = if (hasCubicChunksBuild)
         "-Dfml.coreMods.load=io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.CubicGenCoreMod,io.github.opencubicchunks.cubicchunks.core.asm.coremod.CubicChunksCoreMod"
-        else "-Dfml.coreMods.load=io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.CubicGenCoreMod" //the core mod class, needed for mixins
+    else "-Dfml.coreMods.load=io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.CubicGenCoreMod" //the core mod class, needed for mixins
     val args = listOf(
             coremods,
             "-Dmixin.env.compatLevel=JAVA_8", //needed to use java 8 when using mixins
@@ -135,28 +60,117 @@ minecraft {
             "-da:io.netty..." //disable netty assertions because they sometimes fail
     )
 
-    clientJvmArgs.addAll(args)
-    serverJvmArgs.addAll(args)
+    runs {
+        create("client") {
+            workingDirectory(project.file("run"))
+            property("forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP")
+            property("forge.logging.console.level", "debug")
+            jvmArgs(args)
+        }
+
+        create("server") {
+            workingDirectory(project.file("run"))
+            property("forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP")
+            property("forge.logging.console.level", "debug")
+            jvmArgs(args)
+        }
+    }
 }
 
-license {
-    val ext = (this as HasConvention).convention.extraProperties
-    ext["project"] = projectName
-    ext["year"] = licenseYear
-    exclude("**/*.info")
-    exclude("**/package-info.java")
-    exclude("**/*.json")
-    exclude("**/*.xml")
-    exclude("assets/*")
-    exclude("io/github/opencubicchunks/cubicchunks/cubicgen/XxHash.java")
-    header = file("HEADER.txt")
-    ignoreFailures = false
-    strictCheck = true
-    mapping(mapOf("java" to "SLASHSTAR_STYLE"))
+sourceSets {
+    create("optifine_dummy")
+    // TODO: make this unnecessary, it's an awful hack
+    create("api") {
+        if (!System.getProperty("idea.sync.active", "false").toBoolean()) {
+            java {
+                srcDir("CubicChunksAPI/src/main/java")
+            }
+            resources {
+                srcDir("CubicChunksAPI/src/main/resources")
+            }
+            compileClasspath = sourceSets.main.get().compileClasspath
+        }
+    }
+}
+
+val shade: Configuration by configurations.creating
+
+configurations {
+    implementation {
+        extendsFrom(shade)
+    }
+    testImplementation {
+        extendsFrom(getByName("minecraft"))
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        setUrl("https://oss.sonatype.org/content/repositories/public/")
+    }
+    // Note: sponge repository needs to be the second one because flow-noise is both in sponge and sonatype repository
+    // but sponge has older one, and we need the newer one from sonatype
+    // currently gradle seems to resolve dependencies from repositories in the order they are defined here
+    maven {
+        setUrl("https://repo.spongepowered.org/maven")
+    }
+    maven {
+        setUrl("https://cursemaven.com")
+        content {
+            includeGroup("curse.maven")
+        }
+    }
+}
+
+
+dependencies {
+    minecraft(group = "net.minecraftforge", name = "forge", version = theForgeVersion)
+
+    // provided by cubicchunks implementation
+    implementation("org.spongepowered:mixin:0.8.1-SNAPSHOT") {
+        isTransitive = false
+    }
+
+    implementation(fg.deobf("curse.maven:hackForMixinFMLAgent_deobfedDeps_-223896:2680892"))
+
+    shade("com.flowpowered:flow-noise:1.0.1-SNAPSHOT")
+    shade("blue.endless:jankson:1.2.1")
+
+    testImplementation("junit:junit:4.11")
+    testImplementation("org.hamcrest:hamcrest-junit:2.0.0.0")
+    testImplementation("it.ozimov:java7-hamcrest-matchers:0.7.0")
+    testImplementation("org.mockito:mockito-core:2.1.0-RC.2")
+    testImplementation("org.spongepowered:launchwrappertestsuite:1.0-SNAPSHOT")
+    compileOnly("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0-SNAPSHOT")
+
+    if (hasCubicChunksBuild) {
+        testImplementation("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0-SNAPSHOT")
+        runtimeOnly("io.github.opencubicchunks:cubicchunks:1.12.2-0.0-SNAPSHOT")
+    } else {
+        testImplementation(fg.deobf("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0-SNAPSHOT"))
+    }
+    if (!System.getProperty("idea.sync.active", "false").toBoolean()) {
+        annotationProcessor("org.spongepowered:mixin:0.8.4:processor")
+    }
+}
+
+idea {
+    module.apply {
+        inheritOutputDirs = true
+    }
+    module.isDownloadJavadoc = true
+    module.isDownloadSources = true
 }
 
 mixin {
-    add(sourceSets["main"], "cubicgen.refmap.json")
+    val forgeMinorVersion = theForgeVersion.split(Regex("-")).getOrNull(1)?.split(Regex("\\."))?.getOrNull(1)
+            ?: throw IllegalStateException("Couldn't parse forge version")
+    token("MC_FORGE", forgeMinorVersion)
+}
+
+sourceSets.main {
+    ext["refMap"] = "cubicgen.refmap.json"
 }
 
 mixinGen {
@@ -174,137 +188,148 @@ mixinGen {
     }
 }
 
-val deobfCompile by configurations
-val compile by configurations
-val testCompile by configurations
-val forgeGradleGradleStart by configurations
-val forgeGradleMcDeps by configurations
-val runtime by configurations
-val implementation by configurations
-
-val shade by configurations.creating
-compile.extendsFrom(shade)
-// needed for tests to work
-testCompile.extendsFrom(forgeGradleGradleStart)
-testCompile.extendsFrom(forgeGradleMcDeps)
-
-dependencies {
-
-    // provided by cubicchunks implementation
-    compile("org.spongepowered:mixin:0.8.1-SNAPSHOT") {
-        isTransitive = false
+tasks {
+    test {
+        systemProperty("lwts.tweaker", "cubicchunks.tweaker.MixinTweakerServer")
+        jvmArgs("-Dmixin.debug.verbose=true", //verbose mixin output for easier debugging of mixins
+                "-Dmixin.checks.interfaces=true", //check if all interface methods are overriden in mixin
+                "-Dmixin.env.remapRefMap=true")
+        testLogging {
+            showStandardStreams = true
+        }
     }
 
-    deobfCompile("malisiscore:malisiscore:1.12.2:$malisisCoreVersion") {
-        isTransitive = false
+    compileJava {
+        options.isDeprecation = true
+        options.compilerArgs.add("-Xlint:unchecked")
+        if (gradle.includedBuilds.any { it.name == "CubicChunks" }) {
+            dependsOn(gradle.includedBuild("CubicChunks").task(":reobfJar"))
+        }
     }
 
-    shade("com.flowpowered:flow-noise:1.0.1-SNAPSHOT")
-    shade("blue.endless:jankson:1.2.1")
+    fun substituteVersion(jar: Jar) {
+        val fs = FileSystems.newFileSystem(jar.archiveFile.get().asFile.toPath(), jar.javaClass.classLoader)
+        var str = String(Files.readAllBytes(fs.getPath("mcmod.info")), StandardCharsets.UTF_8)
+        str = str.replace("%%VERSION%%", project.version.toString())
+        Files.write(fs.getPath("mcmod.info"), str.toByteArray(StandardCharsets.UTF_8), StandardOpenOption.TRUNCATE_EXISTING)
+        fs.close()
+    }
 
-    testCompile("junit:junit:4.11")
-    testCompile("org.hamcrest:hamcrest-junit:2.0.0.0")
-    testCompile("it.ozimov:java7-hamcrest-matchers:0.7.0")
-    testCompile("org.mockito:mockito-core:2.1.0-RC.2")
-    testCompile("org.spongepowered:launchwrappertestsuite:1.0-SNAPSHOT")
+    fun Jar.setupManifest() {
+        manifest.attributes(
+                "Specification-Title" to project.name,
+                "Specification-Version" to project.version,
+                "Specification-Vendor" to "OpenCubicChunks",
+                "Implementation-Title" to "${project.group}.${project.name.toLowerCase().replace(' ', '_')}",
+                "Implementation-Version" to project.version,
+                "Implementation-Vendor" to "OpenCubicChunks",
+                "Implementation-Timestamp" to DateTimeFormatter.ISO_INSTANT.format(Instant.now()),
+                "FMLCorePlugin" to "io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.CubicGenCoreMod",
+                "Maven-Version" to "${project.group}:${project.base.archivesBaseName}:${project.version.toString()}:core",
+                "FMLCorePluginContainsFMLMod" to "true" // workaround for mixin double-loading the mod on new forge versions
+        )
+    }
 
-    if (gradle.includedBuilds.any { it.name == "CubicChunks" }) {
-        implementation("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0-SNAPSHOT")
-        runtime("io.github.opencubicchunks:cubicchunks:1.12.2-0.0-SNAPSHOT")
-    } else {
-        deobfCompile("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0-SNAPSHOT")
+    fun configureShadowJar(task: ShadowJar, classifier: String) {
+        task.configurations = listOf(shade)
+        task.exclude("META-INF/MUMFREY*")
+        task.from(sourceSets["main"].output)
+        task.from(sourceSets["api"].output)
+        task.exclude("log4j2.xml")
+        task.relocate("blue.endless.jankson.", "io.github.opencubicchunks.cubicchunks.cubicgen.blue.endless.jankson.")
+        task.archiveClassifier.set(classifier)
+
+        task.setupManifest()
+    }
+
+    jar {
+        finalizedBy("reobfJar")
+        setupManifest()
+        doLast {
+            substituteVersion(this as Jar)
+        }
+    }
+
+    shadowJar {
+        configureShadowJar(this, "all")
+        doLast {
+            substituteVersion(this as Jar)
+        }
+    }
+
+    val sourcesJar by creating(Jar::class) {
+        classifier = "sources"
+        from(sourceSets["main"].java.srcDirs)
+    }
+
+    val devShadowJar by creating(ShadowJar::class) {
+        configureShadowJar(this, "dev")
+    }
+
+    reobf {
+        create("shadowJar")
+    }
+
+    shadowJar {
+        finalizedBy("reobfShadowJar")
+    }
+
+    build {
+        dependsOn(shadowJar, devShadowJar, sourcesJar)
+    }
+
+    if (hasCubicChunksBuild) {
+        clean {
+            dependsOn(cubicChunksBuildProject!!.task(":clean"))
+        }
     }
 }
 
-fun Jar.setupManifest() {
-    manifest {
-        attributes["FMLCorePluginContainsFMLMod"] = "true"
-        attributes["FMLCorePlugin"] = "io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.CubicGenCoreMod"
-        attributes["Maven-Version"] = "${project.group}:${project.base.archivesBaseName}:${project.version.toString()}:core"
-    }
+configurations {
+    create("mainArchives")
+    create("apiArchives")
 }
 
-fun configureShadowJar(task: ShadowJar, classifier: String) {
-    task.configurations = listOf(shade)
-    task.exclude("META-INF/MUMFREY*")
-    task.from(sourceSets["main"].output)
-    task.from(sourceSets["api"].output)
-    task.exclude("log4j2.xml")
-    task.relocate("blue.endless.jankson.", "io.github.opencubicchunks.cubicchunks.cubicgen.blue.endless.jankson.")
-    task.classifier = classifier
-
-    task.setupManifest()
+// tasks must be before artifacts, don't change the order
+artifacts {
+    archives(tasks["shadowJar"])
+    archives(tasks["sourcesJar"])
+    archives(tasks["devShadowJar"])
 }
-
-shadowJar.apply { configureShadowJar(this, "all") }
-
-val sourcesJar by tasks.creating(Jar::class) {
-    classifier = "sources"
-    from(sourceSets["main"].java.srcDirs)
-}
-val devShadowJar by tasks.creating(ShadowJar::class) {
-    configureShadowJar(this, "dev")
-}
-
-reobf {
-    create("shadowJar").apply {
-        mappingType = ReobfMappingType.SEARGE
-    }
-}
-build.dependsOn("reobfShadowJar", devShadowJar)
 
 publishing {
-    val ghpUser = (project.findProperty("gpr.user") ?: System.getenv("USERNAME")) as String?
-    val ghpPassword = (project.findProperty("gpr.key") ?: System.getenv("TOKEN")) as String?
-
-    val sonatypeUser = (project.properties["sonatypeUsername"] ?: System.getenv("sonatypeUsername")) as String?
-    val sonatypePass = (project.properties["sonatypePassword"] ?: System.getenv("sonatypePassword")) as String?
-
-    val ghPackagesPublish = ghpUser != null && ghpPassword != null
-    val sonatypePublish = sonatypeUser != null && sonatypePass != null
     repositories {
-        when {
-            ghPackagesPublish -> {
-                maven {
-                    url = uri("https://maven.pkg.github.com/OpenCubicChunks/CubicWorldGen")
-                    credentials {
-                        username = ghpUser
-                        password = ghpPassword
-                    }
-                }
+        maven {
+            val user = (project.properties["sonatypeUsername"] ?: System.getenv("sonatypeUsername")) as String?
+            val pass = (project.properties["sonatypePassword"] ?: System.getenv("sonatypePassword")) as String?
+            val local = user == null || pass == null
+            if (local) {
+                logger.warn("Username or password not set, publishing to local repository in build/mvnrepo/")
             }
-            sonatypePublish -> {
-                maven {
-                    val releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
-                    val snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+            val localUrl = "$buildDir/mvnrepo"
+            val releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+            val snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
 
-                    setUrl(if (release.toBoolean()) releasesRepoUrl else snapshotsRepoUrl)
-                    credentials {
-                        username = sonatypeUser
-                        password = sonatypePass
-                    }
-                }
-            }
-            else -> {
-                maven {
-                    setUrl("$buildDir/mvnrepo")
+            setUrl(if (local) localUrl else if (doRelease.toBoolean()) releasesRepoUrl else snapshotsRepoUrl)
+            if (!local) {
+                credentials {
+                    username = user
+                    password = pass
                 }
             }
         }
     }
-    (publications) {
-        "mod"(MavenPublication::class) {
-            version = if (ghPackagesPublish) project.version.toString() else project.ext["mavenProjectVersion"]!!.toString()
+    publications {
+        create("mod", MavenPublication::class) {
+            version = project.ext["mavenProjectVersion"]!!.toString()
             artifactId = base.archivesBaseName.toLowerCase()
-            from(components["java"])
-            artifacts.clear()
-            artifact(sourcesJar) {
+            artifact(tasks["sourcesJar"]) {
                 classifier = "sources"
             }
-            artifact(shadowJar) {
+            artifact(tasks["shadowJar"]) {
                 classifier = ""
             }
-            artifact(devShadowJar) {
+            artifact(tasks["devShadowJar"]) {
                 classifier = "dev"
             }
             pom {
@@ -341,48 +366,26 @@ publishing {
             }
         }
     }
-}
-afterEvaluate {
-    tasks["publishModPublicationToMavenRepository"].dependsOn("reobfShadowJar")
-}
-artifacts {
-    withGroovyBuilder {
-        "archives"(shadowJar, sourcesJar, devShadowJar)
-    }
-}
-tasks {
-    "test"(Test::class) {
-        systemProperty("lwts.tweaker", "io.github.opencubicchunks.cubicchunks.tweaker.MixinTweakerServer")
-        jvmArgs("-Dmixin.debug.verbose=true", //verbose mixin output for easier debugging of mixins
-                "-Dmixin.checks.interfaces=true", //check if all interface methods are overriden in mixin
-                "-Dmixin.env.remapRefMap=true")
-        testLogging {
-            showStandardStreams = true
-        }
-    }
-
-    "processResources"(ProcessResources::class) {
-        // this will ensure that this task is redone when the versions change.
-        inputs.property("version", project.version.toString())
-        inputs.property("mcversion", minecraft.version)
-
-        // replace stuff in mcmod.info, nothing else
-        from(mainSourceSet.resources.srcDirs) {
-            include("mcmod.info")
-
-            // replace version and mcversion
-            expand(mapOf("version" to project.version.toString(), "mcversion" to minecraft.version))
-        }
-
-        // copy everything else, thats not the mcmod.info
-        from(mainSourceSet.resources.srcDirs) {
-            exclude("mcmod.info")
-        }
-    }
+    tasks["publishModPublicationToMavenRepository"].dependsOn("sourcesJar", "shadowJar", "devShadowJar")
 }
 
-fun extractForgeMinorVersion(): String {
-    // version format: MC_VERSION-MAJOR.MINOR.?.BUILD
-    return theForgeVersion.split(Regex("-")).getOrNull(1)?.split(Regex("\\."))?.getOrNull(1)
-            ?: throw RuntimeException("Invalid forge version format: $theForgeVersion")
+signing {
+    isRequired = false
+    // isRequired = gradle.taskGraph.hasTask("uploadArchives")
+    sign(configurations.archives.get())
+}
+
+license {
+    ext["project"] = projectName
+    ext["year"] = licenseYear
+    exclude("**/*.info")
+    exclude("**/package-info.java")
+    exclude("**/*.json")
+    exclude("**/*.xml")
+    exclude("assets/*")
+    exclude("io/github/opencubicchunks/cubicchunks/cubicgen/XxHash.java")
+    header = file("HEADER.txt")
+    ignoreFailures = false
+    strictCheck = true
+    mapping(mapOf("java" to "SLASHSTAR_STYLE"))
 }

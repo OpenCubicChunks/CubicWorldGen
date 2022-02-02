@@ -93,16 +93,14 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 @Mod(modid = CustomCubicMod.MODID,
-        dependencies = "required:cubicchunks@[1.12.2-0.0.1231.0,);required:forge@[14.23.3.2658,)",
         acceptableRemoteVersions = "*",
-        version = CustomCubicMod.VERSION
+        useMetadata = true
 )
 @Mod.EventBusSubscriber
 public class CustomCubicMod {
 
     public static final String MODID = "cubicgen";
-    public static final String VERSION = "0.0.9999.0";
-    public static final String MALISIS_VERSION = "@@MALISIS_VERSION@@";
+    public static final String MALISIS_VERSION = "1.12.2-6.5.1";
 
     public static final boolean DEBUG_ENABLED = false;
     public static Logger LOGGER = null;
