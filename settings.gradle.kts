@@ -26,6 +26,7 @@ rootProject.name = "CubicWorldGen"
 if (file("../1.12").exists()) {
     println("Including build at ../1.12/ in composite build")
     includeBuild("../1.12") {
+        name = "CubicChunks"
         dependencySubstitution {
             substitute(module("io.github.opencubicchunks:cubicchunks")).using(project(":"))
         }
@@ -33,6 +34,7 @@ if (file("../1.12").exists()) {
 } else if (file("../CubicChunks").exists()) {
     println("Including build at ../CubicChunks/ in composite build")
     includeBuild("../CubicChunks") {
+        name = "CubicChunks"
         dependencySubstitution {
             substitute(module("io.github.opencubicchunks:cubicchunks")).using(project(":"))
         }
