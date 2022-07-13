@@ -271,6 +271,11 @@ tasks {
         finalizedBy("reobfShadowJar")
     }
 
+    afterEvaluate {
+        getByName("configureReobfTaskForReobfShadowJar").mustRunAfter("compileJava")
+        getByName("configureReobfTaskForReobfJar").mustRunAfter("compileJava")
+    }
+
     build {
         dependsOn(shadowJar, devShadowJar, sourcesJar)
     }
