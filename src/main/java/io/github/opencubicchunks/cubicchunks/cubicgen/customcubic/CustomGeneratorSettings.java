@@ -30,8 +30,7 @@ import io.github.opencubicchunks.cubicchunks.api.util.MathUtil;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
-import io.github.opencubicchunks.cubicchunks.cubicgen.XxHash;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.BiomeBlockReplacerConfig;
+import io.github.opencubicchunks.cubicchunks.cubicgen.RngHash;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.world.storage.IWorldInfoAccess;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.CustomGenSettingsSerialization;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.CustomGeneratorSettingsFixer;
@@ -42,6 +41,7 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateD
 import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockDirt;
 import net.minecraft.block.BlockSilverfish;
 import net.minecraft.block.BlockStone;
 import net.minecraft.block.state.IBlockState;
@@ -50,6 +50,10 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BiomeMesa;
+import net.minecraft.world.biome.BiomeSavannaMutated;
+import net.minecraft.world.biome.BiomeSwamp;
+import net.minecraft.world.biome.BiomeTaiga;
 import net.minecraft.world.storage.ISaveHandler;
 
 import javax.annotation.Nullable;
@@ -62,9 +66,11 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod.MODID;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod.LOGGER;
 
 public class CustomGeneratorSettings {
     /**
@@ -76,7 +82,6 @@ public class CustomGeneratorSettings {
      * <p>
      * Page 1
      */
-    public int waterLevel = 63;
     public boolean caves = true;
 
     public boolean strongholds = true;
@@ -95,8 +100,6 @@ public class CustomGeneratorSettings {
     public int dungeonCount = 7;
 
     public List<LakeConfig> lakes = new ArrayList<>();
-
-    public boolean lavaOceans = false;
 
     public int biome = -1;
     public int biomeSize = 4;
@@ -154,22 +157,15 @@ public class CustomGeneratorSettings {
     public float highNoiseFrequencyY = ConversionUtils.VANILLA_LOWHIGH_NOISE_FREQUENCY_Y;
     public float highNoiseFrequencyZ = ConversionUtils.VANILLA_LOWHIGH_NOISE_FREQUENCY_XZ;
     public int highNoiseOctaves = 16;
+    public List<ReplacerConfig> replacers = new ArrayList<>();
 
     // note: the AABB uses cube coords to simplify the generator
     public CubeAreas cubeAreas = new CubeAreas(new ArrayList<>());
-    public BiomeBlockReplacerConfig replacerConfig = BiomeBlockReplacerConfig.defaults();
 
     // TODO: public boolean negativeHeightVariationInvertsTerrain = true;
     public int version = CustomGeneratorSettingsFixer.LATEST;
 
     public CustomGeneratorSettings() {
-    }
-
-    public BiomeBlockReplacerConfig createBiomeBlockReplacerConfig() {
-        replacerConfig.setDefault(MODID, "water_level", (double) this.waterLevel);
-        replacerConfig.setDefault(MODID, "height_scale", (double) this.expectedHeightVariation);
-        replacerConfig.setDefault(MODID, "height_offset", (double) this.expectedBaseHeight);
-        return replacerConfig;
     }
 
     public JsonObject toJsonObject() {
@@ -333,10 +329,11 @@ public class CustomGeneratorSettings {
                             .maxHeight(-0.5f).create()
             ));
         }
+
         {
             settings.lakes.addAll(Arrays.asList(
                     LakeConfig.builder().setBlock(Blocks.LAVA)
-                            .setBiomes(LakeConfig.BiomeSelectionMode.EXCLUDE, new BiomeDesc[0])
+                            .setBiomes(FilterType.EXCLUDE, new BiomeDesc[0])
                             .setMainProbability(UserFunction.builder()
                                     // same as vanilla for y0-127, probabilities near y=256 are very low, so don't use them
                                     .point(0, 4 / 263f)
@@ -359,7 +356,7 @@ public class CustomGeneratorSettings {
                                     .build())
                             .build(),
                     LakeConfig.builder().setBlock(Blocks.WATER)
-                            .setBiomes(LakeConfig.BiomeSelectionMode.EXCLUDE, Biomes.DESERT, Biomes.DESERT_HILLS)
+                            .setBiomes(FilterType.EXCLUDE, Biomes.DESERT, Biomes.DESERT_HILLS)
                             .setMainProbability(UserFunction.builder()
                                     // same as vanilla
                                     .point(0, 1 / 64f)
@@ -373,6 +370,204 @@ public class CustomGeneratorSettings {
                                     .build())
                             .build()
             ));
+        }
+
+        {
+
+            double depthNoiseFreq = ConversionUtils.frequencyFromVanilla(0.0625f, 4);
+            double depthNoiseFactor = 0.55 * ((1 << 4) - 1) / 3.0;
+            double depthNoiseOffset = 3.0;
+            // terrain
+            settings.replacers.add(new DensityRangeReplacerConfig.Builder()
+                    .setMinY(Integer.MIN_VALUE)
+                    .setMaxY(Integer.MAX_VALUE)
+                    .setBiomeFilter(null)
+                    .setBlockFilterType(FilterType.EXCLUDE)
+                    .setFilterBlocks(new ArrayList<>())
+                    .setMinDensity(0)
+                    .setMaxDensity(Double.POSITIVE_INFINITY)
+                    .setBlockInRange(new BlockStateDesc(Blocks.STONE.getDefaultState()))
+                    .setBlockOutOfRange(null)
+                    .build());
+
+            // surface
+            settings.replacers.add(new MainSurfaceReplacerConfig.Builder()
+                    .setMinY(Integer.MIN_VALUE)
+                    .setMaxY(Integer.MAX_VALUE)
+                    .setBiomeFilter(new AllOfCompositeBiomeFilter(
+                            new ExcludeBiomeClass(
+                                    BiomeClassMatchType.RAW_EXACT,
+                                    BiomeSavannaMutated.class.getName(),
+                                    BiomeMesa.class.getName()
+                            ),
+                            new ExcludeBiomes(
+                                    new BiomeDesc("minecraft:redwood_taiga"),
+                                    new BiomeDesc("minecraft:redwood_taiga_hills"),
+                                    new BiomeDesc("minecraft:mutated_redwood_taiga"),
+                                    new BiomeDesc("minecraft:mutated_redwood_taiga_hills")
+                            )))
+                    .setOceanLevel(63)
+                    .setOverrideFiller(null)
+                    .setOverrideTop(null)
+                    .setMaxSurfaceDepth(9)
+                    .setSurfaceDepthNoiseType(NoiseType.SIMPLEX_SPONGE_NOISE)
+                    .setSurfaceDepthNoiseSeed(0)
+                    .setSurfaceDepthNoiseFactor(depthNoiseFactor)
+                    .setSurfaceDepthNoiseOffset(depthNoiseOffset)
+                    .setSurfaceDepthNoiseFrequencyX(depthNoiseFreq)
+                    .setSurfaceDepthNoiseFrequencyY(0)
+                    .setSurfaceDepthNoiseFrequencyZ(depthNoiseFreq)
+                    .setSurfaceDepthNoiseOctaves(4)
+                    .setHorizontalGradientDepthDecreaseWeight(1.0)
+                    .build());
+
+            // double depth = (defaultReplacer.getDepthNoise().get(x, 0, z) - 3) * 3;
+            // if (depth > 1.75D) {
+            //     defaultReplacer.setTopBlock(Blocks.STONE.getDefaultState());
+            //     defaultReplacer.setFillerBlock(Blocks.STONE.getDefaultState());
+            // } else if (depth > -0.5D) {
+            //     defaultReplacer.setTopBlock(COARSE_DIRT);
+            // }
+            settings.replacers.add(new DepthBasedSurfaceReplacerConfig.Builder()
+                    .setMinY(Integer.MIN_VALUE)
+                    .setMaxY(Integer.MAX_VALUE)
+                    .setBiomeFilter(new IncludeBiomeClass(BiomeClassMatchType.RAW_EXACT, BiomeSavannaMutated.class.getName()))
+                    .setOceanLevel(63)
+                    .setOverrideFiller(null)
+                    .setOverrideTop(null)
+                    .setMaxSurfaceDepth(9)
+                    .setSurfaceDepthNoiseType(NoiseType.SIMPLEX_SPONGE_NOISE)
+                    .setSurfaceDepthNoiseSeed(0)
+                    .setSurfaceDepthNoiseFactor(depthNoiseFactor)
+                    .setSurfaceDepthNoiseOffset(depthNoiseOffset)
+                    .setSurfaceDepthNoiseFrequencyX(depthNoiseFreq)
+                    .setSurfaceDepthNoiseFrequencyY(0)
+                    .setSurfaceDepthNoiseFrequencyZ(depthNoiseFreq)
+                    .setSurfaceDepthNoiseOctaves(4)
+                    .setHorizontalGradientDepthDecreaseWeight(1.0)
+                    .topThreshold(1.75 / 3.0 + 3.0, new BlockStateDesc(Blocks.STONE.getDefaultState()))
+                    .fillerThreshold(1.75 / 3.0 + 3.0, new BlockStateDesc(Blocks.STONE.getDefaultState()))
+                    .topThreshold(-0.5 / 3.0 + 3.0,
+                            new BlockStateDesc(Blocks.DIRT.getDefaultState().withProperty(BlockDirt.VARIANT, BlockDirt.DirtType.COARSE_DIRT)))
+                    .build());
+
+            // double depth = (defaultReplacer.getDepthNoise().get(x, 0, z) - 3) * 3;
+            // if (depth > 1.75D) {
+            //     defaultReplacer.setTopBlock(COARSE_DIRT);
+            // } else if (depth > -0.95D) {
+            //     defaultReplacer.setTopBlock(PODZOL);
+            // }
+            settings.replacers.add(new DepthBasedSurfaceReplacerConfig.Builder()
+                    .setMinY(Integer.MIN_VALUE)
+                    .setMaxY(Integer.MAX_VALUE)
+                    .setBiomeFilter(new IncludeBiomes(
+                            new BiomeDesc("minecraft:redwood_taiga"),
+                            new BiomeDesc("minecraft:redwood_taiga_hills"),
+                            new BiomeDesc("minecraft:mutated_redwood_taiga"),
+                            new BiomeDesc("minecraft:mutated_redwood_taiga_hills")
+                    ))
+                    .setOceanLevel(63)
+                    .setOverrideFiller(null)
+                    .setOverrideTop(null)
+                    .setMaxSurfaceDepth(9)
+                    .setSurfaceDepthNoiseType(NoiseType.SIMPLEX_SPONGE_NOISE)
+                    .setSurfaceDepthNoiseSeed(0)
+                    .setSurfaceDepthNoiseFactor(depthNoiseFactor)
+                    .setSurfaceDepthNoiseOffset(depthNoiseOffset)
+                    .setSurfaceDepthNoiseFrequencyX(depthNoiseFreq)
+                    .setSurfaceDepthNoiseFrequencyY(0)
+                    .setSurfaceDepthNoiseFrequencyZ(depthNoiseFreq)
+                    .setSurfaceDepthNoiseOctaves(4)
+                    .setHorizontalGradientDepthDecreaseWeight(1.0)
+                    .topThreshold(1.75 / 3.0 + 3.0,
+                            new BlockStateDesc(Blocks.DIRT.getDefaultState().withProperty(BlockDirt.VARIANT, BlockDirt.DirtType.COARSE_DIRT)))
+                    .topThreshold(-0.95D / 3.0 + 3.0,
+                            new BlockStateDesc(Blocks.DIRT.getDefaultState().withProperty(BlockDirt.VARIANT, BlockDirt.DirtType.PODZOL)))
+                    .build());
+
+            // return Sets.newHashSet(
+            //         new ConfigOptionInfo(OCEAN_LEVEL, 63.0, -1024.0, 1024.0),
+            //         // TODO: do it properly, currently this value is just temporary until I figure out the right one
+            //         // TODO: figure out what the above comment actually means
+            //         new ConfigOptionInfo(DEPTH_NOISE_FACTOR, ((1 << 3) - 1) / 3.0, -16.0, 16.0),
+            //         new ConfigOptionInfo(DEPTH_NOISE_OFFSET, 3.0, -16.0, 128.0),
+            //         new ConfigOptionInfo(DEPTH_NOISE_FREQUENCY, ConversionUtils.frequencyFromVanilla(0.0625f, 4), 1.0 / (1<<16), 1),
+            //         new ConfigOptionInfo(DEPTH_NOISE_OCTAVES, 4.0, 1, 16),
+            //         new ConfigOptionInfo(MESA_DEPTH, 16.0, 0.0, 64.0),
+            //         new ConfigOptionInfo(HEIGHT_OFFSET, 64.0, -256.0, 256.0),
+            //         new ConfigOptionInfo(HEIGHT_SCALE, 64.0, 0.0, 1024.0)
+            // );
+            settings.replacers.add(new MesaSurfaceReplacerConfig.Builder()
+                    .setMinY(Integer.MIN_VALUE)
+                    .setMaxY(Integer.MAX_VALUE)
+                    .setBiomeFilter(new IncludeBiomeClass(BiomeClassMatchType.RAW_EXACT, BiomeMesa.class.getName()))
+                    .setWaterHeight(63)
+                    .setSurfaceDepthNoiseType(NoiseType.SIMPLEX_SPONGE_NOISE)
+                    .setSurfaceDepthNoiseSeed(0)
+                    .setSurfaceDepthNoiseFactor(depthNoiseFactor)
+                    .setSurfaceDepthNoiseOffset(depthNoiseOffset)
+                    .setSurfaceDepthNoiseFrequencyX(depthNoiseFreq)
+                    .setSurfaceDepthNoiseFrequencyY(0)
+                    .setSurfaceDepthNoiseFrequencyZ(depthNoiseFreq)
+                    .setSurfaceDepthNoiseOctaves(4)
+                    .setMesaDepth(16)
+                    .setHeightOffset(64)
+                    .setHeightScale(64)
+                    .setClayBandsOffsetNoiseSource(MesaSurfaceReplacerConfig.NoiseSource.MESA_CLAY_BANDS_OFFSET_NOISE)
+                    .setClayBandsNoiseFrequencyX(1.0 / 512.0)
+                    .setClayBandsNoiseFrequencyY(0)
+                    .setClayBandsNoiseFrequencyZ(1.0 / 512.0)
+                    .setClayBandsNoiseOffset(0)
+                    .setClayBandsNoiseFactor(1)
+                    .build());
+
+            // ocean. NOTE: another way to do ocean would be to use density range
+            settings.replacers.add(new DensityRangeReplacerConfig.Builder()
+                    .setMinY(Integer.MIN_VALUE)
+                    .setMaxY(63)
+                    .setBiomeFilter(null)
+                    .setBlockFilterType(FilterType.INCLUDE)
+                    .setFilterBlocks(Collections.singletonList(new BlockStateDesc(Blocks.AIR.getDefaultState())))
+                    .setMinDensity(Double.NEGATIVE_INFINITY)
+                    .setMaxDensity(Double.POSITIVE_INFINITY)
+                    .setBlockInRange(new BlockStateDesc(Blocks.WATER.getDefaultState()))
+                    .setBlockOutOfRange(null)
+                    .build());
+
+            // TODO: swamp: separate bottom and top density ranges
+            // if (noise > 0) {
+            //     return Blocks.WATER.getDefaultState();
+            // }
+            // if (noise > 0 && noise < 0.12) {
+            //     return Blocks.WATERLILY.getDefaultState();
+            // }
+            settings.replacers.add(new NoiseBasedSurfaceDecorationConfig.Builder()
+                    .setMinY(63)
+                    .setMaxY(64)
+                    .setBiomeFilter(new IncludeBiomeClass(BiomeClassMatchType.RAW_WITH_SUBCLASSES, BiomeSwamp.class.getName()))
+                    .setFeatureBlock(new BlockStateDesc(Blocks.WATERLILY.getDefaultState()))
+                    .setGroundBlock(new BlockStateDesc(Blocks.WATER.getDefaultState()))
+                    .setGroundMinNoise(0.0)
+                    .setGroundMaxNoise(Double.POSITIVE_INFINITY)
+                    .setFeatureMinNoise(0.0)
+                    .setFeatureMaxNoise(0.12)
+                    .setNoiseSource(NoiseBasedSurfaceDecorationConfig.NoiseSource.GRASS_COLOR_NOISE)
+                    .setNoiseFreqX(0.25)
+                    .setNoiseFreqZ(0.25)
+                    .setNoiseOffset(0.0)
+                    .setNoiseFactor(1.0)
+                    .build());
+
+            settings.replacers.add(new RandomYGradientReplacerConfig.Builder()
+                    .setMinY(Integer.MIN_VALUE / 2)
+                    .setMaxY(Integer.MIN_VALUE / 2 + 5)
+                    .setBiomeFilter(null)
+                    .setBlockToPlace(new BlockStateDesc(Blocks.BEDROCK.getDefaultState()))
+                    .setProbabilityFunction(UserFunction.builder()
+                            .point(Integer.MIN_VALUE >> 1, 1)
+                            .point((Integer.MIN_VALUE >> 1) + 5, 0)
+                            .build())
+                    .build());
         }
         return settings;
     }
@@ -390,7 +585,7 @@ public class CustomGeneratorSettings {
 
         public BlockDesc block;
         public Set<BiomeDesc> biomes = new HashSet<>();
-        public BiomeSelectionMode biomeSelect = BiomeSelectionMode.EXCLUDE;
+        public FilterType biomeSelect = FilterType.EXCLUDE;
 
         public UserFunction surfaceProbability;
         public UserFunction mainProbability;
@@ -398,14 +593,6 @@ public class CustomGeneratorSettings {
 
         public static Builder builder() {
             return new Builder();
-        }
-
-        public enum BiomeSelectionMode {
-            INCLUDE, EXCLUDE;
-
-            public boolean isAllowed(Set<BiomeDesc> biomes, Biome biome) {
-                return (this == INCLUDE) == biomes.contains(new BiomeDesc(biome));
-            }
         }
 
         public static class Builder {
@@ -422,13 +609,13 @@ public class CustomGeneratorSettings {
                 return this;
             }
 
-            public Builder setBiomes(BiomeSelectionMode mode, BiomeDesc... biomes) {
+            public Builder setBiomes(FilterType mode, BiomeDesc... biomes) {
                 config.biomes = new HashSet<>(Arrays.asList(biomes));
                 config.biomeSelect = mode;
                 return this;
             }
 
-            public Builder setBiomes(BiomeSelectionMode mode, Biome... biomes) {
+            public Builder setBiomes(FilterType mode, Biome... biomes) {
                 config.biomes = Arrays.stream(biomes).map(BiomeDesc::new).collect(Collectors.toSet());
                 config.biomeSelect = mode;
                 return this;
@@ -456,6 +643,842 @@ public class CustomGeneratorSettings {
         }
     }
 
+    public static class ReplacerConfig {
+        public int minY, maxY;
+        public BiomeFilter biomeFilter;
+
+        public ReplacerConfig() {
+        }
+        public ReplacerConfig(int minY, int maxY, BiomeFilter biomeFilter) {
+            this.minY = minY;
+            this.maxY = maxY;
+            this.biomeFilter = biomeFilter;
+        }
+    }
+
+    public static class DensityRangeReplacerConfig extends ReplacerConfig {
+        public BlockStateDesc blockInRange;
+        public BlockStateDesc blockOutOfRange;
+        public List<BlockStateDesc> filterBlocks = new ArrayList<>();
+        public FilterType blockFilterType;
+        public double minDensity;
+        public double maxDensity;
+
+        public DensityRangeReplacerConfig() {
+        }
+
+        private DensityRangeReplacerConfig(Builder builder) {
+            super(builder.minY, builder.maxY, builder.biomeFilter);
+            this.blockInRange = builder.blockInRange;
+            this.blockOutOfRange = builder.blockOutOfRange;
+            this.filterBlocks = builder.filterBlocks;
+            this.blockFilterType = builder.blockFilterType;
+            this.minDensity = builder.minDensity;
+            this.maxDensity = builder.maxDensity;
+        }
+
+        public static class Builder {
+
+            private int minY;
+            private int maxY;
+            private BiomeFilter biomeFilter;
+            private BlockStateDesc blockInRange;
+            private BlockStateDesc blockOutOfRange;
+            private List<BlockStateDesc> filterBlocks;
+            private FilterType blockFilterType;
+            private double minDensity;
+            private double maxDensity;
+
+            public Builder setMinY(int minY) {
+                this.minY = minY;
+                return this;
+            }
+
+            public Builder setMaxY(int maxY) {
+                this.maxY = maxY;
+                return this;
+            }
+
+            public Builder setBiomeFilter(BiomeFilter biomeFilter) {
+                this.biomeFilter = biomeFilter;
+                return this;
+            }
+
+            public Builder setBlockInRange(BlockStateDesc blockInRange) {
+                this.blockInRange = blockInRange;
+                return this;
+            }
+
+            public Builder setBlockOutOfRange(BlockStateDesc blockOutOfRange) {
+                this.blockOutOfRange = blockOutOfRange;
+                return this;
+            }
+
+            public Builder setFilterBlocks(List<BlockStateDesc> filterBlocks) {
+                this.filterBlocks = filterBlocks;
+                return this;
+            }
+
+            public Builder setBlockFilterType(FilterType blockFilterType) {
+                this.blockFilterType = blockFilterType;
+                return this;
+            }
+
+            public Builder setMinDensity(double minDensity) {
+                this.minDensity = minDensity;
+                return this;
+            }
+
+            public Builder setMaxDensity(double maxDensity) {
+                this.maxDensity = maxDensity;
+                return this;
+            }
+
+            public DensityRangeReplacerConfig build() {
+                return new DensityRangeReplacerConfig(this);
+            }
+        }
+    }
+
+    public static class RandomYGradientReplacerConfig extends ReplacerConfig {
+        public BlockStateDesc blockToPlace;
+        public UserFunction probabilityFunction;
+        public int seed;
+
+        public RandomYGradientReplacerConfig() {
+        }
+
+        private RandomYGradientReplacerConfig(Builder builder) {
+            super(builder.minY, builder.maxY, builder.biomeFilter);
+            this.blockToPlace = builder.blockToPlace;
+            this.probabilityFunction = builder.probabilityFunction;
+            this.seed = builder.seed;
+        }
+
+        public static class Builder {
+
+            private int minY;
+            private int maxY;
+            private BiomeFilter biomeFilter;
+            private BlockStateDesc blockToPlace;
+            private UserFunction probabilityFunction;
+            private int seed;
+
+            public Builder setMinY(int minY) {
+                this.minY = minY;
+                return this;
+            }
+
+            public Builder setMaxY(int maxY) {
+                this.maxY = maxY;
+                return this;
+            }
+
+            public Builder setBiomeFilter(BiomeFilter biomeFilter) {
+                this.biomeFilter = biomeFilter;
+                return this;
+            }
+
+            public Builder setBlockToPlace(BlockStateDesc blockToPlace) {
+                this.blockToPlace = blockToPlace;
+                return this;
+            }
+
+            public Builder setProbabilityFunction(UserFunction probabilityFunction) {
+                this.probabilityFunction = probabilityFunction;
+                return this;
+            }
+
+            public Builder setSeed(int seed) {
+                this.seed = seed;
+                return this;
+            }
+
+            public RandomYGradientReplacerConfig build() {
+                return new RandomYGradientReplacerConfig(this);
+            }
+        }
+    }
+
+    public static class MainSurfaceReplacerConfig extends ReplacerConfig {
+        public NoiseType surfaceDepthNoiseType;
+        public int surfaceDepthNoiseSeed;
+        public double surfaceDepthNoiseFrequencyX;
+        public double surfaceDepthNoiseFrequencyY;
+        public double surfaceDepthNoiseFrequencyZ;
+        public int surfaceDepthNoiseOctaves;
+        public double surfaceDepthNoiseFactor;
+        public double surfaceDepthNoiseOffset;
+        public double maxSurfaceDepth;
+        public double horizontalGradientDepthDecreaseWeight;
+        public double oceanLevel;
+        public BlockStateDesc overrideTop;
+        public BlockStateDesc overrideFiller;
+
+        public MainSurfaceReplacerConfig() {
+        }
+
+        public MainSurfaceReplacerConfig(int minY, int maxY, BiomeFilter biomeFilter) {
+            super(minY, maxY, biomeFilter);
+        }
+
+        public MainSurfaceReplacerConfig(Builder builder) {
+            super(builder.minY, builder.maxY, builder.biomeFilter);
+            this.surfaceDepthNoiseType = builder.surfaceDepthNoiseType;
+            this.surfaceDepthNoiseSeed = builder.surfaceDepthNoiseSeed;
+            this.surfaceDepthNoiseFrequencyX = builder.surfaceDepthNoiseFrequencyX;
+            this.surfaceDepthNoiseFrequencyY = builder.surfaceDepthNoiseFrequencyY;
+            this.surfaceDepthNoiseFrequencyZ = builder.surfaceDepthNoiseFrequencyZ;
+            this.surfaceDepthNoiseOctaves = builder.surfaceDepthNoiseOctaves;
+            this.surfaceDepthNoiseFactor = builder.surfaceDepthNoiseFactor;
+            this.surfaceDepthNoiseOffset = builder.surfaceDepthNoiseOffset;
+            this.maxSurfaceDepth = builder.maxSurfaceDepth;
+            this.horizontalGradientDepthDecreaseWeight = builder.horizontalGradientDepthDecreaseWeight;
+            this.oceanLevel = builder.oceanLevel;
+            this.overrideTop = builder.overrideTop;
+            this.overrideFiller = builder.overrideFiller;
+        }
+
+        public static class Builder {
+            private int minY;
+            private int maxY;
+            private BiomeFilter biomeFilter;
+            private NoiseType surfaceDepthNoiseType;
+            private int surfaceDepthNoiseSeed;
+            private double surfaceDepthNoiseFrequencyX;
+            private double surfaceDepthNoiseFrequencyY;
+            private double surfaceDepthNoiseFrequencyZ;
+            private int surfaceDepthNoiseOctaves;
+            private double surfaceDepthNoiseFactor;
+            private double surfaceDepthNoiseOffset;
+            private double maxSurfaceDepth;
+            private double horizontalGradientDepthDecreaseWeight;
+            private double oceanLevel;
+            private BlockStateDesc overrideTop;
+            private BlockStateDesc overrideFiller;
+
+            public Builder setMinY(int minY) {
+                this.minY = minY;
+                return this;
+            }
+
+            public Builder setMaxY(int maxY) {
+                this.maxY = maxY;
+                return this;
+            }
+
+            public Builder setBiomeFilter(BiomeFilter biomeFilter) {
+                this.biomeFilter = biomeFilter;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseType(NoiseType surfaceDepthNoiseType) {
+                this.surfaceDepthNoiseType = surfaceDepthNoiseType;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseSeed(int surfaceDepthNoiseSeed) {
+                this.surfaceDepthNoiseSeed = surfaceDepthNoiseSeed;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseFrequencyX(double surfaceDepthNoiseFrequencyX) {
+                this.surfaceDepthNoiseFrequencyX = surfaceDepthNoiseFrequencyX;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseFrequencyY(double surfaceDepthNoiseFrequencyY) {
+                this.surfaceDepthNoiseFrequencyY = surfaceDepthNoiseFrequencyY;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseFrequencyZ(double surfaceDepthNoiseFrequencyZ) {
+                this.surfaceDepthNoiseFrequencyZ = surfaceDepthNoiseFrequencyZ;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseOctaves(int surfaceDepthNoiseOctaves) {
+                this.surfaceDepthNoiseOctaves = surfaceDepthNoiseOctaves;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseFactor(double surfaceDepthNoiseFactor) {
+                this.surfaceDepthNoiseFactor = surfaceDepthNoiseFactor;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseOffset(double surfaceDepthNoiseOffset) {
+                this.surfaceDepthNoiseOffset = surfaceDepthNoiseOffset;
+                return this;
+            }
+
+            public Builder setMaxSurfaceDepth(double maxSurfaceDepth) {
+                this.maxSurfaceDepth = maxSurfaceDepth;
+                return this;
+            }
+
+            public Builder setHorizontalGradientDepthDecreaseWeight(
+                    double horizontalGradientDepthDecreaseWeight) {
+                this.horizontalGradientDepthDecreaseWeight = horizontalGradientDepthDecreaseWeight;
+                return this;
+            }
+
+            public Builder setOceanLevel(double oceanLevel) {
+                this.oceanLevel = oceanLevel;
+                return this;
+            }
+
+            public Builder setOverrideTop(BlockStateDesc overrideTop) {
+                this.overrideTop = overrideTop;
+                return this;
+            }
+
+            public Builder setOverrideFiller(BlockStateDesc overrideFiller) {
+                this.overrideFiller = overrideFiller;
+                return this;
+            }
+
+            public MainSurfaceReplacerConfig build() {
+                return new MainSurfaceReplacerConfig(this);
+            }
+        }
+    }
+
+    public static class NoiseBasedSurfaceDecorationConfig extends ReplacerConfig {
+
+        public double surfaceDensityThreshold;
+        public BlockStateDesc groundBlock;
+        public BlockStateDesc featureBlock;
+        public NoiseSource noiseSource;
+        public double noiseFreqX;
+        public double noiseFreqY;
+        public double noiseFreqZ;
+        public double noiseFactor;
+        public double noiseOffset;
+        public int customNoiseSeed;
+        public int customNoiseOctaves;
+        public double featureMinNoise;
+        public double featureMaxNoise;
+        public double groundMinNoise;
+        public double groundMaxNoise;
+
+        public enum NoiseSource {
+            TEMPERATURE_NOISE,
+            GRASS_COLOR_NOISE,
+            FLOW_NOISE_PERLIN,
+            SPONGE_NOISE_SIMPLEX
+        }
+
+        public NoiseBasedSurfaceDecorationConfig() {
+        }
+
+        public NoiseBasedSurfaceDecorationConfig(Builder builder) {
+            super(builder.minY, builder.maxY, builder.biomeFilter);
+            this.surfaceDensityThreshold = builder.surfaceDensityThreshold;
+            this.groundBlock = builder.groundBlock;
+            this.featureBlock = builder.featureBlock;
+            this.noiseSource = builder.noiseSource;
+            this.noiseFreqX = builder.noiseFreqX;
+            this.noiseFreqY = builder.noiseFreqY;
+            this.noiseFreqZ = builder.noiseFreqZ;
+            this.noiseFactor = builder.noiseFactor;
+            this.noiseOffset = builder.noiseOffset;
+            this.customNoiseSeed = builder.customNoiseSeed;
+            this.customNoiseOctaves = builder.customNoiseOctaves;
+            this.featureMinNoise = builder.featureMinNoise;
+            this.featureMaxNoise = builder.featureMaxNoise;
+            this.groundMinNoise = builder.groundMinNoise;
+            this.groundMaxNoise = builder.groundMaxNoise;
+        }
+
+        public static class Builder {
+
+            private int minY;
+            private int maxY;
+            private BiomeFilter biomeFilter;
+            private double surfaceDensityThreshold;
+            private BlockStateDesc groundBlock;
+            private BlockStateDesc featureBlock;
+            private NoiseSource noiseSource;
+            private double noiseFreqX;
+            private double noiseFreqY;
+            private double noiseFreqZ;
+            private double noiseFactor;
+            private double noiseOffset;
+            private int customNoiseSeed;
+            private int customNoiseOctaves;
+            private double featureMinNoise;
+            private double featureMaxNoise;
+            private double groundMinNoise;
+            private double groundMaxNoise;
+
+            public Builder setMinY(int minY) {
+                this.minY = minY;
+                return this;
+            }
+
+            public Builder setMaxY(int maxY) {
+                this.maxY = maxY;
+                return this;
+            }
+
+            public Builder setBiomeFilter(BiomeFilter biomeFilter) {
+                this.biomeFilter = biomeFilter;
+                return this;
+            }
+
+            public Builder setSurfaceDensityThreshold(double surfaceDensityThreshold) {
+                this.surfaceDensityThreshold = surfaceDensityThreshold;
+                return this;
+            }
+
+            public Builder setGroundBlock(BlockStateDesc groundBlock) {
+                this.groundBlock = groundBlock;
+                return this;
+            }
+
+            public Builder setFeatureBlock(BlockStateDesc featureBlock) {
+                this.featureBlock = featureBlock;
+                return this;
+            }
+
+            public Builder setNoiseSource(NoiseSource noiseSource) {
+                this.noiseSource = noiseSource;
+                return this;
+            }
+
+            public Builder setNoiseFreqX(double noiseFreqX) {
+                this.noiseFreqX = noiseFreqX;
+                return this;
+            }
+
+            public Builder setNoiseFreqY(double noiseFreqY) {
+                this.noiseFreqY = noiseFreqY;
+                return this;
+            }
+
+            public Builder setNoiseFreqZ(double noiseFreqZ) {
+                this.noiseFreqZ = noiseFreqZ;
+                return this;
+            }
+
+            public Builder setNoiseFactor(double noiseFactor) {
+                this.noiseFactor = noiseFactor;
+                return this;
+            }
+
+            public Builder setNoiseOffset(double noiseOffset) {
+                this.noiseOffset = noiseOffset;
+                return this;
+            }
+
+            public Builder setCustomNoiseSeed(int customNoiseSeed) {
+                this.customNoiseSeed = customNoiseSeed;
+                return this;
+            }
+
+            public Builder setCustomNoiseOctaves(int customNoiseOctaves) {
+                this.customNoiseOctaves = customNoiseOctaves;
+                return this;
+            }
+
+            public Builder setFeatureMinNoise(double featureMinNoise) {
+                this.featureMinNoise = featureMinNoise;
+                return this;
+            }
+
+            public Builder setFeatureMaxNoise(double featureMaxNoise) {
+                this.featureMaxNoise = featureMaxNoise;
+                return this;
+            }
+
+            public Builder setGroundMinNoise(double groundMinNoise) {
+                this.groundMinNoise = groundMinNoise;
+                return this;
+            }
+
+            public Builder setGroundMaxNoise(double groundMaxNoise) {
+                this.groundMaxNoise = groundMaxNoise;
+                return this;
+            }
+
+            public NoiseBasedSurfaceDecorationConfig build() {
+                return new NoiseBasedSurfaceDecorationConfig(this);
+            }
+        }
+    }
+
+    public static class MesaSurfaceReplacerConfig extends ReplacerConfig {
+        public double mesaDepth;
+        public double heightOffset;
+        public double heightScale;
+        public double waterHeight;
+        public NoiseType surfaceDepthNoiseType;
+        public int surfaceDepthNoiseSeed;
+        public double surfaceDepthNoiseFrequencyX;
+        public double surfaceDepthNoiseFrequencyY;
+        public double surfaceDepthNoiseFrequencyZ;
+        public int surfaceDepthNoiseOctaves;
+        public double surfaceDepthNoiseFactor;
+        public double surfaceDepthNoiseOffset;
+        public List<BlockStateDesc> clayBandsOverride;
+        public MesaSurfaceReplacerConfig.NoiseSource clayBandsOffsetNoiseSource;
+        public double clayBandsNoiseFrequencyX;
+        public double clayBandsNoiseFrequencyY;
+        public double clayBandsNoiseFrequencyZ;
+        public double clayBandsNoiseFactor;
+        public double clayBandsNoiseOffset;
+        public int customClayBandsNoiseSeed;
+        public int customClayBandsNoiseOctaves;
+
+        public enum NoiseSource {
+            MESA_CLAY_BANDS_OFFSET_NOISE,
+            MINECRAFT_PERLIN_RAW,
+            FLOW_NOISE_PERLIN,
+            SPONGE_NOISE_SIMPLEX
+        }
+
+        public MesaSurfaceReplacerConfig() {
+        }
+
+        public MesaSurfaceReplacerConfig(Builder builder) {
+            super(builder.minY, builder.maxY, builder.biomeFilter);
+            this.mesaDepth = builder.mesaDepth;
+            this.heightOffset = builder.heightOffset;
+            this.heightScale = builder.heightScale;
+            this.waterHeight = builder.waterHeight;
+            this.surfaceDepthNoiseType = builder.surfaceDepthNoiseType;
+            this.surfaceDepthNoiseSeed = builder.surfaceDepthNoiseSeed;
+            this.surfaceDepthNoiseFrequencyX = builder.surfaceDepthNoiseFrequencyX;
+            this.surfaceDepthNoiseFrequencyY = builder.surfaceDepthNoiseFrequencyY;
+            this.surfaceDepthNoiseFrequencyZ = builder.surfaceDepthNoiseFrequencyZ;
+            this.surfaceDepthNoiseOctaves = builder.surfaceDepthNoiseOctaves;
+            this.surfaceDepthNoiseFactor = builder.surfaceDepthNoiseFactor;
+            this.surfaceDepthNoiseOffset = builder.surfaceDepthNoiseOffset;
+            this.clayBandsOverride = builder.clayBandsOverride;
+            this.clayBandsOffsetNoiseSource = builder.clayBandsOffsetNoiseSource;
+            this.clayBandsNoiseFrequencyX = builder.clayBandsNoiseFrequencyX;
+            this.clayBandsNoiseFrequencyY = builder.clayBandsNoiseFrequencyY;
+            this.clayBandsNoiseFrequencyZ = builder.clayBandsNoiseFrequencyZ;
+            this.clayBandsNoiseFactor = builder.clayBandsNoiseFactor;
+            this.clayBandsNoiseOffset = builder.clayBandsNoiseOffset;
+            this.customClayBandsNoiseSeed = builder.customClayBandsNoiseSeed;
+            this.customClayBandsNoiseOctaves = builder.customClayBandsNoiseOctaves;
+        }
+
+        public static class Builder {
+            private int minY;
+            private int maxY;
+            private BiomeFilter biomeFilter;
+            private double mesaDepth;
+            private double heightOffset;
+            private double heightScale;
+            private double waterHeight;
+            private NoiseType surfaceDepthNoiseType;
+            private int surfaceDepthNoiseSeed;
+            private double surfaceDepthNoiseFrequencyX;
+            private double surfaceDepthNoiseFrequencyY;
+            private double surfaceDepthNoiseFrequencyZ;
+            private int surfaceDepthNoiseOctaves;
+            private double surfaceDepthNoiseFactor;
+            private double surfaceDepthNoiseOffset;
+            private List<BlockStateDesc> clayBandsOverride;
+            private MesaSurfaceReplacerConfig.NoiseSource clayBandsOffsetNoiseSource;
+            private double clayBandsNoiseFrequencyX;
+            private double clayBandsNoiseFrequencyY;
+            private double clayBandsNoiseFrequencyZ;
+            private double clayBandsNoiseFactor;
+            private double clayBandsNoiseOffset;
+            private int customClayBandsNoiseSeed;
+            private int customClayBandsNoiseOctaves;
+
+            public Builder setMinY(int minY) {
+                this.minY = minY;
+                return this;
+            }
+
+            public Builder setMaxY(int maxY) {
+                this.maxY = maxY;
+                return this;
+            }
+
+            public Builder setBiomeFilter(BiomeFilter biomeFilter) {
+                this.biomeFilter = biomeFilter;
+                return this;
+            }
+
+            public Builder setMesaDepth(double mesaDepth) {
+                this.mesaDepth = mesaDepth;
+                return this;
+            }
+
+            public Builder setHeightOffset(double heightOffset) {
+                this.heightOffset = heightOffset;
+                return this;
+            }
+
+            public Builder setHeightScale(double heightScale) {
+                this.heightScale = heightScale;
+                return this;
+            }
+
+            public Builder setWaterHeight(double waterHeight) {
+                this.waterHeight = waterHeight;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseType(NoiseType surfaceDepthNoiseType) {
+                this.surfaceDepthNoiseType = surfaceDepthNoiseType;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseSeed(int surfaceDepthNoiseSeed) {
+                this.surfaceDepthNoiseSeed = surfaceDepthNoiseSeed;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseFrequencyX(double surfaceDepthNoiseFrequencyX) {
+                this.surfaceDepthNoiseFrequencyX = surfaceDepthNoiseFrequencyX;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseFrequencyY(double surfaceDepthNoiseFrequencyY) {
+                this.surfaceDepthNoiseFrequencyY = surfaceDepthNoiseFrequencyY;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseFrequencyZ(double surfaceDepthNoiseFrequencyZ) {
+                this.surfaceDepthNoiseFrequencyZ = surfaceDepthNoiseFrequencyZ;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseOctaves(int surfaceDepthNoiseOctaves) {
+                this.surfaceDepthNoiseOctaves = surfaceDepthNoiseOctaves;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseFactor(double surfaceDepthNoiseFactor) {
+                this.surfaceDepthNoiseFactor = surfaceDepthNoiseFactor;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseOffset(double surfaceDepthNoiseOffset) {
+                this.surfaceDepthNoiseOffset = surfaceDepthNoiseOffset;
+                return this;
+            }
+
+            public Builder setClayBandsOverride(List<BlockStateDesc> clayBandsOverride) {
+                this.clayBandsOverride = clayBandsOverride;
+                return this;
+            }
+
+            public Builder setClayBandsOffsetNoiseSource(MesaSurfaceReplacerConfig.NoiseSource clayBandsOffsetNoiseSource) {
+                this.clayBandsOffsetNoiseSource = clayBandsOffsetNoiseSource;
+                return this;
+            }
+
+            public Builder setClayBandsNoiseFrequencyX(double clayBandsNoiseFrequencyX) {
+                this.clayBandsNoiseFrequencyX = clayBandsNoiseFrequencyX;
+                return this;
+            }
+
+            public Builder setClayBandsNoiseFrequencyY(double clayBandsNoiseFrequencyY) {
+                this.clayBandsNoiseFrequencyY = clayBandsNoiseFrequencyY;
+                return this;
+            }
+
+            public Builder setClayBandsNoiseFrequencyZ(double clayBandsNoiseFrequencyZ) {
+                this.clayBandsNoiseFrequencyZ = clayBandsNoiseFrequencyZ;
+                return this;
+            }
+
+            public Builder setClayBandsNoiseFactor(double clayBandsNoiseFactor) {
+                this.clayBandsNoiseFactor = clayBandsNoiseFactor;
+                return this;
+            }
+
+            public Builder setClayBandsNoiseOffset(double clayBandsNoiseOffset) {
+                this.clayBandsNoiseOffset = clayBandsNoiseOffset;
+                return this;
+            }
+
+            public Builder setCustomClayBandsNoiseSeed(int customClayBandsNoiseSeed) {
+                this.customClayBandsNoiseSeed = customClayBandsNoiseSeed;
+                return this;
+            }
+
+            public Builder setCustomClayBandsNoiseOctaves(int customClayBandsNoiseOctaves) {
+                this.customClayBandsNoiseOctaves = customClayBandsNoiseOctaves;
+                return this;
+            }
+
+            public MesaSurfaceReplacerConfig build() {
+                return new MesaSurfaceReplacerConfig(this);
+            }
+        }
+    }
+
+    public static class DepthBasedSurfaceReplacerConfig extends MainSurfaceReplacerConfig {
+        public Set<Entry> topThresholds = new HashSet<>();
+        public Set<Entry> fillerThresholds = new HashSet<>();
+
+        public DepthBasedSurfaceReplacerConfig() {
+        }
+
+        private DepthBasedSurfaceReplacerConfig(Builder builder) {
+            super(builder.minY, builder.maxY, builder.biomeFilter);
+            this.surfaceDepthNoiseType = builder.surfaceDepthNoiseType;
+            this.surfaceDepthNoiseSeed = builder.surfaceDepthNoiseSeed;
+            this.surfaceDepthNoiseFrequencyX = builder.surfaceDepthNoiseFrequencyX;
+            this.surfaceDepthNoiseFrequencyY = builder.surfaceDepthNoiseFrequencyY;
+            this.surfaceDepthNoiseFrequencyZ = builder.surfaceDepthNoiseFrequencyZ;
+            this.surfaceDepthNoiseOctaves = builder.surfaceDepthNoiseOctaves;
+            this.surfaceDepthNoiseFactor = builder.surfaceDepthNoiseFactor;
+            this.surfaceDepthNoiseOffset = builder.surfaceDepthNoiseOffset;
+            this.maxSurfaceDepth = builder.maxSurfaceDepth;
+            this.horizontalGradientDepthDecreaseWeight = builder.horizontalGradientDepthDecreaseWeight;
+            this.oceanLevel = builder.oceanLevel;
+            this.overrideTop = builder.overrideTop;
+            this.overrideFiller = builder.overrideFiller;
+            this.topThresholds = builder.topThresholds.entrySet().stream()
+                    .map(e -> new Entry(e.getKey(), e.getValue())).collect(Collectors.toSet());
+            this.fillerThresholds = builder.fillerThresholds.entrySet().stream()
+                    .map(e -> new Entry(e.getKey(), e.getValue())).collect(Collectors.toSet());
+        }
+
+        public static class Entry {
+            public double y;
+            public BlockStateDesc b;
+
+            public Entry() {
+            }
+
+            public Entry(double y, BlockStateDesc b) {
+                this.y = y;
+                this.b = b;
+            }
+        }
+
+        public static class Builder {
+            private int minY;
+            private int maxY;
+            private BiomeFilter biomeFilter;
+            private NoiseType surfaceDepthNoiseType;
+            private int surfaceDepthNoiseSeed;
+            private double surfaceDepthNoiseFrequencyX;
+            private double surfaceDepthNoiseFrequencyY;
+            private double surfaceDepthNoiseFrequencyZ;
+            private int surfaceDepthNoiseOctaves;
+            private double surfaceDepthNoiseFactor;
+            private double surfaceDepthNoiseOffset;
+            private double maxSurfaceDepth;
+            private double horizontalGradientDepthDecreaseWeight;
+            private double oceanLevel;
+            private BlockStateDesc overrideTop;
+            private BlockStateDesc overrideFiller;
+
+            private final Map<Double, BlockStateDesc> topThresholds = new HashMap<>();
+            private final Map<Double, BlockStateDesc> fillerThresholds = new HashMap<>();
+
+
+            public Builder setMinY(int minY) {
+                this.minY = minY;
+                return this;
+            }
+
+            public Builder setMaxY(int maxY) {
+                this.maxY = maxY;
+                return this;
+            }
+
+            public Builder setBiomeFilter(BiomeFilter biomeFilter) {
+                this.biomeFilter = biomeFilter;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseType(NoiseType surfaceDepthNoiseType) {
+                this.surfaceDepthNoiseType = surfaceDepthNoiseType;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseSeed(int surfaceDepthNoiseSeed) {
+                this.surfaceDepthNoiseSeed = surfaceDepthNoiseSeed;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseFrequencyX(double surfaceDepthNoiseFrequencyX) {
+                this.surfaceDepthNoiseFrequencyX = surfaceDepthNoiseFrequencyX;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseFrequencyY(double surfaceDepthNoiseFrequencyY) {
+                this.surfaceDepthNoiseFrequencyY = surfaceDepthNoiseFrequencyY;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseFrequencyZ(double surfaceDepthNoiseFrequencyZ) {
+                this.surfaceDepthNoiseFrequencyZ = surfaceDepthNoiseFrequencyZ;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseOctaves(int surfaceDepthNoiseOctaves) {
+                this.surfaceDepthNoiseOctaves = surfaceDepthNoiseOctaves;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseFactor(double surfaceDepthNoiseFactor) {
+                this.surfaceDepthNoiseFactor = surfaceDepthNoiseFactor;
+                return this;
+            }
+
+            public Builder setSurfaceDepthNoiseOffset(double surfaceDepthNoiseOffset) {
+                this.surfaceDepthNoiseOffset = surfaceDepthNoiseOffset;
+                return this;
+            }
+
+            public Builder setMaxSurfaceDepth(double maxSurfaceDepth) {
+                this.maxSurfaceDepth = maxSurfaceDepth;
+                return this;
+            }
+
+            public Builder setHorizontalGradientDepthDecreaseWeight(
+                    double horizontalGradientDepthDecreaseWeight) {
+                this.horizontalGradientDepthDecreaseWeight = horizontalGradientDepthDecreaseWeight;
+                return this;
+            }
+
+            public Builder setOceanLevel(double oceanLevel) {
+                this.oceanLevel = oceanLevel;
+                return this;
+            }
+
+            public Builder setOverrideTop(BlockStateDesc overrideTop) {
+                this.overrideTop = overrideTop;
+                return this;
+            }
+
+            public Builder setOverrideFiller(BlockStateDesc overrideFiller) {
+                this.overrideFiller = overrideFiller;
+                return this;
+            }
+
+            public Builder topThreshold(double threshold, BlockStateDesc blockState) {
+                this.topThresholds.put(threshold, blockState);
+                return this;
+            }
+
+            public Builder fillerThreshold(double threshold, BlockStateDesc blockState) {
+                this.fillerThresholds.put(threshold, blockState);
+                return this;
+            }
+
+            public DepthBasedSurfaceReplacerConfig build() {
+                return new DepthBasedSurfaceReplacerConfig(this);
+            }
+        }
+
+    }
+
     public static class UserFunction {
 
         // TODO: flatten to float array for performance?
@@ -465,7 +1488,7 @@ public class CustomGeneratorSettings {
             values = new Entry[0];
         }
 
-        public UserFunction(Map<Float, Float> funcMap) {
+        public UserFunction(Map<Double, Double> funcMap) {
             values = funcMap.entrySet().stream()
                     .sorted(Comparator.comparing(Map.Entry::getKey))
                     .map(e -> new Entry(e.getKey(), e.getValue()))
@@ -476,7 +1499,7 @@ public class CustomGeneratorSettings {
             this.values = entries.clone();
         }
 
-        public float getValue(float y) {
+        public double getValue(double y) {
             if (values.length == 0) {
                 return 0;
             }
@@ -492,7 +1515,7 @@ public class CustomGeneratorSettings {
                     e2 = values[i];
                 }
             }
-            float yFract = MathUtil.unlerp(y, e1.y, e2.y);
+            double yFract = MathUtil.unlerp(y, e1.y, e2.y);
             return MathUtil.lerp(yFract, e1.v, e2.v);
         }
 
@@ -502,9 +1525,9 @@ public class CustomGeneratorSettings {
 
         public static class Builder {
 
-            private Map<Float, Float> map = new HashMap<>();
+            private Map<Double, Double> map = new HashMap<>();
 
-            public Builder point(float y, float v) {
+            public Builder point(double y, double v) {
                 this.map.put(y, v);
                 return this;
             }
@@ -516,13 +1539,13 @@ public class CustomGeneratorSettings {
 
         public static class Entry {
 
-            public float y;
-            public float v;
+            public double y;
+            public double v;
 
             public Entry() {
             }
 
-            public Entry(float key, float value) {
+            public Entry(double key, double value) {
                 this.y = key;
                 this.v = value;
             }
@@ -536,7 +1559,7 @@ public class CustomGeneratorSettings {
                     return false;
                 }
                 Entry entry = (Entry) o;
-                return Float.compare(entry.y, y) == 0;
+                return Double.compare(entry.y, y) == 0;
             }
 
             @Override
@@ -923,9 +1946,200 @@ public class CustomGeneratorSettings {
         }
     }
 
-    public interface GenerationCondition {
-        default void beforeGenerate(Random rand) {
+    public interface BiomeFilter extends Predicate<Biome> {
+    }
+
+    public static class IncludeBiomes implements BiomeFilter {
+        public Set<BiomeDesc> biomes;
+
+        public IncludeBiomes() {
         }
+
+        public IncludeBiomes(BiomeDesc... biomes) {
+            this.biomes = new HashSet<>(Arrays.asList(biomes));
+        }
+
+        @Override public boolean test(Biome biome) {
+            return this.biomes.contains(new BiomeDesc(biome));
+        }
+    }
+
+    public static class ExcludeBiomes implements BiomeFilter {
+        public Set<BiomeDesc> biomes;
+
+        public ExcludeBiomes() {
+        }
+
+        public ExcludeBiomes(BiomeDesc... biomes) {
+            this.biomes = new HashSet(Arrays.asList(biomes));
+        }
+
+        @Override public boolean test(Biome biome) {
+            return !this.biomes.contains(new BiomeDesc(biome));
+        }
+    }
+
+    public enum BiomeClassMatchType {
+        RAW_EXACT((filter, obj) -> filter == obj.getClass()),
+        BIOMECLASS_EXACT((filter, obj) -> filter == obj.getBiomeClass()),
+        RAW_WITH_SUBCLASSES((filter, obj) -> filter.isAssignableFrom(obj.getClass())),
+        BIOMECLASS_WITH_SUBCLASSES((filter, obj) -> filter.isAssignableFrom(obj.getBiomeClass()));
+
+        private final BiPredicate<Class<?>, Biome> test;
+
+        BiomeClassMatchType(BiPredicate<Class<?>, Biome> test) {
+            this.test = test;
+        }
+
+        public boolean test(Class<?> filter, Biome biome) {
+            return this.test.test(filter, biome);
+        }
+    }
+
+    public static class IncludeBiomeClass implements BiomeFilter {
+        private transient List<Class<?>> classes;
+        public String[] classNames;
+        public BiomeClassMatchType matchType;
+
+        public IncludeBiomeClass() {
+        }
+
+        public IncludeBiomeClass(BiomeClassMatchType matchType, String... classNames) {
+            this.classNames = classNames;
+            this.matchType = matchType;
+            init();
+        }
+
+        public void init() {
+            this.classes = new ArrayList<>(this.classNames.length);
+            for (String className : this.classNames) {
+                try {
+                    this.classes.add(Class.forName(className));
+                } catch (ClassNotFoundException e) {
+                    LOGGER.warn("CustomGeneratorSettings: no class " + className);
+                }
+            }
+        }
+
+        @Override public boolean test(Biome biome) {
+            for (Class<?> cl : this.classes) {
+                if (matchType.test(cl, biome)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    public static class ExcludeBiomeClass implements BiomeFilter {
+        private transient List<Class<?>> classes;
+        public String[] classNames;
+        public BiomeClassMatchType matchType;
+
+        public ExcludeBiomeClass() {
+        }
+
+        public ExcludeBiomeClass(BiomeClassMatchType matchType, String... classNames) {
+            this.classNames = classNames;
+            this.matchType = matchType;
+            init();
+        }
+
+        public void init() {
+            this.classes = new ArrayList<>(this.classNames.length);
+            for (String className : this.classNames) {
+                try {
+                    this.classes.add(Class.forName(className));
+                } catch (ClassNotFoundException e) {
+                    LOGGER.warn("CustomGeneratorSettings: no class " + className);
+                }
+            }
+        }
+
+        @Override public boolean test(Biome biome) {
+            for (Class<?> cl : this.classes) {
+                if (matchType.test(cl, biome)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    public static abstract class CompositeBiomeFilter implements BiomeFilter {
+        public List<BiomeFilter> filters;
+
+        public List<BiomeFilter> getFilters() {
+            return filters;
+        }
+    }
+
+    public static class AllOfCompositeBiomeFilter extends CompositeBiomeFilter {
+        public AllOfCompositeBiomeFilter() {
+            this.filters = new ArrayList<>();
+        }
+
+        public AllOfCompositeBiomeFilter(List<BiomeFilter> conditions) {
+            this.filters = conditions;
+        }
+
+        public AllOfCompositeBiomeFilter(BiomeFilter... conditions) {
+            this.filters = Arrays.asList(conditions);
+        }
+
+        @Override
+        public boolean test(Biome biome) {
+            for (BiomeFilter filter : filters) {
+                if (!filter.test(biome)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    public static class AnyOfCompositeBiomeFilter extends CompositeBiomeFilter {
+        public AnyOfCompositeBiomeFilter() {
+            this.filters = new ArrayList<>();
+        }
+
+        public AnyOfCompositeBiomeFilter(List<BiomeFilter> conditions) {
+            this.filters = conditions;
+        }
+
+        @Override
+        public boolean test(Biome biome) {
+            for (BiomeFilter filter : filters) {
+                if (filter.test(biome)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    public static class NoneOfCompositeBiomeFilter extends CompositeBiomeFilter {
+        public NoneOfCompositeBiomeFilter() {
+            this.filters = new ArrayList<>();
+        }
+
+        public NoneOfCompositeBiomeFilter(List<BiomeFilter> conditions) {
+            this.filters = conditions;
+        }
+
+        @Override
+        public boolean test(Biome biome) {
+            for (BiomeFilter filter : filters) {
+                if (filter.test(biome)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+
+    public interface GenerationCondition {
 
         boolean canGenerate(Random rand, World world, BlockPos pos);
     }
@@ -961,7 +2175,7 @@ public class CustomGeneratorSettings {
 
         @Override
         public boolean canGenerate(Random rand, World world, BlockPos pos) {
-            long r = XxHash.xxHash64(world.getSeed(), 0, pos.getX(), pos.getY(), pos.getZ());
+            long r = RngHash.xxHash64(world.getSeed(), 0, pos.getX(), pos.getY(), pos.getZ());
             r >>>= 24;
             r &= (1L << 24) - 1L;
             return r < chance * (1 << 24);
@@ -983,7 +2197,7 @@ public class CustomGeneratorSettings {
 
         @Override
         public boolean canGenerate(Random rand, World world, BlockPos pos) {
-            long r = XxHash.xxHash64(world.getSeed(), (int) seed, pos.getX(), pos.getY(), pos.getZ());
+            long r = RngHash.xxHash64(world.getSeed(), (int) seed, pos.getX(), pos.getY(), pos.getZ());
             r >>>= 24;
             r &= (1L << 24) - 1L;
             return r < chance * (1 << 24);
@@ -1059,8 +2273,6 @@ public class CustomGeneratorSettings {
     }
 
     public static class AllOfCompositeCondition extends CompositeCondition {
-        List<GenerationCondition> conditions;
-
         public AllOfCompositeCondition() {
             this.conditions = new ArrayList<>();
         }
@@ -1101,7 +2313,6 @@ public class CustomGeneratorSettings {
     }
 
     public static class NoneOfCompositeCondition extends CompositeCondition {
-        List<GenerationCondition> conditions;
 
         public NoneOfCompositeCondition() {
             this.conditions = new ArrayList<>();
@@ -1120,5 +2331,30 @@ public class CustomGeneratorSettings {
             }
             return true;
         }
+    }
+
+    public enum FilterType {
+        INCLUDE, EXCLUDE;
+
+        public <T> boolean isAllowed(Set<T> objects, T obj) {
+            return (this == INCLUDE) == objects.contains(obj);
+        }
+
+        public <T> boolean isAllowed(T filter, T toTest) {
+            return (this == INCLUDE) == (filter == toTest);
+        }
+
+        public boolean emptyAlwaysFails() {
+            return this == INCLUDE;
+        }
+
+        public boolean emptyAlwaysMatches() {
+            return this == EXCLUDE;
+        }
+    }
+
+    public enum NoiseType {
+        PERLIN_FLOW_NOISE,
+        SIMPLEX_SPONGE_NOISE
     }
 }

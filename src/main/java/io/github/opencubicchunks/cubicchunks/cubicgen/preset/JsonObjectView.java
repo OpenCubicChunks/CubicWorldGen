@@ -124,7 +124,7 @@ public class JsonObjectView {
     }
 
     public BlockStateDesc getBlockState(String key) {
-        return CustomGenSettingsSerialization.deserializeBlockstate(object(key).obj, null);
+        return CustomGenSettingsSerialization.deserializeBlockstate(this.obj.get(key), null);
     }
 
     public JsonArrayView<JsonObjectView> objectArray(String key) {

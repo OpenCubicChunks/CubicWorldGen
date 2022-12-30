@@ -23,7 +23,6 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.biome;
 
-import com.google.common.base.Preconditions;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.CubicPopulatorList;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopulator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
@@ -41,7 +40,6 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.minecraftforge.registries.RegistryBuilder;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +47,6 @@ import java.util.function.Function;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-//
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public final class CubicBiome extends IForgeRegistryEntry.Impl<CubicBiome> {
@@ -59,12 +56,7 @@ public final class CubicBiome extends IForgeRegistryEntry.Impl<CubicBiome> {
     private static boolean isPostInit = false;
 
     private final Biome originalBiome;
-    private final List<IBiomeBlockReplacerProvider> blockReplacers = new ArrayList<>();
-    private Function<CustomGeneratorSettings, ICubicPopulator> decoratorProvider;
-
-    public Iterable<IBiomeBlockReplacerProvider> getReplacerProviders() {
-        return Collections.unmodifiableList(blockReplacers);
-    }
+    private final Function<CustomGeneratorSettings, ICubicPopulator> decoratorProvider;
 
     public ICubicPopulator getDecorator(CustomGeneratorSettings conf) {
         return decoratorProvider.apply(conf);
@@ -119,7 +111,6 @@ public final class CubicBiome extends IForgeRegistryEntry.Impl<CubicBiome> {
 
     private CubicBiome(Builder builder) {
         this.originalBiome = builder.biome;
-        this.blockReplacers.addAll(builder.blockReplacers);
         this.decoratorProvider = conf -> {
             CubicPopulatorList list = new CubicPopulatorList();
             builder.decorators.forEach(func -> list.add(func.apply(conf)));
@@ -162,18 +153,6 @@ public final class CubicBiome extends IForgeRegistryEntry.Impl<CubicBiome> {
         return biomeMapping.get(vanillaBiome);
     }
 
-    public static IBiomeBlockReplacerProvider terrainShapeReplacer() {
-        return TerrainShapeReplacer.provider();
-    }
-
-    public static IBiomeBlockReplacerProvider oceanWaterReplacer() {
-        return OceanWaterReplacer.provider();
-    }
-
-    public static IBiomeBlockReplacerProvider surfaceDefaultReplacer() {
-        return SurfaceDefaultReplacer.provider();
-    }
-
     public static CubicBiome.Builder createForBiome(Biome biome) {
         return new Builder(biome);
     }
@@ -181,7 +160,6 @@ public final class CubicBiome extends IForgeRegistryEntry.Impl<CubicBiome> {
     public static class Builder {
 
         private final Biome biome;
-        private List<IBiomeBlockReplacerProvider> blockReplacers = new ArrayList<>();
         private ResourceLocation registryName;
         private final List<Function<CustomGeneratorSettings, ICubicPopulator>> decorators = new ArrayList<>();
 
@@ -190,20 +168,7 @@ public final class CubicBiome extends IForgeRegistryEntry.Impl<CubicBiome> {
         }
 
         public Builder defaults() {
-            return addDefaultBlockReplacers()
-                    .defaultDecorators();
-        }
-
-        public Builder addDefaultBlockReplacers() {
-            return addBlockReplacer(terrainShapeReplacer())
-                    .addBlockReplacer(surfaceDefaultReplacer())
-                    .addBlockReplacer(oceanWaterReplacer());
-        }
-
-        public Builder addBlockReplacer(IBiomeBlockReplacerProvider provider) {
-            Preconditions.checkNotNull(provider);
-            this.blockReplacers.add(provider);
-            return this;
+            return defaultDecorators();
         }
 
         public Builder defaultDecorators() {

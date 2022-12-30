@@ -85,6 +85,9 @@ public class CustomCubicGui extends ExtraGui {
     private OreSettingsTab oreSettings;
     private LakeSettingsTab lakeSettings;
     private AdvancedTerrainShapeTab advancedterrainShapeSettings;
+    //private ReplacerConfigTab advancedterrainShapeSettings;
+    //private CaveConfigTab advancedterrainShapeSettings;
+    //private RavineConfigTab advancedterrainShapeSettings;
 
     private JsonObject jsonConf;
 
@@ -119,7 +122,7 @@ public class CustomCubicGui extends ExtraGui {
         JsonObjectView jsonView = JsonObjectView.of(json);
 
         this.basicSettings = new BasicSettingsTab(this, jsonView);
-        this.advancedterrainShapeSettings = new AdvancedTerrainShapeTab(this, jsonView, basicSettings::getWaterLevel);
+        this.advancedterrainShapeSettings = new AdvancedTerrainShapeTab(this, jsonView, () -> 63); // TODO: preview
         this.oreSettings = new OreSettingsTab(this, jsonView,
                 advancedterrainShapeSettings.getExpectedBaseHeight(), advancedterrainShapeSettings.getExpectedHeightVariation());
         this.lakeSettings = new LakeSettingsTab(this, jsonView);

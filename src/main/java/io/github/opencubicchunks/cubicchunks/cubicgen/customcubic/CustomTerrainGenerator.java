@@ -38,7 +38,7 @@ import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.feature.ICub
 import io.github.opencubicchunks.cubicchunks.cubicgen.BasicCubeGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.IBiomeBlockReplacer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.replacer.IBiomeBlockReplacer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.world.storage.IWorldInfoAccess;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.BiomeSource;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.IBuilder;
@@ -55,17 +55,14 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeProvider;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.terraingen.InitMapGenEvent;
 import net.minecraftforge.event.terraingen.InitMapGenEvent.EventType;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.lwjgl.input.Keyboard;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.ToIntFunction;
@@ -93,9 +90,11 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
     private boolean fillCubeBiomes;
 
     //TODO: Implement more structures
-    @Nonnull private ICubicStructureGenerator caveGenerator;
-    @Nonnull private ICubicStructureGenerator ravineGenerator;
-    @Nonnull private ICubicFeatureGenerator strongholds;
+    private ICubicStructureGenerator caveGenerator;
+    private ICubicStructureGenerator ravineGenerator;
+    private ICubicFeatureGenerator strongholds;
+
+    private IBiomeBlockReplacer[] replacers;
 
     public CustomTerrainGenerator(World world, final long seed) {
         this(world, world.getBiomeProvider(), CustomGeneratorSettings.getFromWorld(world), seed);
@@ -140,7 +139,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         this.ravineGenerator = ravineEvent.getNewGen();
 
         this.fillCubeBiomes = !isMainLayer;
-        this.biomeSource = new BiomeSource(world, conf.createBiomeBlockReplacerConfig(), biomeProvider, 2);
+        this.biomeSource = new BiomeSource(world, conf.replacers, biomeProvider, 2);
         initGenerator(seed);
 
         this.areaGenerators.clear();
@@ -206,6 +205,11 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
                 .lerp(low, high).add(randomHeight2d).mul(volatility).add(height)
                 .sub(volatility.signum().mul((x, y, z) -> y))
                 .cached(CACHE_SIZE_3D, HASH_3D);
+
+        this.replacers = new IBiomeBlockReplacer[conf.replacers.size()];
+        for (int i = 0; i < conf.replacers.size(); i++) {
+            this.replacers[i] = IBiomeBlockReplacer.create(seed, conf.replacers.get(i));
+        }
     }
 
     @Override
@@ -324,11 +328,17 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
      * @return The block state
      */
     private IBlockState getBlock(int x, int y, int z, double dx, double dy, double dz, double density) {
-        List<IBiomeBlockReplacer> replacers = biomeSource.getReplacers(x, y, z);
+        // TODO: generate bytecode for this method with the main loop unrolled and types inlined\
+        BiomeSource.ReplacerData biomeData = biomeSource.getReplacers(x, y, z);
+        Biome biome = biomeData.biome;
+        long[] replacerFlags = biomeData.replacerFlags;
         IBlockState block = Blocks.AIR.getDefaultState();
-        int size = replacers.size();
+        int size = replacers.length;
         for (int i = 0; i < size; i++) {
-            block = replacers.get(i).getReplacedBlock(block, x, y, z, dx, dy, dz, density);
+            if ((replacerFlags[i >> 6] & (1L << (i & 63))) == 0) {
+                continue;
+            }
+            block = replacers[i].getReplacedBlock(block, biome, x, y, z, dx, dy, dz, density);
         }
         return block;
     }

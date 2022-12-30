@@ -29,6 +29,7 @@ import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.ICubicPopula
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.event.DecorateCubeBiomeEvent;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CWGEventFactory;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BiomeDesc;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -60,7 +61,7 @@ public class PrePopulator implements ICubicPopulator {
             if (lake.block.getBlock() == null) {
                 continue;
             }
-            if (!lake.biomeSelect.isAllowed(lake.biomes, biome)) {
+            if (!lake.biomeSelect.isAllowed(lake.biomes, new BiomeDesc(biome))) {
                 continue;
             }
             BlockPos populationPos = pos.randomPopulationPos(random);
@@ -69,12 +70,12 @@ public class PrePopulator implements ICubicPopulator {
                     populationPos.getZ() - cubeToMinBlock(pos.getZ()),
                     0, (p, s) -> !s.getBlock().isAir(s, world, p));
             if (surface != null) {
-                float prob = lake.surfaceProbability.getValue(surface.getY());
+                double prob = lake.surfaceProbability.getValue(surface.getY());
                 if (random.nextFloat() < prob && (lake.generateWhen == null || lake.generateWhen.canGenerate(random, world, surface))) {
                     new WorldGenLakes(lake.block.getBlock()).generate(world, random, surface);
                 }
             } else  {
-                float prob = lake.mainProbability.getValue(populationPos.getY());
+                double prob = lake.mainProbability.getValue(populationPos.getY());
                 if (random.nextFloat() < prob && (lake.generateWhen == null || lake.generateWhen.canGenerate(random, world, populationPos))) {
                     new WorldGenLakes(lake.block.getBlock()).generate(world, random, populationPos);
                 }

@@ -34,7 +34,6 @@ import com.google.common.eventbus.Subscribe;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.GuiOverlay;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBlockStateButton;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIDynamicTextField;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIList;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIProbabilityDistributionEditor;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
@@ -52,10 +51,8 @@ import net.malisis.core.client.gui.component.container.UIContainer;
 import net.malisis.core.client.gui.component.interaction.UIButton;
 import net.malisis.core.client.gui.component.interaction.UICheckBox;
 import net.malisis.core.client.gui.component.interaction.UISelect;
-import net.malisis.core.client.gui.component.interaction.UITextField;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import org.apache.commons.lang3.math.NumberUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,8 +63,6 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
 
 public class LakeSettingsTab {
 
@@ -202,7 +197,7 @@ public class LakeSettingsTab {
         private final UIComponent<?> biomeSelectionLabel;
 
         private final UISplitLayout<?> biomeSelectionSplit;
-        private final UISelect<CustomGeneratorSettings.LakeConfig.BiomeSelectionMode> biomeSelectMode;
+        private final UISelect<CustomGeneratorSettings.FilterType> biomeSelectMode;
         private final UIButton selectAllBiomesBtn;
         private final UIButton invertBiomeSelection;
         private final UIVerticalTableLayout<?> biomeTable;
@@ -251,11 +246,11 @@ public class LakeSettingsTab {
             UIContainer<?> biomeSelectionLeft = new UIVerticalTableLayout<>(gui, 1)
                     .setInsets(1, 1, 0, 0);
             biomeSelectionLeft.add(
-                    biomeSelectMode = makeUISelect(gui, Arrays.asList(CustomGeneratorSettings.LakeConfig.BiomeSelectionMode.values())),
+                    biomeSelectMode = makeUISelect(gui, Arrays.asList(CustomGeneratorSettings.FilterType.values())),
                     selectAllBiomesBtn = new UIButton(gui, malisisText("select_all")).setSize(10, 20),
                     invertBiomeSelection = new UIButton(gui, malisisText("invert_selection")).setSize(10, 20)
             );
-            biomeSelectMode.select(CustomGeneratorSettings.LakeConfig.BiomeSelectionMode.valueOf(conf.getString("biomeSelect")));
+            biomeSelectMode.select(CustomGeneratorSettings.FilterType.valueOf(conf.getString("biomeSelect")));
 
             biomeTable = new UIVerticalTableLayout<>(gui, 3).setScrollbarOffset(-1);
 

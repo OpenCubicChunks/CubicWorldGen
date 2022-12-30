@@ -24,13 +24,12 @@
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder;
 
 import io.github.opencubicchunks.cubicchunks.api.util.Coords;
+import io.github.opencubicchunks.cubicchunks.api.util.MathUtil;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.ConversionUtils;
 import io.github.opencubicchunks.cubicchunks.cubicgen.cache.HashCache;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.BiomeBlockReplacerConfig;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.IBiomeBlockReplacer;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.IBiomeBlockReplacerProvider;
+import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3i;
@@ -39,7 +38,6 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeProvider;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
-import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,10 +62,10 @@ public class BiomeSource {
     private static final ToIntFunction<ChunkPos> HASH_CHUNKS = v -> v.x * CHUNKS_CACHE_RADIUS + v.z;
     private static final ToIntFunction<Vec3i> HASH_SECTIONS = v -> v.getX() * SECTIONS_CACHE_RADIUS + v.getZ();
 
-    private final Map<Biome, List<IBiomeBlockReplacer>> biomeBlockReplacers = new IdentityHashMap<>();
+    private final Map<Biome, ReplacerData> biomeBlockReplacers = new IdentityHashMap<>();
     private final double[] nearBiomeWeightArray;
 
-    private BiomeProvider biomeGen;
+    private final BiomeProvider biomeGen;
     private final int smoothRadius;
     private final int smoothDiameter;
 
@@ -76,11 +74,11 @@ public class BiomeSource {
     /** Mapping from chunk positions to Cache with sections of 16x16 blocks (chunk) */
     private final HashCache<ChunkPos, CubicBiome[]> biomeCacheBlocks;
     /** Mapping from chunk positions to Cache with sections of 16x16 blocks (chunk) */
-    private final HashCache<ChunkPos, List<IBiomeBlockReplacer>[]> biomeBlockReplacerCache;
+    private final HashCache<ChunkPos, ReplacerData[]> biomeBlockReplacerCache;
 
     private final HashCache<Vec3i, BiomeTerrainData> biomeDataCache;
 
-    public BiomeSource(World world, BiomeBlockReplacerConfig conf, BiomeProvider biomeGen, int smoothRadius) {
+    public BiomeSource(World world, List<CustomGeneratorSettings.ReplacerConfig> replacers, BiomeProvider biomeGen, int smoothRadius) {
         this.biomeGen = biomeGen;
         this.smoothRadius = smoothRadius;
         this.smoothDiameter = smoothRadius * 2 + 1;
@@ -100,18 +98,23 @@ public class BiomeSource {
         this.biomeBlockReplacerCache = HashCache.create(CHUNKS_CACHE_SIZE, HASH_CHUNKS, this::generateReplacers);
 
         for (Biome biome : ForgeRegistries.BIOMES) {
-            CubicBiome cubicBiome = CubicBiome.getCubic(biome);
-            Iterable<IBiomeBlockReplacerProvider> providers = cubicBiome.getReplacerProviders();
-            List<IBiomeBlockReplacer> replacers = new ArrayList<>();
-            for (IBiomeBlockReplacerProvider prov : providers) {
-                replacers.add(prov.create(world, cubicBiome, conf));
-            }
-
-            biomeBlockReplacers.put(biome, replacers);
+            long[] replacerFlags = replacerFlagsForBiome(biome, replacers);
+            biomeBlockReplacers.put(biome, new ReplacerData(replacerFlags, biome));
         }
     }
 
-    private List<IBiomeBlockReplacer>[] generateReplacers(ChunkPos pos) {
+    private long[] replacerFlagsForBiome(Biome biome, List<CustomGeneratorSettings.ReplacerConfig> replacers) {
+        long[] array = new long[MathUtil.ceilDiv(replacers.size(), Long.SIZE)];
+        for (int i = 0; i < replacers.size(); i++) {
+            CustomGeneratorSettings.ReplacerConfig replacer = replacers.get(i);
+            if (replacer.biomeFilter == null || replacer.biomeFilter.test(biome)) {
+                array[i >> 6] |= 1L << (i & 63);
+            }
+        }
+        return array;
+    }
+
+    private ReplacerData[] generateReplacers(ChunkPos pos) {
         CubicBiome[] biomes = biomeCacheBlocks.get(pos);
         return this.mapToReplacers(biomes);
     }
@@ -179,8 +182,8 @@ public class BiomeSource {
         return cubicBiomes;
     }
 
-    private List<IBiomeBlockReplacer>[] mapToReplacers(CubicBiome[] cubicBiomes) {
-        List<IBiomeBlockReplacer>[] replacers = new List[cubicBiomes.length];
+    private ReplacerData[] mapToReplacers(CubicBiome[] cubicBiomes) {
+        ReplacerData[] replacers = new ReplacerData[cubicBiomes.length];
         for (int i = 0; i < cubicBiomes.length; i++) {
             replacers[i] = biomeBlockReplacers.get(cubicBiomes[i].getBiome());
         }
@@ -200,7 +203,7 @@ public class BiomeSource {
         return biomeCacheBlocks.get(pos)[Coords.blockToLocal(blockZ) << 4 | Coords.blockToLocal(blockX)];
     }
 
-    public List<IBiomeBlockReplacer> getReplacers(int blockX, int blockY, int blockZ) {
+    public ReplacerData getReplacers(int blockX, int blockY, int blockZ) {
         ChunkPos pos = new ChunkPos(Coords.blockToCube(blockX), Coords.blockToCube(blockZ));
         return biomeBlockReplacerCache.get(pos)[Coords.blockToLocal(blockZ) << 4 | Coords.blockToLocal(blockX)];
     }
@@ -222,5 +225,15 @@ public class BiomeSource {
     private static final class BiomeTerrainData {
 
         double height, heightVariation;
+    }
+
+    public static class ReplacerData {
+        public final long[] replacerFlags;
+        public final Biome biome;
+
+        public ReplacerData(long[] replacerFlags, Biome biome) {
+            this.replacerFlags = replacerFlags;
+            this.biome = biome;
+        }
     }
 }

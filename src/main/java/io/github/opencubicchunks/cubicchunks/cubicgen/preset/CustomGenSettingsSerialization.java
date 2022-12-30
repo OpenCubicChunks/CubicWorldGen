@@ -27,12 +27,10 @@ import blue.endless.jankson.Jankson;
 import blue.endless.jankson.JsonArray;
 import blue.endless.jankson.JsonElement;
 import blue.endless.jankson.JsonGrammar;
-import blue.endless.jankson.JsonNull;
 import blue.endless.jankson.JsonObject;
 import blue.endless.jankson.JsonPrimitive;
 import blue.endless.jankson.api.DeserializationException;
 import blue.endless.jankson.api.Marshaller;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.BiomeBlockReplacerConfig;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings.CubeAreas;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings.IntAABB;
@@ -46,12 +44,14 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockDesc;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
 import net.minecraft.util.ResourceLocation;
 
+import java.lang.reflect.Field;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -68,74 +68,58 @@ public class CustomGenSettingsSerialization {
 
     public static final Marshaller MARSHALLER = jankson().getMarshaller();
 
-    private static BiomeBlockReplacerConfig deserializeReplacerConfig(JsonObject obj, Marshaller marshaller) throws DeserializationException {
-        JsonObject defaults = (JsonObject) obj.get("defaults");
-        JsonObject overrides = (JsonObject) obj.get("overrides");
-
-        BiomeBlockReplacerConfig conf = BiomeBlockReplacerConfig.defaults();
-        if (defaults != null) {
-            for (Map.Entry<String, JsonElement> e : defaults.entrySet()) {
-                ResourceLocation key = new ResourceLocation(e.getKey());
-                Object value = getObject(e, marshaller);
-                conf.setDefault(key, value);
-            }
+    private static CustomGeneratorSettings.ReplacerConfig deserializeReplacerConfig(JsonObject obj, Marshaller marshaller) throws DeserializationException {
+        String type = obj.get(String.class, "type");
+        JsonObject withoutType = obj.clone();
+        withoutType.remove("type");
+        switch (Objects.requireNonNull(type)) {
+            case "densityRange":
+                return marshaller.marshallCarefully(CustomGeneratorSettings.DensityRangeReplacerConfig.class, withoutType);
+            case "mainSurface":
+                return marshaller.marshallCarefully(CustomGeneratorSettings.MainSurfaceReplacerConfig.class, withoutType);
+            case "mesaSurface":
+                return marshaller.marshallCarefully(CustomGeneratorSettings.MesaSurfaceReplacerConfig.class, withoutType);
+            case "noiseBasedSurfaceDecoration":
+                return marshaller.marshallCarefully(CustomGeneratorSettings.NoiseBasedSurfaceDecorationConfig.class, withoutType);
+            case "randomYGradient":
+                return marshaller.marshallCarefully(CustomGeneratorSettings.RandomYGradientReplacerConfig.class, withoutType);
+            case "depthBasedSurface":
+                return marshaller.marshallCarefully(CustomGeneratorSettings.DepthBasedSurfaceReplacerConfig.class, withoutType);
+            default:
+                throw new DeserializationException("Unknown type: " + type);
         }
-        if (overrides != null) {
-            for (Map.Entry<String, JsonElement> e : overrides.entrySet()) {
-                ResourceLocation key = new ResourceLocation(e.getKey());
-                Object value = getObject(e, marshaller);
-                conf.set(key, value);
-            }
-        }
-        return conf;
     }
 
-    private static JsonObject serializeReplacerConfig(BiomeBlockReplacerConfig src, Marshaller marshaller) {
+    private static JsonObject serializeReplacerConfig(CustomGeneratorSettings.ReplacerConfig src, Marshaller marshaller) {
         JsonObject root = new JsonObject();
         root.setMarshaller(marshaller);
-
-        JsonObject defaults = new JsonObject();
-        defaults.setMarshaller(marshaller);
-        JsonObject overrides = new JsonObject();
-        defaults.setMarshaller(marshaller);
-
-        for (Map.Entry<ResourceLocation, Object> e : src.getDefaults().entrySet()) {
-            defaults.put(e.getKey().toString(), getJsonElement(marshaller, e));
+        String type;
+        if (src.getClass() == CustomGeneratorSettings.DensityRangeReplacerConfig.class) {
+            type = "densityRange";
+        } else if (src.getClass() == CustomGeneratorSettings.MainSurfaceReplacerConfig.class) {
+            type = "mainSurface";
+        } else if (src.getClass() == CustomGeneratorSettings.MesaSurfaceReplacerConfig.class) {
+            type = "mesaSurface";
+        } else if (src.getClass() == CustomGeneratorSettings.NoiseBasedSurfaceDecorationConfig.class) {
+            type = "noiseBasedSurfaceDecoration";
+        } else if (src.getClass() == CustomGeneratorSettings.RandomYGradientReplacerConfig.class) {
+            type = "randomYGradient";
+        } else if (src.getClass() == CustomGeneratorSettings.DepthBasedSurfaceReplacerConfig.class) {
+            type = "depthBasedSurface";
+        } else {
+            throw new RuntimeException("Unknown type " + src.getClass());
         }
-        for (Map.Entry<ResourceLocation, Object> e : src.getOverrides().entrySet()) {
-            overrides.put(e.getKey().toString(), getJsonElement(marshaller, e));
+        root.put("type", new JsonPrimitive(type));
+
+        for (Field field : src.getClass().getFields()) {
+            try {
+                root.put(field.getName(), marshaller.serialize(field.get(src)));
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
         }
-        root.put("defaults", defaults);
-        root.put("overrides", overrides);
         return root;
     }
-
-    private static Object getObject(Map.Entry<String, JsonElement> e, Marshaller marshaller) throws DeserializationException {
-        Object value;
-        if (e.getValue() instanceof JsonPrimitive) {
-            value = ((JsonPrimitive) e.getValue()).asDouble(0.0);
-        } else {
-            // currently the only object suppoorted is blockstate
-            value = marshaller.marshallCarefully(BlockStateDesc.class, e.getValue());
-        }
-        return value;
-    }
-
-    private static JsonElement getJsonElement(Marshaller marshaller, Map.Entry<ResourceLocation, Object> e) {
-        JsonElement v;
-        if (e.getValue() == null) {
-            return JsonNull.INSTANCE;
-        }
-        if (e.getValue() instanceof Number) {
-            v = new JsonPrimitive(e.getValue());
-        } else if (e.getValue() instanceof BlockStateDesc) {
-            v = marshaller.serialize(e.getValue());
-        } else {
-            throw new UnsupportedOperationException(e.getValue() + " of type " + e.getValue().getClass() + " is not supported");
-        }
-        return v;
-    }
-
     private static BiomeDesc deserializeBiome(String obj, Marshaller marshaller) {
         return new BiomeDesc(obj);
     }
@@ -172,7 +156,11 @@ public class CustomGenSettingsSerialization {
         return new JsonPrimitive(block.getBlockId());
     }
 
-    public static BlockStateDesc deserializeBlockstate(JsonObject obj, Marshaller marshaller) {
+    public static BlockStateDesc deserializeBlockstate(JsonElement element, Marshaller marshaller) {
+        if (element instanceof JsonPrimitive) {
+            return new BlockStateDesc(((JsonPrimitive) element).asString(), new HashMap<>());
+        }
+        JsonObject obj = (JsonObject) element;
         String name = obj.get(String.class, "Name");
         Map<String, String> properties = new HashMap<>();
         if (obj.containsKey("Properties")) {
@@ -186,11 +174,24 @@ public class CustomGenSettingsSerialization {
 
     public static JsonElement serializeBlockstate(BlockStateDesc state, Marshaller m) {
         JsonObject json = new JsonObject();
-        json.put("Name", new JsonPrimitive(state.getBlockId()));
+        ResourceLocation blockRL = new ResourceLocation(state.getBlockId());
+        String blockId = blockRL.getNamespace().equals("minecraft") ? blockRL.getPath() : blockRL.toString();
+        boolean hasProperties = !state.getProperties().isEmpty() &&
+                (state.getBlockState() == null || state.getBlockState() != state.getBlockState().getBlock().getDefaultState());
+        if (!hasProperties) {
+            return new JsonPrimitive(blockId);
+        }
+        Map<String, String> defaultProperties = state.getBlockState() == null ? new HashMap<>() :
+                new BlockStateDesc(state.getBlockState().getBlock().getDefaultState()).getProperties();
+        json.put("Name", new JsonPrimitive(blockId));
 
         if (!state.getProperties().isEmpty()) {
             JsonObject properties = new JsonObject();
-            state.getProperties().forEach((name, value) -> properties.put(name, new JsonPrimitive(value)));
+            state.getProperties().forEach((name, value) -> {
+                if (!value.equals(defaultProperties.get(name))) {
+                    properties.put(name, new JsonPrimitive(value));
+                }
+            });
             json.put("Properties", properties);
         }
 
@@ -408,11 +409,74 @@ public class CustomGenSettingsSerialization {
         }
     }
 
+    private static CustomGeneratorSettings.BiomeFilter deserializeBiomeFilter(JsonObject obj, Marshaller marshaller) throws DeserializationException {
+        String type = obj.get(String.class, "type");
+        JsonObject withoutType = obj.clone();
+        withoutType.remove("type");
+        switch (Objects.requireNonNull(type)) {
+            case "include":
+                return marshaller.marshallCarefully(CustomGeneratorSettings.IncludeBiomes.class, withoutType);
+            case "exclude":
+                return marshaller.marshallCarefully(CustomGeneratorSettings.ExcludeBiomes.class, withoutType);
+            case "includeClass":
+                CustomGeneratorSettings.IncludeBiomeClass includeBiomeClass =
+                        marshaller.marshallCarefully(CustomGeneratorSettings.IncludeBiomeClass.class, withoutType);
+                includeBiomeClass.init();
+                return includeBiomeClass;
+            case "excludeClass":
+                CustomGeneratorSettings.ExcludeBiomeClass excludeBiomeClass =
+                        marshaller.marshallCarefully(CustomGeneratorSettings.ExcludeBiomeClass.class, withoutType);
+                excludeBiomeClass.init();
+                return excludeBiomeClass;
+            case "allOf":
+                return marshaller.marshallCarefully(CustomGeneratorSettings.AllOfCompositeBiomeFilter.class, withoutType);
+            case "anyOf":
+                return marshaller.marshallCarefully(CustomGeneratorSettings.AnyOfCompositeBiomeFilter.class, withoutType);
+            case "noneOf":
+                return marshaller.marshallCarefully(CustomGeneratorSettings.NoneOfCompositeBiomeFilter.class, withoutType);
+            default:
+                throw new DeserializationException("Unknown type: " + type);
+        }
+    }
+
+    private static JsonObject serializeBiomeFilter(CustomGeneratorSettings.BiomeFilter src, Marshaller marshaller) {
+        JsonObject root = new JsonObject();
+        root.setMarshaller(marshaller);
+        String type;
+        if (src instanceof CustomGeneratorSettings.IncludeBiomes) {
+            type = "include";
+        } else if (src instanceof CustomGeneratorSettings.ExcludeBiomes) {
+            type = "exclude";
+        } else if (src instanceof CustomGeneratorSettings.IncludeBiomeClass) {
+            type = "includeClass";
+        } else if (src instanceof CustomGeneratorSettings.ExcludeBiomeClass) {
+            type = "excludeClass";
+        } else if (src instanceof CustomGeneratorSettings.AllOfCompositeBiomeFilter) {
+            type = "allOf";
+        } else if (src instanceof CustomGeneratorSettings.AnyOfCompositeBiomeFilter) {
+            type = "anyOf";
+        } else if (src instanceof CustomGeneratorSettings.NoneOfCompositeBiomeFilter) {
+            type = "noneOf";
+        } else {
+            throw new RuntimeException("Unknown type " + src.getClass());
+        }
+        root.put("type", new JsonPrimitive(type));
+
+        for (Field field : src.getClass().getFields()) {
+            try {
+                root.put(field.getName(), marshaller.serialize(field.get(src)));
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return root;
+    }
+
     public static Jankson jankson() {
 
         Jankson.Builder builder = Jankson.builder();
-        builder.registerDeserializer(JsonObject.class, BiomeBlockReplacerConfig.class, CustomGenSettingsSerialization::deserializeReplacerConfig);
-        builder.registerSerializer(BiomeBlockReplacerConfig.class, CustomGenSettingsSerialization::serializeReplacerConfig);
+        builder.registerDeserializer(JsonObject.class, CustomGeneratorSettings.ReplacerConfig.class, CustomGenSettingsSerialization::deserializeReplacerConfig);
+        builder.registerSerializer(CustomGeneratorSettings.ReplacerConfig.class, CustomGenSettingsSerialization::serializeReplacerConfig);
 
         builder.registerDeserializer(String.class, BiomeDesc.class, CustomGenSettingsSerialization::deserializeBiome);
         builder.registerSerializer(BiomeDesc.class, CustomGenSettingsSerialization::serializeBiome);
@@ -423,7 +487,7 @@ public class CustomGenSettingsSerialization {
         builder.registerDeserializer(String.class, BlockDesc.class, CustomGenSettingsSerialization::deserializeBlock);
         builder.registerSerializer(BlockDesc.class, CustomGenSettingsSerialization::serializeBlock);
 
-        builder.registerDeserializer(JsonObject.class, BlockStateDesc.class, CustomGenSettingsSerialization::deserializeBlockstate);
+        builder.registerDeserializer(JsonElement.class, BlockStateDesc.class, CustomGenSettingsSerialization::deserializeBlockstate);
         builder.registerSerializer(BlockStateDesc.class, CustomGenSettingsSerialization::serializeBlockstate);
 
         builder.registerDeserializer(JsonArray.class, CubeAreas.class, CustomGenSettingsSerialization::deserializeCubeAreas);
@@ -443,6 +507,10 @@ public class CustomGenSettingsSerialization {
 
         builder.registerDeserializer(JsonObject.class, CustomGeneratorSettings.GenerationCondition.class, CustomGenSettingsSerialization::deserializeGenerationCondition);
         builder.registerSerializer(CustomGeneratorSettings.GenerationCondition.class, CustomGenSettingsSerialization::serializeGenerationCondition);
+
+        builder.registerDeserializer(JsonObject.class, CustomGeneratorSettings.BiomeFilter.class, CustomGenSettingsSerialization::deserializeBiomeFilter);
+        builder.registerSerializer(CustomGeneratorSettings.BiomeFilter.class, CustomGenSettingsSerialization::serializeBiomeFilter);
+
         return builder.build();
     }
 

@@ -34,6 +34,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 /**
  * BlockState descriptor. Allows to keep blockstates from mods, that don't exist currently.
  */
@@ -43,6 +45,12 @@ public final class BlockStateDesc {
     private final Map<String, String> properties;
 
     private final IBlockState blockState;
+
+    private BlockStateDesc() {
+        blockId = "";
+        properties = new HashMap<>();
+        blockState = null;
+    }
 
     public BlockStateDesc(String blockId, Map<String, String> properties) {
         this.blockId = blockId;
@@ -78,6 +86,9 @@ public final class BlockStateDesc {
         }
     }
 
+    @Nullable public static IBlockState stateFromNullable(@Nullable BlockStateDesc desc) {
+        return desc == null ? null : desc.getBlockState();
+    }
 
     public String getBlockId() {
         return blockId;

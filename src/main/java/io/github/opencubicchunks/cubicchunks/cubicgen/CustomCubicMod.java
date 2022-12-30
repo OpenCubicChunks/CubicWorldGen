@@ -23,17 +23,10 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen;
 
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome.oceanWaterReplacer;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome.terrainShapeReplacer;
-
 import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld;
 import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorldServer;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.ICubeGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer.MesaSurfaceReplacer;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer.MutatedSavannaSurfaceReplacer;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer.SwampWaterWithLilypadReplacer;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.replacer.TaigaSurfaceReplacer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomCubicWorldType;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomTerrainGenerator;
@@ -177,59 +170,34 @@ public class CustomCubicMod {
     public static void registerCubicBiomes(RegistryEvent.Register<CubicBiome> event) {
         // Vanilla biomes are initialized during bootstrap which happens before registration events
         // so it should be safe to use them here
-        autoRegister(event, Biome.class, b -> b
-                .addDefaultBlockReplacers()
-                .defaultDecorators());
-        autoRegister(event, BiomeBeach.class, b -> b
-                .addDefaultBlockReplacers()
-                .defaultDecorators());
+        autoRegister(event, Biome.class, CubicBiome.Builder::defaultDecorators);
+        autoRegister(event, BiomeBeach.class, CubicBiome.Builder::defaultDecorators);
         autoRegister(event, BiomeDesert.class, b -> b
-                .addDefaultBlockReplacers()
                 .defaultDecorators().decorator(new DesertDecorator()));
         autoRegister(event, BiomeForest.class, b -> b
-                .addDefaultBlockReplacers()
                 .decorator(new ForestDecorator()).defaultDecorators());
         autoRegister(event, BiomeForestMutated.class, b -> b
-                .addDefaultBlockReplacers()
                 .decorator(new ForestDecorator()).defaultDecorators());
-        autoRegister(event, BiomeHills.class, b -> b
-                .addDefaultBlockReplacers()
-                .defaultDecorators());
+        autoRegister(event, BiomeHills.class, CubicBiome.Builder::defaultDecorators);
         autoRegister(event, BiomeJungle.class, b -> b
-                .addDefaultBlockReplacers()
                 .defaultDecorators().decorator(new JungleDecorator()));
         autoRegister(event, BiomeMesa.class, b -> b
-                .addBlockReplacer(terrainShapeReplacer()).addBlockReplacer(MesaSurfaceReplacer.provider()).addBlockReplacer(oceanWaterReplacer())
                 .decoratorProvider(DefaultDecorator.Ores::new).decoratorProvider(DefaultDecorator::new));
-        autoRegister(event, BiomeMushroomIsland.class, b -> b
-                .addDefaultBlockReplacers()
-                .defaultDecorators());
-        autoRegister(event, BiomeOcean.class, b -> b
-                .addDefaultBlockReplacers()
-                .defaultDecorators());
+        autoRegister(event, BiomeMushroomIsland.class, CubicBiome.Builder::defaultDecorators);
+        autoRegister(event, BiomeOcean.class, CubicBiome.Builder::defaultDecorators);
         autoRegister(event, BiomePlains.class, b -> b
-                .addDefaultBlockReplacers()
                 .decorator(new PlainsDecorator()).defaultDecorators());
-        autoRegister(event, BiomeRiver.class, b -> b
-                .addDefaultBlockReplacers()
-                .defaultDecorators());
+        autoRegister(event, BiomeRiver.class, CubicBiome.Builder::defaultDecorators);
         autoRegister(event, BiomeSavanna.class, b -> b
-                .addDefaultBlockReplacers()
                 .decorator(new SavannaDecorator()).defaultDecorators());
-        autoRegister(event, BiomeSavannaMutated.class, b -> b
-                .addBlockReplacer(terrainShapeReplacer()).addBlockReplacer(MutatedSavannaSurfaceReplacer.provider()).addBlockReplacer(oceanWaterReplacer())
-                .defaultDecorators());
+
+        autoRegister(event, BiomeSavannaMutated.class, CubicBiome.Builder::defaultDecorators);
         autoRegister(event, BiomeSnow.class, b -> b
-                .addDefaultBlockReplacers()
                 .decorator(new SnowBiomeDecorator()).defaultDecorators());
-        autoRegister(event, BiomeStoneBeach.class, b -> b
-                .addDefaultBlockReplacers()
-                .defaultDecorators());
+        autoRegister(event, BiomeStoneBeach.class, CubicBiome.Builder::defaultDecorators);
         autoRegister(event, BiomeSwamp.class, b -> b
-                .addDefaultBlockReplacers().addBlockReplacer(SwampWaterWithLilypadReplacer.provider())
                 .defaultDecorators().decorator(new SwampDecorator()));
         autoRegister(event, BiomeTaiga.class, b -> b
-                .addBlockReplacer(terrainShapeReplacer()).addBlockReplacer(TaigaSurfaceReplacer.provider()).addBlockReplacer(oceanWaterReplacer())
                 .decorator(new TaigaDecorator()).defaultDecorators());
 
     }

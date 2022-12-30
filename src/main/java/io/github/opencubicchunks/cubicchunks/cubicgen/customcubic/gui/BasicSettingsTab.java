@@ -23,8 +23,15 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui;
 
-import blue.endless.jankson.JsonObject;
-import blue.endless.jankson.JsonPrimitive;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeBiomeList;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeCheckbox;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeIntSlider;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.malisisText;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_INSETS;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_PADDING;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.VERTICAL_INSETS;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.WIDTH_2_COL;
+
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.BiomeOption;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIVerticalTableLayout;
@@ -34,9 +41,6 @@ import net.malisis.core.client.gui.component.interaction.UICheckBox;
 import net.malisis.core.client.gui.component.interaction.UISelect;
 import net.malisis.core.client.gui.component.interaction.UISlider;
 import net.minecraft.world.biome.Biome;
-
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.*;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.*;
 
 class BasicSettingsTab {
 
@@ -51,16 +55,12 @@ class BasicSettingsTab {
     private final UICheckBox oceanMonuments;
     private final UICheckBox woodlandMansions;
     private final UICheckBox dungeons;
-    private final UICheckBox lavaOceans;
-
     private final UISelect<BiomeOption> biome;
 
     private final UISlider<Integer> dungeonCount;
 
     private final UISlider<Integer> biomeSize;
     private final UISlider<Integer> riverSize;
-
-    private final UISlider<Float> waterLevel;
 
     BasicSettingsTab(ExtraGui gui, JsonObjectView conf) {
 
@@ -94,10 +94,6 @@ class BasicSettingsTab {
                 .add(this.dungeons = makeCheckbox(gui, malisisText("dungeons"), conf.getBool("dungeons")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 4, WIDTH_2_COL))
 
-                .add(this.lavaOceans = makeCheckbox(gui, malisisText("lavaOceans"), conf.getBool("lavaOceans")),
-                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 4, WIDTH_2_COL))
-
-
                 .add(this.biome = makeBiomeList(gui, conf.getInt("biome")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 5, WIDTH_2_COL))
                 .add(this.dungeonCount = makeIntSlider(gui, malisisText("dungeonCount", ": %d"), 1, 100, conf.getInt("dungeonCount")),
@@ -106,14 +102,7 @@ class BasicSettingsTab {
                 .add(this.biomeSize = makeIntSlider(gui, malisisText("biomeSize", ": %d"), 1, 8, conf.getInt("biomeSize")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 6, WIDTH_2_COL))
                 .add(this.riverSize = makeIntSlider(gui, malisisText("riverSize", ": %d"), 1, 5, conf.getInt("riverSize")),
-                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 6, WIDTH_2_COL))
-
-
-                .add(this.waterLevel = makeExponentialSlider(
-                        gui, malisisText("water_level", ": %.2f"),
-                        1, 12, 1, 12, conf.getInt("waterLevel")),
-                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 7, WIDTH_2_COL));
-
+                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 6, WIDTH_2_COL));
 
         this.container = layout;
     }
@@ -132,25 +121,9 @@ class BasicSettingsTab {
         conf.put("oceanMonuments", oceanMonuments.isChecked());
         conf.put("woodlandMansions", woodlandMansions.isChecked());
         conf.put("dungeons", dungeons.isChecked());
-        conf.put("lavaOceans", lavaOceans.isChecked());
         conf.put("biome", biome.getSelectedValue().getBiome() == null ? -1 : Biome.getIdForBiome(biome.getSelectedValue().getBiome()));
         conf.put("dungeonCount", dungeonCount.getValue());
         conf.put("biomeSize", biomeSize.getValue());
         conf.put("riverSize", riverSize.getValue());
-        conf.put("waterLevel", Math.round(waterLevel.getValue()));
-
-        String liquidName = lavaOceans.isChecked() ? "minecraft:lava" : "minecraft:water";
-        JsonObject liquid = new JsonObject();
-        JsonObject liquidProp = new JsonObject();
-        liquidProp.put("level", new JsonPrimitive(0.0));
-        liquid.put("Properties", liquidProp);
-        liquid.put("Name", new JsonPrimitive(liquidName));
-
-        conf.object("replacerConfig").object("defaults").put("cubicgen:water_level", waterLevel.getValue());
-        conf.object("replacerConfig").object("defaults").put("cubicgen:ocean_block", liquid);
-    }
-
-    public double getWaterLevel() {
-        return waterLevel.getValue();
     }
 }

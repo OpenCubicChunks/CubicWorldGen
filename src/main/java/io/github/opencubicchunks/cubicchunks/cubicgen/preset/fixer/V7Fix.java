@@ -21,40 +21,15 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package io.github.opencubicchunks.cubicchunks.cubicgen.common.biome;
+package io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer;
 
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.util.ResourceLocation;
+import blue.endless.jankson.JsonObject;
 
-import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.function.Function;
 
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
-public class ConfigOptionInfo {
+public class V7Fix implements IJsonFix {
 
-    private final ResourceLocation location;
-    private final Object defaultValue;
-    private final String unlocalizedDescription;
-
-    public ConfigOptionInfo(ResourceLocation location, Object defaultValue, String unlocalizedDescription) {
-        this.location = location;
-        this.defaultValue = defaultValue;
-        this.unlocalizedDescription = unlocalizedDescription;
-    }
-
-    public ConfigOptionInfo(ResourceLocation location, Object defaultValue) {
-        this(location, defaultValue, null);// TODO: unlocalized descriptions
-    }
-
-    public ResourceLocation getLocation() {
-        return location;
-    }
-
-    public Object getDefaultValue() {
-        return defaultValue;
-    }
-
-    public String getUnlocalizedDescription() {
-        return unlocalizedDescription;
+    @Override public JsonObject fix(Function<JsonObject, JsonObject> fixer, JsonObject jsonObject) {
+        throw new UnsupportedOperationException("TODO: Not implemented");
     }
 }

@@ -135,6 +135,7 @@ dependencies {
     implementation(fg.deobf("curse.maven:hackForMixinFMLAgent_deobfedDeps_-223896:2680892"))
 
     shade("com.flowpowered:flow-noise:1.0.1-SNAPSHOT")
+    shade("org.spongepowered:noise:2.0.0-SNAPSHOT")
     shade("blue.endless:jankson:1.2.1")
 
     testImplementation("junit:junit:4.11")

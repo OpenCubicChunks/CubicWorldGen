@@ -155,7 +155,7 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
         return toUserFunction(entries);
     }
 
-    public UIUserFunctionEdit autoValueLockForParams(float minArg, float maxArg) {
+    public UIUserFunctionEdit autoValueLockForParams(double minArg, double maxArg) {
         int i = 0;
         Runnable old = toRunLater;
         this.toRunLater = () -> {
@@ -167,7 +167,7 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
 
             CustomGeneratorSettings.UserFunction func = toUserFunction(entries);
 
-            float min = Float.MAX_VALUE, max = -Float.MAX_VALUE;
+            double min = Double.MAX_VALUE, max = -Double.MAX_VALUE;
             min = Math.min(func.getValue(minArg), min);
             max = Math.max(func.getValue(minArg), max);
 
@@ -185,7 +185,7 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
                 min -= 0.05;
                 max += 0.05;
             }
-            float delta = (max - min) * 0.1f;
+            double delta = (max - min) * 0.1;
             lockValueRange(min - delta, max + delta);
         };
         return this;
@@ -194,7 +194,7 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
     public UIUserFunctionEdit autoYLockWithMinMax(double minMin, double maxMin, double minMax, double maxMax, double margin) {
         this.autoYLockHandler = () -> {
             CustomGeneratorSettings.UserFunction func = toUserFunction(entries);
-            float min = Float.MAX_VALUE, max = -Float.MAX_VALUE;
+            double min = Double.MAX_VALUE, max = -Double.MAX_VALUE;
 
             for (CustomGeneratorSettings.UserFunction.Entry value : func.values) {
                 min = Math.min(value.v, min);
@@ -217,7 +217,7 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
         return this;
     }
 
-    public UIUserFunctionEdit setLockedMin(float minValue) {
+    public UIUserFunctionEdit setLockedMin(double minValue) {
         Runnable old = toRunLater;
         toRunLater = () -> {
             if (old != null) {
@@ -229,7 +229,7 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
         return this;
     }
 
-    public UIUserFunctionEdit setLockedMax(float maxValue) {
+    public UIUserFunctionEdit setLockedMax(double maxValue) {
         Runnable old = toRunLater;
         toRunLater = () -> {
             if (old != null) {
@@ -241,7 +241,7 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
         return this;
     }
 
-    public UIUserFunctionEdit lockValueRange(float minValue, float maxValue) {
+    public UIUserFunctionEdit lockValueRange(double minValue, double maxValue) {
         this.lockYRange = true;
         this.minLockedY = minValue;
         this.maxLockedY = maxValue;
@@ -434,7 +434,7 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
         dragging.v = (float) DrawUtils.posToY(getHeightFlip(), localY, yOffset(), yScale());
 
         CustomGeneratorSettings.UserFunction.Entry otherClosest = getClosest(entries, localX, localY, true, e -> e != dragging);
-        Set<Float> allYValues = entries.stream().filter(e -> e != dragging).map(e -> e.y).collect(Collectors.toSet());
+        Set<Double> allYValues = entries.stream().filter(e -> e != dragging).map(e -> e.y).collect(Collectors.toSet());
 
         if (otherClosest != null) {
             Boolean goUp = null;
@@ -570,7 +570,7 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
             final double yScale = yScale();
             final double yOffset = yOffset();
 
-            float currY = (float) DrawUtils.posToX(getWidthFlip(), localX, xOffset, xScale);
+            double currY = DrawUtils.posToX(getWidthFlip(), localX, xOffset, xScale);
 
             float r = 2;
 
@@ -581,7 +581,7 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
             }
 
             CustomGeneratorSettings.UserFunction func = toUserFunction(entries);
-            float currV = func.getValue(currY);
+            double currV = func.getValue(currY);
 
             @SuppressWarnings("SuspiciousNameCombination")
             float screenXRaw = (float) DrawUtils.xToPos(getWidthFlip(), currY, xOffset, xScale);
@@ -608,8 +608,8 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
 
         float lineWidth = 0.9f / renderer.getScaleFactor();
 
-        float currY = (float) DrawUtils.posToX(getWidthFlip(), 0, xOffset, xScale);
-        float currV = func.getValue(currY);
+        double currY = DrawUtils.posToX(getWidthFlip(), 0, xOffset, xScale);
+        double currV = func.getValue(currY);
         for (CustomGeneratorSettings.UserFunction.Entry entry : entries) {
             if (entry.y > maxGraphY) {
                 break;
@@ -646,8 +646,8 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
 
         }
 
-        float lastY = (float) DrawUtils.posToX(getWidthFlip(), getWidthFlip(), xOffset, xScale);
-        float lastV = func.getValue(lastY);
+        double lastY = DrawUtils.posToX(getWidthFlip(), getWidthFlip(), xOffset, xScale);
+        double lastV = func.getValue(lastY);
 
         @SuppressWarnings("SuspiciousNameCombination")
         float startX = (float) DrawUtils.xToPos(getWidthFlip(), currY, xOffset, xScale);

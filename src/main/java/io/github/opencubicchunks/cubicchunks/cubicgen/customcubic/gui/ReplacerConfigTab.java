@@ -21,25 +21,24 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common.accessor;
+package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui;
 
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.gen.NoiseGeneratorPerlin;
-import net.minecraft.world.gen.feature.WorldGenDoublePlant;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIVerticalTableLayout;
+import net.malisis.core.client.gui.component.UIComponent;
 
-@Mixin(Biome.class)
-public interface IBiome {
-    @Accessor("DOUBLE_PLANT_GENERATOR") static WorldGenDoublePlant getDoublePlantGenerator() {
-        throw new Error("IBiome failed to apply");
-    }
+public class ReplacerConfigTab {
 
-    @Accessor("GRASS_COLOR_NOISE") static NoiseGeneratorPerlin getGrassColorNoise() {
-        throw new Error("IBiome failed to apply");
-    }
+    private static class Entry extends UIVerticalTableLayout<Entry> {
 
-    @Accessor("TEMPERATURE_NOISE") static NoiseGeneratorPerlin getTemperatureNoise() {
-        throw new Error("IBiome failed to apply");
+        /**
+         * Default constructor, creates the components list.
+         *
+         * @param gui     the gui
+         */
+        public Entry(ExtraGui gui, String name) {
+            super(gui, 3);
+
+        }
     }
 }
