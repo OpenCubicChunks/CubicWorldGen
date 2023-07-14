@@ -11,7 +11,7 @@ plugins {
     `maven-publish`
     signing
     idea
-    id("net.minecraftforge.gradle").version("5.1.27")
+    id("net.minecraftforge.gradle").version("6.+")
     id("org.spongepowered.mixin").version("0.7-SNAPSHOT")
     id("com.github.johnrengelman.shadow").version("7.1.2")
     id("com.github.hierynomus.license").version("0.16.1")
@@ -123,16 +123,20 @@ repositories {
     }
 }
 
+legacy {
+    fixClasspath.set(true)
+    extractMappings.set(true)
+}
 
 dependencies {
     minecraft(group = "net.minecraftforge", name = "forge", version = theForgeVersion)
 
     // provided by cubicchunks implementation
-    implementation("org.spongepowered:mixin:0.8.1-SNAPSHOT") {
-        isTransitive = false
+    implementation("org.spongepowered:mixin:0.8.3-SNAPSHOT") {
+        isTransitive = true
     }
 
-    implementation(fg.deobf("curse.maven:hackForMixinFMLAgent_deobfedDeps_-223896:2680892"))
+    compileOnly(fg.deobf("curse.maven:hackForMixinFMLAgent_deobfedDeps_-223896:2680892"))
 
     shade("com.flowpowered:flow-noise:1.0.1-SNAPSHOT")
     shade("org.spongepowered:noise:2.0.0-SNAPSHOT")
@@ -256,7 +260,7 @@ tasks {
     }
 
     val sourcesJar by creating(Jar::class) {
-        classifier = "sources"
+        archiveClassifier.set("sources")
         from(sourceSets["main"].java.srcDirs)
     }
 
