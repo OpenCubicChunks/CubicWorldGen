@@ -12,6 +12,12 @@
         "conformVisibility": true
     },
     "mixins": [
+        "common.IUIContainer",
+        "common.MixinSaveHandler",
+        "common.MixinStrongholdStart",
+        "common.MixinUIComponent",
+        "common.MixinVillageStart",
+        "common.MixinWorldInfo",
         "common.accessor.IBiome",
         "common.accessor.IBiomeForest",
         "common.accessor.IBiomeMesa",
@@ -20,12 +26,7 @@
         "common.accessor.IBiomeSnow",
         "common.accessor.IBiomeTaiga",
         "common.accessor.INoiseGeneratorImproved",
-        "common.extras.FarLands",
-        "common.IUIContainer",
-        "common.MixinSaveHandler",
-        "common.MixinStrongholdStart",
-        "common.MixinUIComponent",
-        "common.MixinWorldInfo"
+        "common.extras.FarLands"
     ],
     "client": [],
     "server": []

@@ -52,12 +52,14 @@ public class CubicGenCoreMod implements IFMLLoadingPlugin {
         Mixins.addConfiguration("cubicgen.mixins.json");
         if (System.getProperty("net.minecraftforge.gradle.GradleStart.srg.srg-mcp") != null) {
             return new String[]{
+                    "io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.MapGenVillageCubicConstructorTransform",
                     "io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.MapGenStrongholdCubicConstructorTransform",
                     // hack for FG5 dev environment - dependency ATs aren't applied at runtime
                     "io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.MalisisCoreAT"
             };
         } else {
             return new String[]{
+                    "io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.MapGenVillageCubicConstructorTransform",
                     "io.github.opencubicchunks.cubicchunks.cubicgen.asm.coremod.MapGenStrongholdCubicConstructorTransform"
             };
         }
