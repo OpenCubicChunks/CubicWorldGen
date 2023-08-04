@@ -119,6 +119,10 @@ public class JsonObjectView {
         return (float) (double) Objects.requireNonNull(this.obj.get(double.class, key), () -> "Missing float entry " + key);
     }
 
+    public double getDouble(String key) {
+        return Objects.requireNonNull(this.obj.get(double.class, key), () -> "Missing double entry " + key);
+    }
+
     public String getString(String key) {
         return Objects.requireNonNull(this.obj.get(String.class, key), () -> "Missing string entry " + key);
     }

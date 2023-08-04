@@ -63,6 +63,7 @@ public class V6Fix implements IJsonFix {
             .valueTransform("cubeAreas", this::convertCubeAreas)
             .build();
 
+    // TODO: why is this never called?
     private void transformGenInBlockstates(JsonObject oldRoot, JsonObject newRoot, JsonTransformer.CombinedContext<Function<JsonObject, JsonObject>> ctx) {
         JsonElement oldValue = oldRoot.get("genInBlockstates");
         if (oldValue instanceof JsonNull) {
