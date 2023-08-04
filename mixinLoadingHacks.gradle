@@ -1,0 +1,96 @@
+import static java.util.Collections.singletonMap
+
+// intellij is wrong, this is required
+import org.gradle.api.artifacts.transform.TransformParameters
+
+import java.nio.file.FileSystem
+import java.nio.file.FileSystems
+import java.nio.file.FileVisitResult
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+import java.nio.file.attribute.BasicFileAttributes
+
+// This is required because normally, FML on 1.12.2 doesn't load tweaker plugins as mods
+// Anything that uses Mixin on 1.12.2 is actually a tweaker plugin that loads mixin
+// to be able to actually load a mod from the same jar, Mixin FML agent then injects that jar into FML mod loading\
+// but this breaks in dev on FG3+, because mixin FML agent is looking for the string "deobfedDeps" in the jar name
+// this artifact transform just adds the string Mixin FML agent is looking for into the jar name
+def artifactType = Attribute.of('artifactType', String)
+def renamedForMixinFmlAgent = Attribute.of('renamedForMixinFmlAgent', Boolean)
+
+dependencies {
+    attributesSchema {
+        attribute(renamedForMixinFmlAgent)
+    }
+    artifactTypes.named("jar") {
+        attributes.attribute(renamedForMixinFmlAgent, false)
+    }
+}
+
+configurations.configureEach {
+    if (canBeResolved) {
+        attributes.attribute(renamedForMixinFmlAgent, true)
+    }
+}
+
+dependencies {
+    registerTransform(RenameForMixinFmlAgentTransform) {
+        from.attribute(renamedForMixinFmlAgent, false).attribute(artifactType, "jar")
+        to.attribute(renamedForMixinFmlAgent, true).attribute(artifactType, "jar")
+    }
+}
+
+abstract class RenameForMixinFmlAgentTransform implements TransformAction<TransformParameters.None> {
+    @InputArtifact
+    abstract Provider<FileSystemLocation> getInputArtifact()
+
+    @Override
+    void transform(TransformOutputs outputs) {
+        def input = inputArtifact.get().asFile
+        if (input.name.contains('CubicChunks')) {
+            def renamedJar = outputs.file('hackForMixinFMLAgent_deobfedDeps_' + input.name)
+            Files.copy(input.toPath(), renamedJar.toPath())
+        } else if (input.name.contains('223896')) {
+            File modifiedJar = outputs.file('hackForMixinFMLAgent_deobfedDeps_MalisisCoreNoMixin_' + input.name)
+            try (FileSystem inFs = FileSystems.newFileSystem(input.toPath(), getClass().classLoader)
+                 FileSystem outFs = createJarAndOpenFileSystem(modifiedJar.toPath())) {
+                copyFilteredMalisisCoreContents(inFs.getPath("/"), outFs.getPath("/"))
+            }
+        } else {
+            outputs.file(inputArtifact)
+        }
+    }
+
+    // remove Mixin from MalisisCore jar - this breaks because MalisisCore is above other sources of Mixin on the classpath
+    static void copyFilteredMalisisCoreContents(java.nio.file.Path from, java.nio.file.Path to) throws IOException {
+        final fromAbsolute = from.toAbsolutePath();
+        Files.walkFileTree(from, new java.nio.file.FileVisitor<java.nio.file.Path>() {
+            @Override FileVisitResult preVisitDirectory(java.nio.file.Path dir, BasicFileAttributes attrs) throws IOException {
+                if (dir.toString().startsWith('/org/spongepowered')) {
+                    return FileVisitResult.SKIP_SUBTREE
+                }
+                Files.createDirectories(to.resolve(fromAbsolute.relativize(dir).toString()))
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override FileVisitResult visitFile(java.nio.file.Path file, BasicFileAttributes attrs) throws IOException {
+                Files.copy(file, to.resolve(fromAbsolute.relativize(file).toString()), StandardCopyOption.REPLACE_EXISTING)
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override FileVisitResult visitFileFailed(java.nio.file.Path file, IOException exc) {
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override FileVisitResult postVisitDirectory(java.nio.file.Path dir, IOException exc) {
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }
+
+    static FileSystem createJarAndOpenFileSystem(java.nio.file.Path jarPath) throws IOException {
+        URI uri = jarPath.toUri();
+        URI jarUri = new URI("jar:" + uri.getScheme(), uri.getPath(), null);
+        return FileSystems.newFileSystem(jarUri, singletonMap("create", "true"));
+    }
+}

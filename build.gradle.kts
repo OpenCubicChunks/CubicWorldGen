@@ -11,13 +11,15 @@ plugins {
     `maven-publish`
     signing
     idea
-    id("net.minecraftforge.gradle").version("5.1.27")
+    id("net.neoforged.gradle").version("[6.0.18,6.2)")
     id("org.spongepowered.mixin").version("0.7-SNAPSHOT")
     id("com.github.johnrengelman.shadow").version("7.1.2")
     id("com.github.hierynomus.license").version("0.16.1")
     id("io.github.opencubicchunks.gradle.mcGitVersion")
     id("io.github.opencubicchunks.gradle.mixingen")
 }
+
+apply(from = "mixinLoadingHacks.gradle")
 
 // TODO: update to gradle 7.3+, currently blocked by https://youtrack.jetbrains.com/issue/IDEA-276738
 val hasCubicChunksBuild = gradle.includedBuilds.any { it.name == "CubicChunks" || it.name == "1.12" }
@@ -256,7 +258,7 @@ tasks {
     }
 
     val sourcesJar by creating(Jar::class) {
-        classifier = "sources"
+        archiveClassifier.set("sources")
         from(sourceSets["main"].java.srcDirs)
     }
 
