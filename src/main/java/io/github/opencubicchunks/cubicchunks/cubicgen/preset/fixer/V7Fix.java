@@ -37,14 +37,12 @@ public class V7Fix implements IJsonFix {
     private final JsonTransformer<Function<JsonObject, JsonObject>> transformer = JsonTransformer.<Function<JsonObject, JsonObject>>builder("V6 -> V7")
             .valueTransform("version", (e, ctx) -> new JsonPrimitive(6))
             .passthroughFor(
-                    "waterLevel",
                     "caves",
                     "strongholds", "alternateStrongholdsPositions",
                     "villages", "mineshafts", "temples", "oceanMonuments", "woodlandMansions", "ravines",
                     "dungeons", "dungeonCount",
                     "standardOres",
                     "periodicGaussianOres",
-                    "lavaOceans",
                     "biome", "biomeSize", "riverSize",
                     "heightVariationFactor", "specialHeightVariationFactorBelowAverageY", "heightVariationOffset", "heightFactor", "heightOffset",
                     "depthNoiseFactor", "depthNoiseOffset", "depthNoiseFrequencyX", "depthNoiseFrequencyZ", "depthNoiseOctaves",
