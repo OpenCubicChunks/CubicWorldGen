@@ -99,6 +99,7 @@ public class V7Fix implements IJsonFix {
         stoneReplacer.put("filterBlocks", new JsonArray());
         stoneReplacer.put("blockFilterType", new JsonPrimitive("EXCLUDE"));
         stoneReplacer.put("minDensity", new JsonPrimitive(0.0));
+        stoneReplacer.put("maxDensity", new JsonPrimitive(Double.POSITIVE_INFINITY));
         stoneReplacer.put("minY", new JsonPrimitive(Integer.MIN_VALUE));
         stoneReplacer.put("maxY", new JsonPrimitive(Integer.MAX_VALUE));
         stoneReplacer.put("biomeFilter", JsonNull.INSTANCE);
