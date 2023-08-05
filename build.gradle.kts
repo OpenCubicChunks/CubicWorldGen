@@ -235,7 +235,7 @@ tasks {
 
     fun configureShadowJar(task: ShadowJar, classifier: String) {
         task.configurations = listOf(shade)
-        task.exclude("META-INF/MUMFREY*")
+        task.exclude("META-INF/MUMFREY*", "META-INF/versions/**/*")
         task.from(sourceSets["main"].output)
         task.from(sourceSets["api"].output)
         task.exclude("log4j2.xml")
