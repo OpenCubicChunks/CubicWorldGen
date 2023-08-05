@@ -109,6 +109,9 @@ configurations {
 repositories {
     mavenCentral()
     maven {
+        setUrl("https://files.minecraftforge.net/maven/")
+    }
+    maven {
         setUrl("https://oss.sonatype.org/content/repositories/public/")
     }
     // Note: sponge repository needs to be the second one because flow-noise is both in sponge and sonatype repository
