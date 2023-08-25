@@ -136,6 +136,10 @@ public abstract class DensityRangeReplacer extends IBiomeBlockReplacer {
             this.threshold = threshold;
         }
 
+        @Override protected boolean rangeChecksAlwaysFail() {
+            return super.rangeChecksAlwaysFail() || (this.blockInRange == null && this.blockOutOfRange == null);
+        }
+
         @Override
         public IBlockState getReplacedBlockImpl(IBlockState previousBlock, Biome biome, int x, int y, int z, double dx, double dy, double dz, double density) {
             if (density > threshold) {
@@ -157,6 +161,10 @@ public abstract class DensityRangeReplacer extends IBiomeBlockReplacer {
             this.max = max;
         }
 
+        @Override protected boolean rangeChecksAlwaysFail() {
+            return super.rangeChecksAlwaysFail() || (this.blockInRange == null && this.blockOutOfRange == null);
+        }
+
         @Override
         public IBlockState getReplacedBlockImpl(IBlockState previousBlock, Biome biome, int x, int y, int z, double dx, double dy, double dz, double density) {
             if (density > min && density < max) {
@@ -175,6 +183,10 @@ public abstract class DensityRangeReplacer extends IBiomeBlockReplacer {
             super(minY, maxY, blockInRange);
             this.filterBlock = filterBlock;
             this.blockFilterType = blockFilterType;
+        }
+
+        @Override protected boolean rangeChecksAlwaysFail() {
+            return super.rangeChecksAlwaysFail() || this.blockInRange == null;
         }
 
         @Override
@@ -203,6 +215,10 @@ public abstract class DensityRangeReplacer extends IBiomeBlockReplacer {
             this.max = max;
         }
 
+        @Override protected boolean rangeChecksAlwaysFail() {
+            return super.rangeChecksAlwaysFail() || (this.blockInRange == null && this.blockOutOfRange == null);
+        }
+
         @Override
         public IBlockState getReplacedBlockImpl(IBlockState previousBlock, Biome biome, int x, int y, int z, double dx, double dy, double dz, double density) {
             if (blockFilterType.isAllowed(filterBlock, previousBlock)) {
@@ -229,6 +245,10 @@ public abstract class DensityRangeReplacer extends IBiomeBlockReplacer {
             this.blockFilterType = blockFilterType;
             this.min = min;
             this.max = max;
+        }
+
+        @Override protected boolean rangeChecksAlwaysFail() {
+            return super.rangeChecksAlwaysFail() || (this.blockInRange == null && this.blockOutOfRange == null);
         }
 
         @Override

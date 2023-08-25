@@ -8,6 +8,9 @@ import static org.objectweb.asm.Opcodes.ASTORE;
 import static org.objectweb.asm.Opcodes.CHECKCAST;
 import static org.objectweb.asm.Opcodes.DLOAD;
 import static org.objectweb.asm.Opcodes.IFEQ;
+import static org.objectweb.asm.Opcodes.IF_ICMPGT;
+import static org.objectweb.asm.Opcodes.IF_ICMPLT;
+import static org.objectweb.asm.Opcodes.IF_ICMPNE;
 import static org.objectweb.asm.Opcodes.ILOAD;
 import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 import static org.objectweb.asm.Opcodes.LALOAD;
@@ -42,7 +45,7 @@ public class ReplacerBytecodeGenerator {
     public static IMultiBiomeBlockReplacer generateFromArray(IBiomeBlockReplacer[] replacers) {
         //TODO: maybe we could re-use an existing replacer class if this is called multiple times with an identical array?
 
-        String className = "GeneratedMultiBiomeBlockReplacer";
+        String className = Type.getInternalName(IMultiBiomeBlockReplacer.class) + "$GeneratedImpl";
 
         ClassWriterWithConstants cw = new ClassWriterWithConstants(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
         cw.visit(V1_8, ACC_PUBLIC | ACC_FINAL, className, null, Type.getInternalName(IMultiBiomeBlockReplacer.class), null);
@@ -81,6 +84,12 @@ public class ReplacerBytecodeGenerator {
                 mv.visitVarInsn(LSTORE, 15);
 
                 for (int bitIndex = 0; bitIndex < Long.SIZE && replacerIndex < replacers.length; bitIndex++, replacerIndex++) {
+                    IBiomeBlockReplacer replacer = replacers[replacerIndex];
+                    if (replacer.rangeChecksAlwaysFail()) {
+                        // if this replacer will never pass its range checks, we'll skip processing it entirely and not bother generating any code
+                        continue;
+                    }
+
                     Label tailLabel = new Label();
 
                     //if ((flagsElement & (1L << bitIndex)) != 0L) {
@@ -91,8 +100,31 @@ public class ReplacerBytecodeGenerator {
                     mv.visitInsn(LCMP);
                     mv.visitJumpInsn(IFEQ, tailLabel);
 
-                    //  state = replacers[replacerIndex].getReplacedBlock(state, biome, x, y, z, dx, dy, dz, density);
-                    mv.visitLdcInsn(cw.constantPlaceholder(replacers[replacerIndex]));
+                    // if this replacer's range checks won't always pass, we'll hoist them out of IBiomeBlockReplacer#getReplacedBlock() to allow
+                    // JIT to treat the min/max values as constants so they can be optimized more aggressively
+                    if (replacer.minY == replacer.maxY) {
+                        //  if (y == replacers[replacerIndex].minY)
+                        mv.visitVarInsn(ILOAD, 4);
+                        mv.visitLdcInsn(replacer.minY);
+                        mv.visitJumpInsn(IF_ICMPNE, tailLabel);
+                    } else {
+                        if (replacer.minY != Integer.MIN_VALUE) {
+                            //  if (y >= replacers[replacerIndex].minY)
+                            mv.visitVarInsn(ILOAD, 4);
+                            mv.visitLdcInsn(replacer.minY);
+                            mv.visitJumpInsn(IF_ICMPLT, tailLabel);
+                        }
+                        if (replacer.maxY != Integer.MAX_VALUE) {
+                            //  if (y <= replacers[replacerIndex].maxY)
+                            mv.visitVarInsn(ILOAD, 4);
+                            mv.visitLdcInsn(replacer.maxY);
+                            mv.visitJumpInsn(IF_ICMPGT, tailLabel);
+                        }
+                        // if minY/maxY are Integer.MIN_VALUE/MAX_VALUE respectively, no range checking code will be generated
+                    }
+
+                    //    state = replacers[replacerIndex].getReplacedBlockImpl(state, biome, x, y, z, dx, dy, dz, density);
+                    mv.visitLdcInsn(cw.constantPlaceholder(replacer));
                     mv.visitTypeInsn(CHECKCAST, Type.getInternalName(IBiomeBlockReplacer.class));
                     mv.visitVarInsn(ALOAD, 1);
                     mv.visitVarInsn(ALOAD, 2);
@@ -103,7 +135,7 @@ public class ReplacerBytecodeGenerator {
                     mv.visitVarInsn(DLOAD, 8);
                     mv.visitVarInsn(DLOAD, 10);
                     mv.visitVarInsn(DLOAD, 12);
-                    mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(IBiomeBlockReplacer.class), "getReplacedBlock",
+                    mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(IBiomeBlockReplacer.class), "getReplacedBlockImpl",
                             "(Lnet/minecraft/block/state/IBlockState;Lnet/minecraft/world/biome/Biome;IIIDDDD)"
                                     + "Lnet/minecraft/block/state/IBlockState;", false);
                     mv.visitVarInsn(ASTORE, 1);
@@ -124,7 +156,7 @@ public class ReplacerBytecodeGenerator {
 
         if (Boolean.getBoolean("cwg.dumpClasses")) {
             try {
-                Files.write(Paths.get(className + ".class"), cw.toByteArray());
+                Files.write(Paths.get((className + ".class").replace('/', '_')), cw.toByteArray());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

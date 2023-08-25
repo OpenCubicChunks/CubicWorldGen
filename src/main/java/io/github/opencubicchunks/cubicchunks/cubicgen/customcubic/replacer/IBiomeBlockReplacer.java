@@ -65,6 +65,10 @@ public abstract class IBiomeBlockReplacer {
         throw new UnsupportedOperationException("Unknown replacer type: " + config.getClass());
     }
 
+    protected boolean rangeChecksAlwaysFail() {
+        return minY > maxY;
+    }
+
     /**
      * Replaces the given block with another block based on given location, density gradient and density value. Biome
      * block replacers can be chained (output if one replacer used as input to another replacer)
@@ -84,7 +88,7 @@ public abstract class IBiomeBlockReplacer {
      * @param dz            the Z component of density gradient
      * @param density       the density value
      */
-    public IBlockState getReplacedBlock(IBlockState previousBlock, Biome biome,
+    public final IBlockState getReplacedBlock(IBlockState previousBlock, Biome biome,
             int x, int y, int z, double dx, double dy, double dz, double density) {
         if (y >= minY && y <= maxY) {
             return getReplacedBlockImpl(previousBlock, biome, x, y, z, dx, dy, dz, density);

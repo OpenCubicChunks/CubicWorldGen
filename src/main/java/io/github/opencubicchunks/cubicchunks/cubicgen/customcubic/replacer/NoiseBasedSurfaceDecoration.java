@@ -65,10 +65,9 @@ public class NoiseBasedSurfaceDecoration extends IBiomeBlockReplacer {
         this.featureMax = featureMax;
     }
 
-    @Override
-    public IBlockState getReplacedBlock(IBlockState previousBlock, Biome biome, int x, int y, int z, double dx, double dy, double dz, double density) {
-        // skip height checks, this replacer checks height in impl
-        return getReplacedBlockImpl(previousBlock, biome, x, y, z, dx, dy, dz, density);
+    @Override protected boolean rangeChecksAlwaysFail() {
+        // if both groundBlock and featureBlock are null, nothing will ever be replaced
+        return super.rangeChecksAlwaysFail() || (this.groundBlock == null && this.featureBlock == null);
     }
 
     @Override public IBlockState getReplacedBlockImpl(IBlockState previousBlock, Biome biome,
@@ -76,7 +75,7 @@ public class NoiseBasedSurfaceDecoration extends IBiomeBlockReplacer {
         // NOTE: duplicating noise check code because all the earlier checks are much faster
 
         // block right under the surface, can't be at maxY or there will be nowhere to fit the block above
-        if (groundBlock != null && y >= minY && y < maxY && density > densityThreshold && density + dy <= densityThreshold) {
+        if (groundBlock != null && y < maxY && density > densityThreshold && density + dy <= densityThreshold) {
             double v = builder.get(x, y, z);
             if (v >= groundMin && v <= groundMax) {
                 return groundBlock;
@@ -84,7 +83,7 @@ public class NoiseBasedSurfaceDecoration extends IBiomeBlockReplacer {
             return previousBlock;
         }
         // block right above the surface, can't be minY or there will be nowhere to fit the block below
-        if (featureBlock != null && y > minY && y <= maxY && density <= densityThreshold && density - dy > densityThreshold) {
+        if (featureBlock != null && y > minY && density <= densityThreshold && density - dy > densityThreshold) {
             double v = builder.get(x, y, z);
             if (v >= featureMin && v < featureMax) {
                 return featureBlock;
