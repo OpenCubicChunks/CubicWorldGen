@@ -43,6 +43,8 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.common.world.storage.IWorl
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.BiomeSource;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.IBuilder;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.builder.NoiseSource;
+import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.replacer.IMultiBiomeBlockReplacer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.replacer.ReplacerBytecodeGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.CubicCaveGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.CubicRavineGenerator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.structure.feature.CubicStrongholdGenerator;
@@ -95,6 +97,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
     private ICubicFeatureGenerator strongholds;
 
     private IBiomeBlockReplacer[] replacers;
+    private IMultiBiomeBlockReplacer multiReplacer;
 
     public CustomTerrainGenerator(World world, final long seed) {
         this(world, world.getBiomeProvider(), CustomGeneratorSettings.getFromWorld(world), seed);
@@ -210,6 +213,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         for (int i = 0; i < conf.replacers.size(); i++) {
             this.replacers[i] = IBiomeBlockReplacer.create(seed, conf.replacers.get(i));
         }
+        this.multiReplacer = ReplacerBytecodeGenerator.generateFromArray(this.replacers);
     }
 
     @Override
@@ -328,19 +332,10 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
      * @return The block state
      */
     private IBlockState getBlock(int x, int y, int z, double dx, double dy, double dz, double density) {
-        // TODO: generate bytecode for this method with the main loop unrolled and types inlined\
         BiomeSource.ReplacerData biomeData = biomeSource.getReplacers(x, y, z);
         Biome biome = biomeData.biome;
         long[] replacerFlags = biomeData.replacerFlags;
-        IBlockState block = Blocks.AIR.getDefaultState();
-        int size = replacers.length;
-        for (int i = 0; i < size; i++) {
-            if ((replacerFlags[i >> 6] & (1L << (i & 63))) == 0) {
-                continue;
-            }
-            block = replacers[i].getReplacedBlock(block, biome, x, y, z, dx, dy, dz, density);
-        }
-        return block;
+        return this.multiReplacer.getReplacedBlock(Blocks.AIR.getDefaultState(), biome, x, y, z, dx, dy, dz, density, replacerFlags);
     }
 
     public void generateStructures(CubePrimer cube, CubePos cubePos) {
