@@ -48,6 +48,14 @@ abstract class RenameForMixinFmlAgentTransform implements TransformAction<Transf
     void transform(TransformOutputs outputs) {
         def input = inputArtifact.get().asFile
         if (input.name.contains('CubicChunks')) {
+            if (!input.exists()) {
+                // For some reason, for this specific project (what is special here?), when intellij is importing it
+                // an exception in artifact transforms actually makes it fail to build the model
+                // An exception normally always happens in this situation (transforming a composite build dependency substitution)
+                // but for CubicWorldGen specifically it causes an error in intellij
+                // as a workaround, return here to not throw an exception, this seems to make intellij happy
+                return;
+            }
             def renamedJar = outputs.file('hackForMixinFMLAgent_deobfedDeps_' + input.name)
             Files.copy(input.toPath(), renamedJar.toPath())
         } else if (input.name.contains('223896')) {
