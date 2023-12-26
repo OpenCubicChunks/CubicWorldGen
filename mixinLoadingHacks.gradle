@@ -17,6 +17,7 @@ import java.nio.file.attribute.BasicFileAttributes
 // this artifact transform just adds the string Mixin FML agent is looking for into the jar name
 def artifactType = Attribute.of('artifactType', String)
 def renamedForMixinFmlAgent = Attribute.of('renamedForMixinFmlAgent', Boolean)
+def hasCubicChunksBuild = gradle.includedBuilds.any { it.name == "CubicChunks" || it.name == "1.12" }
 
 dependencies {
     attributesSchema {
@@ -37,10 +38,18 @@ dependencies {
     registerTransform(RenameForMixinFmlAgentTransform) {
         from.attribute(renamedForMixinFmlAgent, false).attribute(artifactType, "jar")
         to.attribute(renamedForMixinFmlAgent, true).attribute(artifactType, "jar")
+        parameters {
+            transformCubicChunksJar = !hasCubicChunksBuild
+        }
     }
 }
 
-abstract class RenameForMixinFmlAgentTransform implements TransformAction<TransformParameters.None> {
+abstract class RenameForMixinFmlAgentTransform implements TransformAction<Parameters> {
+    interface Parameters extends TransformParameters {
+        @Input
+        Property<Boolean> getTransformCubicChunksJar()
+    }
+
     @InputArtifact
     abstract Provider<FileSystemLocation> getInputArtifact()
 
@@ -56,6 +65,13 @@ abstract class RenameForMixinFmlAgentTransform implements TransformAction<Transf
                 // as a workaround, return here to not throw an exception, this seems to make intellij happy
                 return;
             }
+            // skip transforming CC when it's a substituted build - this exists only for running in IDE
+            // and in this case the actual project will be used when we don't transform
+            if (!parameters.transformCubicChunksJar.get()) {
+                outputs.file(inputArtifact)
+                return;
+            }
+
             def renamedJar = outputs.file('hackForMixinFMLAgent_deobfedDeps_' + input.name)
             Files.copy(input.toPath(), renamedJar.toPath())
         } else if (input.name.contains('223896')) {
