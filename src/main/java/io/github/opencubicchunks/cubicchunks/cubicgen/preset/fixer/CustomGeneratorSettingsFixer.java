@@ -50,7 +50,8 @@ public class CustomGeneratorSettingsFixer {
             new V4Fix(),
             new V5Fix(),
             new V6Fix(),
-            new V7Fix()
+            new V7Fix(),
+            new V8Fix()
     );
 
     private CustomGeneratorSettingsFixer() {
