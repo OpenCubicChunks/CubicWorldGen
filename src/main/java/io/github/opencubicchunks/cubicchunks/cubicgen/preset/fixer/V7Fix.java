@@ -35,7 +35,7 @@ import java.util.function.Function;
 public class V7Fix implements IJsonFix {
 
     private final JsonTransformer<Function<JsonObject, JsonObject>> transformer = JsonTransformer.<Function<JsonObject, JsonObject>>builder("V6 -> V7")
-            .valueTransform("version", (e, ctx) -> new JsonPrimitive(6))
+            .valueTransform("version", (e, ctx) -> new JsonPrimitive(7))
             .passthroughFor(
                     "caves",
                     "strongholds", "alternateStrongholdsPositions",
