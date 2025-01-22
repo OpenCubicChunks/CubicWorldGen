@@ -37,7 +37,7 @@ import javax.annotation.Nullable;
 
 public class CustomGeneratorSettingsFixer {
 
-    public static final int LATEST = 7;
+    public static final int LATEST = 8;
     public static final CustomGeneratorSettingsFixer INSTANCE = new CustomGeneratorSettingsFixer();
 
     private final V3Preprocessor legacyPreprocessor = new V3Preprocessor();

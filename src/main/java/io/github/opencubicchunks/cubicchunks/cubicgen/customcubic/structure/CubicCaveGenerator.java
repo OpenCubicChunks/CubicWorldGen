@@ -35,14 +35,19 @@ import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.StructureGenUtil;
+import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -55,102 +60,14 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public class CubicCaveGenerator implements IFlexHandlerStructureGenerator {
 
-    //=============================================
-    //Possibly configurable values
-    //=============================================
+    private final List<IBlockState> allowedBlocks;
+    private final CustomGeneratorSettings.CaveConfig caveConfig;
 
-    /**
-     * 1 in CAVE_RARITY attempts will result in generating any caves at all
-     * <p>
-     * Vanilla value: 7 Multiply by 16 and divide by 8: there are 16 cubes in a vanilla chunk, but only one cube per 8
-     * has caves generated
-     */
-    private static final int CAVE_RARITY = 16 * 7 / (2 * 2 * 2);
-
-    /**
-     * Maximum amount of starting nodes
-     */
-    private static final int MAX_INIT_NODES = 14;
-
-    /**
-     * 1 in LARGE_NODE_RARITY initial attempts will result in large node
-     */
-    private static final int LARGE_NODE_RARITY = 4;
-
-    /**
-     * The maximum amount of additional branches after generating large node. Random value between 0 and
-     * LARGE_NODE_MAX_BRANCHES is chosen.
-     */
-    private static final int LARGE_NODE_MAX_BRANCHES = 4;
-
-    /**
-     * 1 in BIG_CAVE_RARITY branches will start bigger than usual
-     */
-    private static final int BIG_CAVE_RARITY = 10;
-
-    /**
-     * Value added to the size of the cave (radius)
-     */
-    private static final double CAVE_SIZE_ADD = 1.5D;
-
-    /**
-     * In 1 of STEEP_STEP_RARITY steps, cave will be flattened using STEEPER_FLATTEN_FACTOR instead of FLATTEN_FACTOR
-     */
-    private static final int STEEP_STEP_RARITY = 6;
-
-    /**
-     * After each step the Y direction component will be multiplied by this value, unless steeper cave is allowed
-     */
-    private static final float FLATTEN_FACTOR = 0.7f;
-
-    /**
-     * If steeper cave is allowed - this value will be used instead of FLATTEN_FACTOR
-     */
-    private static final float STEEPER_FLATTEN_FACTOR = 0.92f;
-
-    /**
-     * Each step cave direction angles will be changed by this fraction of values that specify how direction changes
-     */
-    private static final float DIRECTION_CHANGE_FACTOR = 0.1f;
-
-    /**
-     * This fraction of the previous value that controls horizontal direction changes will be used in next step
-     */
-    private static final float PREV_HORIZ_DIRECTION_CHANGE_WEIGHT = 0.75f;
-
-    /**
-     * This fraction of the previous value that controls vertical direction changes will be used in next step
-     */
-    private static final float PREV_VERT_DIRECTION_CHANGE_WEIGHT = 0.9f;
-
-    /**
-     * Maximum value by which horizontal cave direction randomly changes each step, lower values are much more likely.
-     */
-    private static final float MAX_ADD_DIRECTION_CHANGE_HORIZ = 4.0f;
-
-    /**
-     * Maximum value by which vertical cave direction randomly changes each step, lower values are much more likely.
-     */
-    private static final float MAX_ADD_DIRECTION_CHANGE_VERT = 2.0f;
-
-    /**
-     * 1 in this amount of steps will actually carve any blocks,
-     */
-    private static final int CARVE_STEP_RARITY = 4;
-
-    /**
-     * Relative "height" if depth floor
-     * <p>
-     * -1 results in round cave without flat floor 1 will completely fill the cave 0 will result in lower half of the
-     * cave to be filled with stone
-     */
-    private static final double CAVE_FLOOR_DEPTH = -0.7;
-
-    /**
-     * Controls which blocks can be replaced by cave
-     */
-    private static final Predicate<IBlockState> isBlockReplaceable = (state ->
-            state.getBlock() == Blocks.STONE || state.getBlock() == Blocks.DIRT || state.getBlock() == Blocks.GRASS);
+    public CubicCaveGenerator(CustomGeneratorSettings.CaveConfig caveConfig) {
+        this.caveConfig = caveConfig;
+        this.allowedBlocks=
+                this.caveConfig.isBlockReplaceable.stream().map(BlockStateDesc::getBlockState).filter(Objects::nonNull).collect(Collectors.toList());
+    }
 
     @Override
     public Handler getHandler() {
@@ -159,11 +76,11 @@ public class CubicCaveGenerator implements IFlexHandlerStructureGenerator {
 
     protected void generate(World world, Random rand, CubePrimer cube,
                             int cubeXOrigin, int cubeYOrigin, int cubeZOrigin, CubePos generatedCubePos) {
-        if (rand.nextInt(CAVE_RARITY) != 0) {
+        if (rand.nextInt(caveConfig.caveRarity) != 0) {
             return;
         }
         //very low probability of generating high number
-        int nodes = rand.nextInt(rand.nextInt(rand.nextInt(MAX_INIT_NODES + 1) + 1) + 1);
+        int nodes = rand.nextInt(rand.nextInt(rand.nextInt(caveConfig.maxInitNodes + 1) + 1) + 1);
 
         for (int node = 0; node < nodes; ++node) {
             double branchStartX = localToBlock(cubeXOrigin, rand.nextInt(ICube.SIZE));
@@ -171,10 +88,10 @@ public class CubicCaveGenerator implements IFlexHandlerStructureGenerator {
             double branchStartZ = localToBlock(cubeZOrigin, rand.nextInt(ICube.SIZE));
             int subBranches = 1;
 
-            if (rand.nextInt(LARGE_NODE_RARITY) == 0) {
+            if (rand.nextInt(caveConfig.largeNodeRarity) == 0) {
                 this.generateLargeNode(cube, rand, rand.nextLong(), generatedCubePos,
                         branchStartX, branchStartY, branchStartZ);
-                subBranches += rand.nextInt(LARGE_NODE_MAX_BRANCHES);
+                subBranches += rand.nextInt(caveConfig.largeNodeMaxBranches);
             }
 
             for (int branch = 0; branch < subBranches; ++branch) {
@@ -182,7 +99,7 @@ public class CubicCaveGenerator implements IFlexHandlerStructureGenerator {
                 float vertDirAngle = (rand.nextFloat() - 0.5F) * 2.0F / 8.0F;
                 float baseHorizSize = rand.nextFloat() * 2.0F + rand.nextFloat();
 
-                if (rand.nextInt(BIG_CAVE_RARITY) == 0) {
+                if (rand.nextInt(caveConfig.bigCaveRarity) == 0) {
                     baseHorizSize *= rand.nextFloat() * rand.nextFloat() * 3.0F + 1.0F;
                 }
 
@@ -268,7 +185,7 @@ public class CubicCaveGenerator implements IFlexHandlerStructureGenerator {
             float fractionWalked = walkedDistance / (float) maxWalkedDistance;
             //horizontal and vertical size of the cave
             //size starts small and increases, then decreases as cave goes further
-            double caveSizeHoriz = CAVE_SIZE_ADD + sin(fractionWalked * (float) Math.PI) * baseCaveSize;
+            double caveSizeHoriz = caveConfig.caveSizeAdd + sin(fractionWalked * (float) Math.PI) * baseCaveSize;
             double caveSizeVert = caveSizeHoriz * vertCaveSizeMod;
 
             //Walk forward a single step:
@@ -285,20 +202,20 @@ public class CubicCaveGenerator implements IFlexHandlerStructureGenerator {
             caveY += yDirectionFactor;
             caveZ += sin(horizDirAngle) * xzDirectionFactor;
 
-            if (rand.nextInt(STEEP_STEP_RARITY) == 0) {
-                vertDirAngle *= STEEPER_FLATTEN_FACTOR;
+            if (rand.nextInt(caveConfig.steepStepRarity) == 0) {
+                vertDirAngle *= caveConfig.steeperFlattenFactor;
             } else {
-                vertDirAngle *= FLATTEN_FACTOR;
+                vertDirAngle *= caveConfig.flattenFactor;
             }
 
             //change the direction
-            vertDirAngle += vertDirChange * DIRECTION_CHANGE_FACTOR;
-            horizDirAngle += horizDirChange * DIRECTION_CHANGE_FACTOR;
+            vertDirAngle += vertDirChange * caveConfig.directionChangeFactor;
+            horizDirAngle += horizDirChange * caveConfig.directionChangeFactor;
             //update direction change angles
-            vertDirChange *= PREV_VERT_DIRECTION_CHANGE_WEIGHT;
-            horizDirChange *= PREV_HORIZ_DIRECTION_CHANGE_WEIGHT;
-            vertDirChange += (rand.nextFloat() - rand.nextFloat()) * rand.nextFloat() * MAX_ADD_DIRECTION_CHANGE_VERT;
-            horizDirChange += (rand.nextFloat() - rand.nextFloat()) * rand.nextFloat() * MAX_ADD_DIRECTION_CHANGE_HORIZ;
+            vertDirChange *= caveConfig.prevVertDirectionChangeWeight;
+            horizDirChange *= caveConfig.prevHorizDirectionChangeWeight;
+            vertDirChange += (rand.nextFloat() - rand.nextFloat()) * rand.nextFloat() * caveConfig.maxAddDirectionChangeVert;
+            horizDirChange += (rand.nextFloat() - rand.nextFloat()) * rand.nextFloat() * caveConfig.maxAddDirectionChangeHoriz;
 
             //if we reached split point - try to split
             //can split only if it's not final branch and the cave is still big enough (>1 block radius)
@@ -318,7 +235,7 @@ public class CubicCaveGenerator implements IFlexHandlerStructureGenerator {
             }
 
             //carve blocks only on some percentage of steps, unless this is the final branch
-            if (rand.nextInt(CARVE_STEP_RARITY) == 0 && !finalStep) {
+            if (rand.nextInt(caveConfig.carveStepRarity) == 0 && !finalStep) {
                 continue;
             }
 
@@ -327,7 +244,7 @@ public class CubicCaveGenerator implements IFlexHandlerStructureGenerator {
             double zDist = caveZ - generatedCubePos.getZCenter();
             double maxStepsDist = maxWalkedDistance - walkedDistance;
             //CHANGE: multiply max(1, vertCaveSizeMod)
-            double maxDistToCube = baseCaveSize * max(1, vertCaveSizeMod) + CAVE_SIZE_ADD + ICube.SIZE;
+            double maxDistToCube = baseCaveSize * max(1, vertCaveSizeMod) + caveConfig.caveSizeAdd + ICube.SIZE;
 
             //can this cube be reached at all?
             //if even after going max distance allowed by remaining steps, it's still too far - stop
@@ -419,7 +336,7 @@ public class CubicCaveGenerator implements IFlexHandlerStructureGenerator {
 
                     IBlockState state = cube.getBlockState(localX, localY, localZ);
 
-                    if (!isBlockReplaceable.test(state)) {
+                    if (!allowedBlocks.contains(state)) {
                         continue;
                     }
 
@@ -442,8 +359,8 @@ public class CubicCaveGenerator implements IFlexHandlerStructureGenerator {
         }
     }
 
-    private static boolean shouldCarveBlock(double distX, double distY, double distZ) {
+    private boolean shouldCarveBlock(double distX, double distY, double distZ) {
         //distY > CAVE_FLOOR_DEPTH --> flattened floor
-        return distY > CAVE_FLOOR_DEPTH && distX * distX + distY * distY + distZ * distZ < 1.0D;
+        return distY > caveConfig.caveFloorDepth && distX * distX + distY * distY + distZ * distZ < 1.0D;
     }
 }

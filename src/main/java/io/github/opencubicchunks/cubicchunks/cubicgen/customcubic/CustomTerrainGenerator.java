@@ -62,7 +62,10 @@ import org.lwjgl.input.Keyboard;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.ToIntFunction;
@@ -90,7 +93,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
     private boolean fillCubeBiomes;
 
     //TODO: Implement more structures
-    private ICubicStructureGenerator caveGenerator;
+    private List<ICubicStructureGenerator> caveGenerators = new ArrayList<>();
     private ICubicStructureGenerator ravineGenerator;
     private ICubicFeatureGenerator strongholds;
 
@@ -125,16 +128,20 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
             populators.put(biome, cubicBiome.getDecorator(conf));
         }
 
-        InitCubicStructureGeneratorEvent caveEvent = new InitCubicStructureGeneratorEvent(EventType.CAVE, new CubicCaveGenerator(), world);
+        for (CustomGeneratorSettings.CaveConfig cave : settings.caves) {
+            InitCubicStructureGeneratorEvent caveEvent = new InitCubicStructureGeneratorEvent(EventType.CAVE, new CubicCaveGenerator(cave),
+                    world);
+            MinecraftForge.TERRAIN_GEN_BUS.post(caveEvent);
+            this.caveGenerators.add(caveEvent.getNewGen());
+        }
         InitCubicStructureGeneratorEvent strongholdsEvent = new InitCubicStructureGeneratorEvent(
                 EventType.STRONGHOLD, new CubicStrongholdGenerator(conf), world);
         InitCubicStructureGeneratorEvent ravineEvent = new InitCubicStructureGeneratorEvent(EventType.RAVINE, new CubicRavineGenerator(conf), world);
 
-        MinecraftForge.TERRAIN_GEN_BUS.post(caveEvent);
+
         MinecraftForge.TERRAIN_GEN_BUS.post(strongholdsEvent);
         MinecraftForge.TERRAIN_GEN_BUS.post(ravineEvent);
 
-        this.caveGenerator = caveEvent.getNewGen();
         this.strongholds = (CubicFeatureGenerator) strongholdsEvent.getNewGen();
         this.ravineGenerator = ravineEvent.getNewGen();
 
@@ -345,8 +352,8 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
 
     public void generateStructures(CubePrimer cube, CubePos cubePos) {
         // generate world populator
-        if (this.conf.caves) {
-            this.caveGenerator.generate(world, cube, cubePos);
+        for (ICubicStructureGenerator caveGenerator : caveGenerators) {
+            caveGenerator.generate(world, cube, cubePos);
         }
         if (this.conf.ravines) {
             this.ravineGenerator.generate(world, cube, cubePos);
@@ -356,8 +363,8 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         }
     }
 
-    public final ICubicStructureGenerator getCaveGenerator() {
-        return caveGenerator;
+    public final List<ICubicStructureGenerator> getCaveGenerators() {
+        return caveGenerators;
     }
 
     public final ICubicFeatureGenerator getStrongholds() {

@@ -46,7 +46,6 @@ class BasicSettingsTab {
 
     private final UIVerticalTableLayout container;
 
-    private final UICheckBox caves;
     private final UICheckBox strongholds;
     private final UICheckBox villages;
     private final UICheckBox mineshafts;
@@ -70,8 +69,6 @@ class BasicSettingsTab {
                 .setInsets(VERTICAL_INSETS, VERTICAL_INSETS, HORIZONTAL_INSETS, HORIZONTAL_INSETS)
                 .setRightPadding(HORIZONTAL_PADDING + 6)
 
-                .add(this.caves = makeCheckbox(gui, malisisText("caves"), conf.getBool("caves")),
-                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 0, WIDTH_2_COL))
                 .add(this.strongholds = makeCheckbox(gui, malisisText("strongholds"), conf.getBool("strongholds")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 0, WIDTH_2_COL))
 
@@ -112,7 +109,6 @@ class BasicSettingsTab {
     }
 
     void writeConfig(JsonObjectView conf) {
-        conf.put("caves", caves.isChecked());
         conf.put("strongholds", strongholds.isChecked());
         conf.put("villages", villages.isChecked());
         conf.put("mineshafts", mineshafts.isChecked());

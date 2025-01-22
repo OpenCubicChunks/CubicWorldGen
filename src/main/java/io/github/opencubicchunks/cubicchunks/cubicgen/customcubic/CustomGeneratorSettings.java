@@ -82,8 +82,6 @@ public class CustomGeneratorSettings {
      * <p>
      * Page 1
      */
-    public boolean caves = true;
-
     public boolean strongholds = true;
     public boolean alternateStrongholdsPositions = false; // TODO: add to gui
     public boolean villages = true;
@@ -100,6 +98,8 @@ public class CustomGeneratorSettings {
     public int dungeonCount = 7;
 
     public List<LakeConfig> lakes = new ArrayList<>();
+
+    public List<CaveConfig> caves = new ArrayList<>();
 
     public int biome = -1;
     public int biomeSize = 4;
@@ -370,7 +370,12 @@ public class CustomGeneratorSettings {
                                     .build())
                             .build()
             ));
+
+            settings.caves.add(CaveConfig.builder().addReplacableBlock(Blocks.GRASS.getDefaultState())
+                    .addReplacableBlock(Blocks.DIRT.getDefaultState())
+                    .addReplacableBlock(Blocks.STONE.getDefaultState()).build());
         }
+
 
         {
 
@@ -637,6 +642,199 @@ public class CustomGeneratorSettings {
             }
 
             public LakeConfig build() {
+                return config;
+            }
+
+        }
+    }
+
+    public static class CaveConfig {
+        /**
+         * 1 in CAVE_RARITY attempts will result in generating any caves at all
+         * <p>
+         * Vanilla value: 7 Multiply by 16 and divide by 8: there are 16 cubes in a vanilla chunk, but only one cube per 8
+         * has caves generated
+         */
+        public int caveRarity = 16 * 7 / (2 * 2 * 2);
+
+        /**
+         * Maximum amount of starting nodes
+         */
+        public int maxInitNodes = 14;
+
+        /**
+         * 1 in LARGE_NODE_RARITY initial attempts will result in large node
+         */
+        public int largeNodeRarity = 4;
+
+        /**
+         * The maximum amount of additional branches after generating large node. Random value between 0 and
+         * LARGE_NODE_MAX_BRANCHES is chosen.
+         */
+        public int largeNodeMaxBranches = 4;
+
+        /**
+         * 1 in BIG_CAVE_RARITY branches will start bigger than usual
+         */
+        public int bigCaveRarity = 10;
+
+        /**
+         * Value added to the size of the cave (radius)
+         */
+        public double caveSizeAdd = 1.5D;
+
+        /**
+         * In 1 of STEEP_STEP_RARITY steps, cave will be flattened using STEEPER_FLATTEN_FACTOR instead of FLATTEN_FACTOR
+         */
+        public int steepStepRarity = 6;
+
+        /**
+         * After each step the Y direction component will be multiplied by this value, unless steeper cave is allowed
+         */
+        public float flattenFactor = 0.7f;
+
+        /**
+         * If steeper cave is allowed - this value will be used instead of FLATTEN_FACTOR
+         */
+        public float steeperFlattenFactor = 0.92f;
+
+        /**
+         * Each step cave direction angles will be changed by this fraction of values that specify how direction changes
+         */
+        public float directionChangeFactor = 0.1f;
+
+        /**
+         * This fraction of the previous value that controls horizontal direction changes will be used in next step
+         */
+        public float prevHorizDirectionChangeWeight = 0.75f;
+
+        /**
+         * This fraction of the previous value that controls vertical direction changes will be used in next step
+         */
+        public float prevVertDirectionChangeWeight = 0.9f;
+
+        /**
+         * Maximum value by which horizontal cave direction randomly changes each step, lower values are much more likely.
+         */
+        public float maxAddDirectionChangeHoriz = 4.0f;
+
+        /**
+         * Maximum value by which vertical cave direction randomly changes each step, lower values are much more likely.
+         */
+        public float maxAddDirectionChangeVert = 2.0f;
+
+        /**
+         * 1 in this amount of steps will actually carve any blocks,
+         */
+        public int carveStepRarity = 4;
+
+        /**
+         * Relative "height" if depth floor
+         * <p>
+         * -1 results in round cave without flat floor 1 will completely fill the cave 0 will result in lower half of the
+         * cave to be filled with stone
+         */
+        public double caveFloorDepth = -0.7;
+
+        /**
+         * Controls which blocks can be replaced by cave
+         */
+        public List<BlockStateDesc> isBlockReplaceable = new ArrayList<>();
+
+        public static CaveConfig.Builder builder() {
+            return new CaveConfig.Builder();
+        }
+
+        public static class Builder {
+
+            private CaveConfig config = new CaveConfig();
+
+            public CaveConfig.Builder setCaveRarity(int caveRarity) {
+                config.caveRarity = caveRarity;
+                return this;
+            }
+
+            public CaveConfig.Builder setMaxInitNodes(int maxInitNodes) {
+                config.maxInitNodes = maxInitNodes;
+                return this;
+            }
+
+            public CaveConfig.Builder setLargeNodeRarity(int largeNodeRarity) {
+                config.largeNodeRarity = largeNodeRarity;
+                return this;
+            }
+
+            public CaveConfig.Builder setLargeNodeMaxBranches(int largeNodeMaxBranches) {
+                config.largeNodeMaxBranches = largeNodeMaxBranches;
+                return this;
+            }
+
+            public CaveConfig.Builder setBigCaveRarity(int bigCaveRarity) {
+                config.bigCaveRarity = bigCaveRarity;
+                return this;
+            }
+
+            public CaveConfig.Builder setCaveSizeAdd(double caveSizeAdd) {
+                config.caveSizeAdd = caveSizeAdd;
+                return this;
+            }
+
+            public CaveConfig.Builder setSteepStepRarity(int steepStepRarity) {
+                config.steepStepRarity = steepStepRarity;
+                return this;
+            }
+
+            public CaveConfig.Builder setFlattenFactor(float flattenFactor) {
+                config.flattenFactor = flattenFactor;
+                return this;
+            }
+
+            public CaveConfig.Builder setSteeperFlattenFactor(float steeperFlattenFactor ) {
+                config.steeperFlattenFactor = steeperFlattenFactor;
+                return this;
+            }
+
+            public CaveConfig.Builder set(float directionChangeFactor) {
+                config.directionChangeFactor = directionChangeFactor;
+                return this;
+            }
+
+            public CaveConfig.Builder setPrevHorizDirectionChangeWeight(float prevHorizDirectionChangeWeight) {
+                config.prevHorizDirectionChangeWeight = prevHorizDirectionChangeWeight;
+                return this;
+            }
+
+            public CaveConfig.Builder setPrevVertDirectionChangeWeight(float prevVertDirectionChangeWeight) {
+                config.prevVertDirectionChangeWeight = prevVertDirectionChangeWeight;
+                return this;
+            }
+
+            public CaveConfig.Builder setMaxAddDirectionChangeHoriz(float maxAddDirectionChangeHoriz) {
+                config.maxAddDirectionChangeHoriz = maxAddDirectionChangeHoriz;
+                return this;
+            }
+
+            public CaveConfig.Builder setMaxAddDirectionChangeVert(float maxAddDirectionChangeVert) {
+                config.maxAddDirectionChangeVert = maxAddDirectionChangeVert;
+                return this;
+            }
+
+            public CaveConfig.Builder setCarveStepRarity(int carveStepRarity ) {
+                config.carveStepRarity = carveStepRarity;
+                return this;
+            }
+
+            public CaveConfig.Builder setCaveFloorDepth(double caveFloorDepth) {
+                config.caveFloorDepth = caveFloorDepth;
+                return this;
+            }
+
+            public CaveConfig.Builder addReplacableBlock(IBlockState block) {
+                config.isBlockReplaceable.add(new BlockStateDesc(block));
+                return this;
+            }
+
+            public CaveConfig build() {
                 return config;
             }
 
