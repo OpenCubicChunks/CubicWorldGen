@@ -54,6 +54,7 @@ class BasicSettingsTab {
     private final UICheckBox oceanMonuments;
     private final UICheckBox woodlandMansions;
     private final UICheckBox dungeons;
+    private final UICheckBox alternateStrongholdsPositions;
     private final UISelect<BiomeOption> biome;
 
     private final UISlider<Integer> dungeonCount;
@@ -90,15 +91,19 @@ class BasicSettingsTab {
                 .add(this.woodlandMansions = makeCheckbox(gui, malisisText("woodlandMansions"), conf.getBool("woodlandMansions")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 3, WIDTH_2_COL))
 
+                .add(this.alternateStrongholdsPositions = makeCheckbox(gui, malisisText("alternate_strongholds"), conf.getBool(
+                        "alternateStrongholdsPositions")),
+                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 4, WIDTH_2_COL))
+
                 .add(this.biome = makeBiomeList(gui, conf.getInt("biome")),
-                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 5, WIDTH_2_COL))
+                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 6, WIDTH_2_COL))
                 .add(this.dungeonCount = makeIntSlider(gui, malisisText("dungeonCount", ": %d"), 1, 100, conf.getInt("dungeonCount")),
-                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 5, WIDTH_2_COL))
+                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 6, WIDTH_2_COL))
                 
                 .add(this.biomeSize = makeIntSlider(gui, malisisText("biomeSize", ": %d"), 1, 8, conf.getInt("biomeSize")),
-                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 6, WIDTH_2_COL))
+                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 7, WIDTH_2_COL))
                 .add(this.riverSize = makeIntSlider(gui, malisisText("riverSize", ": %d"), 1, 5, conf.getInt("riverSize")),
-                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 6, WIDTH_2_COL));
+                        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 7, WIDTH_2_COL));
 
         this.container = layout;
     }
@@ -109,6 +114,7 @@ class BasicSettingsTab {
 
     void writeConfig(JsonObjectView conf) {
         conf.put("strongholds", strongholds.isChecked());
+        conf.put("alternateStrongholdsPositions", alternateStrongholdsPositions.isChecked());
         conf.put("villages", villages.isChecked());
         conf.put("mineshafts", mineshafts.isChecked());
         conf.put("temples", temples.isChecked());

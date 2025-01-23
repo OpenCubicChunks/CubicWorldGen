@@ -59,6 +59,7 @@ cubicgen.gui.cubicgen.dungeons=Dungeons
 cubicgen.gui.cubicgen.dungeonCount=Dungeon count
 
 cubicgen.gui.cubicgen.strongholds=Strongholds
+cubicgen.gui.cubicgen.alternate_strongholds=Alternate stronghold positions
 
 cubicgen.gui.cubicgen.villages=Villages*
 
