@@ -212,13 +212,13 @@ public class CaveSettingsTab {
                 }
             });
 
-            this.caveRarity = makeIntSlider(gui, malisisText("cave_rarity", " %d"), 1, 1024, conf.getInt("caveRarity"));
+            this.caveRarity = makeIntSlider(gui, malisisText("cave_rarity", " %d"), 1, 128, conf.getInt("caveRarity"));
             this.maxInitNodes = makeIntSlider(gui, malisisText("max_init_nodes", " %d"), 1, 128, conf.getInt("maxInitNodes"));
-            this.largeNodeRarity = makeIntSlider(gui, malisisText("large_node_rarity", " %d"), 1, 1024, conf.getInt("largeNodeRarity"));
+            this.largeNodeRarity = makeIntSlider(gui, malisisText("large_node_rarity", " %d"), 1, 128, conf.getInt("largeNodeRarity"));
             this.largeNodeMaxBranches = makeIntSlider(gui, malisisText("large_node_max_branches", " %d"), 1, 256, conf.getInt("largeNodeMaxBranches"));
-            this.bigCaveRarity = makeIntSlider(gui, malisisText("big_cave_rarity", " %d"), 1, 1024, conf.getInt("bigCaveRarity"));
+            this.bigCaveRarity = makeIntSlider(gui, malisisText("big_cave_rarity", " %d"), 1, 128, conf.getInt("bigCaveRarity"));
             this.caveSizeAdd = makeFloatSlider(gui, malisisText("cave_size_add", " %f"), 0, 16, conf.getFloat("caveSizeAdd"));
-            this.steepStepRarity = makeIntSlider(gui, malisisText("steep_step_rarity", " %d"), 1, 1024, conf.getInt("steepStepRarity"));
+            this.steepStepRarity = makeIntSlider(gui, malisisText("steep_step_rarity", " %d"), 1, 128, conf.getInt("steepStepRarity"));
             this.flattenFactor = makeFloatSlider(gui, malisisText("flatten_factor", " %f"), 0, 1, conf.getFloat("flattenFactor"));
             this.steeperFlattenFactor = makeFloatSlider(gui, malisisText("steeper_flatten_factor", " %f"), 0, 1, conf.getFloat(
                     "steeperFlattenFactor"));
@@ -232,7 +232,7 @@ public class CaveSettingsTab {
                     "max_add_direction_change_horiz", " %f"), 0, 128, conf.getFloat("maxAddDirectionChangeHoriz"));
             this.maxAddDirectionChangeVert = makeFloatSlider(gui, malisisText(
                     "max_add_direction_change_vert", " %f"), 0, 128, conf.getFloat("maxAddDirectionChangeVert"));
-            this.carveStepRarity = makeIntSlider(gui, malisisText("carve_step_rarity", " %d"), 1, 1000, conf.getInt("carveStepRarity"));
+            this.carveStepRarity = makeIntSlider(gui, malisisText("carve_step_rarity", " %d"), 1, 128, conf.getInt("carveStepRarity"));
             this.caveFloorDepth = makeFloatSlider(gui, malisisText("cave_floor_depth", " %f"), -1, 1, conf.getFloat("caveFloorDepth"));
 
             this.addReplaceableBtn = new UIButton(gui, malisisText("cave_replacer")).setSize(10, 20).setAutoSize(true).register(
