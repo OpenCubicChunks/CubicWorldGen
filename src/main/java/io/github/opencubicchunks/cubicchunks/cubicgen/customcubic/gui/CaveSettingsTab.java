@@ -240,8 +240,8 @@ public class CaveSettingsTab {
 
             this.caveRarity = makeIntSlider(gui, malisisText("cave_rarity", " %d"), 1, 128, conf.getInt("caveRarity"));
             this.caveCubeHeight = makeRangeSlider(gui,vanillaText("cave_cube_height"),
-                    (float) (-2f*heightVariation.getAsDouble()+baseHeight.getAsDouble())/4,
-                    (float) (2f*heightVariation.getAsDouble()+baseHeight.getAsDouble())/16,
+                    (float) (-2f*(heightVariation.getAsDouble()/4)+(baseHeight.getAsDouble()/8))/100,
+                    (float) (2f*(heightVariation.getAsDouble()/8)+(baseHeight.getAsDouble()/16))/100,
                     conf.getFloat("caveMinHeight"), conf.getFloat("caveMaxHeight"));
             this.maxInitNodes = makeIntSlider(gui, malisisText("max_init_nodes"), 1, 128, conf.getInt("maxInitNodes"));
             this.largeNodeRarity = makeIntSlider(gui, malisisText("large_node_rarity", " %d"), 1, 128, conf.getInt("largeNodeRarity"));
