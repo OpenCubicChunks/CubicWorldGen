@@ -371,9 +371,9 @@ public class CustomGeneratorSettings {
                             .build()
             ));
 
-            settings.caves.add(CaveConfig.builder().addReplacableBlock(Blocks.GRASS.getDefaultState())
-                    .addReplacableBlock(Blocks.DIRT.getDefaultState())
-                    .addReplacableBlock(Blocks.STONE.getDefaultState()).build());
+            settings.caves.add(CaveConfig.builder().addReplaceableBlock(Blocks.GRASS.getDefaultState())
+                    .addReplaceableBlock(Blocks.DIRT.getDefaultState())
+                    .addReplaceableBlock(Blocks.STONE.getDefaultState()).build());
         }
 
 
@@ -829,7 +829,7 @@ public class CustomGeneratorSettings {
                 return this;
             }
 
-            public CaveConfig.Builder addReplacableBlock(IBlockState block) {
+            public CaveConfig.Builder addReplaceableBlock(IBlockState block) {
                 config.isBlockReplaceable.add(new BlockStateDesc(block));
                 return this;
             }
