@@ -13,10 +13,11 @@ cubicgen.gui.cubicgen.done=Done
 cubicgen.gui.cubicgen.cancel=Cancel
 cubicgen.gui.cubicgen.presets=Presets
 
-cubicgen.gui.cubicgen.basic_tab_title=Customise world settings%nPage 1 of 4%nBasic settings (Structures marked * not yet implemented)
-cubicgen.gui.cubicgen.ores_tab_title=Customise world settings%nPage 2 of 4%nOre settings
-cubicgen.gui.cubicgen.lake_tab_title=Customise world settings%nPage 3 of 4%nLake settings
-cubicgen.gui.cubicgen.advanced_tab_title=Customise world settings%nPage 4 of 4%nAdvanced settings
+cubicgen.gui.cubicgen.basic_tab_title=Customise world settings%nPage 1 of 5%nBasic settings (Structures marked * not yet implemented)
+cubicgen.gui.cubicgen.ores_tab_title=Customise world settings%nPage 2 of 5%nOre settings
+cubicgen.gui.cubicgen.lake_tab_title=Customise world settings%nPage 3 of 5%nLake settings
+cubicgen.gui.cubicgen.cave_tab_title=Customize world settings%nPage 4 of 5%nCave Settings
+cubicgen.gui.cubicgen.advanced_tab_title=Customise world settings%nPage 5 of 5%nAdvanced settings
 
 cubicgen.gui.cubicgen.layers_title=Customise world settings%nPage 1 of 1%nLayers
 
@@ -99,6 +100,29 @@ cubicgen.gui.cubicgen.add_lake=Add lake
 cubicgen.gui.cubicgen.reset=Reset
 cubicgen.gui.cubicgen.reset_view=Reset view
 cubicgen.gui.cubicgen.make_flat_edges=Make flat edges
+
+#################################
+######### cave settings #########
+#################################
+
+cubicgen.gui.cubicgen.add_cave=Add cave
+cubicgen.gui.cubicgen.cave_rarity=Cave rarity
+cubicgen.gui.cubicgen.max_init_nodes=Max init nodes
+cubicgen.gui.cubicgen.large_node_rarity=Large node rarity
+cubicgen.gui.cubicgen.large_node_max_branches=Large node max branches
+cubicgen.gui.cubicgen.big_cave_rarity=Big cave rarity
+cubicgen.gui.cubicgen.cave_size_add=Cave size add
+cubicgen.gui.cubicgen.steep_step_rarity=Steep step rarity
+cubicgen.gui.cubicgen.flatten_factor=Flatten factor
+cubicgen.gui.cubicgen.steeper_flatten_factor=Steeper flatten factor
+cubicgen.gui.cubicgen.direction_change_factor=Direction change factor
+cubicgen.gui.cubicgen.prev_horiz_direction_change_weight=Prev horiz change weight
+cubicgen.gui.cubicgen.prev_vert_direction_change_weight=Prev vert change weight
+cubicgen.gui.cubicgen.max_add_direction_change_horiz=Max add direction change horiz
+cubicgen.gui.cubicgen.max_add_direction_change_vert=Max add direction change vert
+cubicgen.gui.cubicgen.carve_step_rarity=Carve step rarity
+cubicgen.gui.cubicgen.cave_floor_depth=Cave floor depth
+cubicgen.gui.cubicgen.cave_replaced=Replaced blocks
 
 #################################
 ### advanced terrain settings ###

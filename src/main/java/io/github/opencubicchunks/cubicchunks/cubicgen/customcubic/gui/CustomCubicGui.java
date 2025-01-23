@@ -84,6 +84,7 @@ public class CustomCubicGui extends ExtraGui {
     private BasicSettingsTab basicSettings;
     private OreSettingsTab oreSettings;
     private LakeSettingsTab lakeSettings;
+    private CaveSettingsTab caveSettings;
     private AdvancedTerrainShapeTab advancedterrainShapeSettings;
     //private ReplacerConfigTab advancedterrainShapeSettings;
     //private CaveConfigTab advancedterrainShapeSettings;
@@ -111,6 +112,7 @@ public class CustomCubicGui extends ExtraGui {
         basicSettings = null;
         oreSettings = null;
         lakeSettings = null;
+        caveSettings = null;
         advancedterrainShapeSettings = null;
         super.clearScreen();
     }
@@ -126,11 +128,13 @@ public class CustomCubicGui extends ExtraGui {
         this.oreSettings = new OreSettingsTab(this, jsonView,
                 advancedterrainShapeSettings.getExpectedBaseHeight(), advancedterrainShapeSettings.getExpectedHeightVariation());
         this.lakeSettings = new LakeSettingsTab(this, jsonView);
+        this.caveSettings = new CaveSettingsTab(this, jsonView);
 
         tabs = makeTabContainer();
         tabs.addTab(inPanel(this, basicSettings.getContainer()), vanillaText("basic_tab_title"));
         tabs.addTab(inPanel(this, oreSettings.getContainer()), vanillaText("ores_tab_title"));
         tabs.addTab(inPanel(this, lakeSettings.getContainer()), vanillaText("lake_tab_title"));
+        tabs.addTab(inPanel(this, caveSettings.getContainer()), vanillaText("cave_tab_title"));
         tabs.addTab(inPanel(this, advancedterrainShapeSettings.getContainer()), vanillaText("advanced_tab_title"));
         addToScreen(tabs);
 
@@ -291,6 +295,7 @@ public class CustomCubicGui extends ExtraGui {
         this.basicSettings.writeConfig(json);
         this.oreSettings.writeConfig(json);
         this.lakeSettings.writeConfig(json);
+        this.caveSettings.writeConfig(json);
         this.advancedterrainShapeSettings.writeConfig(json);
     }
 

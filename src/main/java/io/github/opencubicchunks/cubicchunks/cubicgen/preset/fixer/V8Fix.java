@@ -77,9 +77,9 @@ public class V8Fix implements IJsonFix {
             caveConfig.put("caveFloorDepth", new JsonPrimitive(-0.7));
 
             JsonArray replaceable = new JsonArray();
-            replaceable.add(new JsonPrimitive("grass"));
-            replaceable.add(new JsonPrimitive("dirt"));
-            replaceable.add(new JsonPrimitive("stone"));
+            replaceable.add(new JsonPrimitive("minecraft:grass"));
+            replaceable.add(new JsonPrimitive("minecraft:dirt"));
+            replaceable.add(new JsonPrimitive("minecraft:stone"));
             caveConfig.put("isBlockReplaceable", replaceable);
 
 
