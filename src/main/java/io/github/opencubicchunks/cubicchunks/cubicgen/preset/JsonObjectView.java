@@ -164,6 +164,11 @@ public class JsonObjectView {
             return this;
         }
 
+        public JsonArrayView<T> add(JsonElement element) {
+            this.array.add(element);
+            return this;
+        }
+
         public JsonArray array() {
             return array;
         }

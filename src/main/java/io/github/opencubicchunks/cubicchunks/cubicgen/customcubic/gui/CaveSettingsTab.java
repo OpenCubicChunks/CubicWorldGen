@@ -103,10 +103,10 @@ public class CaveSettingsTab {
             .put("maxAddDirectionChangeVert", 2.0)
             .put("carveStepRarity", 4)
             .put("caveFloorDepth", -0.7)
-            .put("isBlockReplaceable", JsonObjectView.JsonArrayView.empty().array().addAll(new ArrayList<>(
-                    Arrays.asList(JsonPrimitive.of("minecraft:grass"),JsonPrimitive.of("minecraft:dirt"),JsonPrimitive.of("minecraft:stone")
-                    )))
-            )
+            .put("isBlockReplaceable", JsonObjectView.JsonArrayView.empty().add(new JsonPrimitive("grass"))
+                            .add(new JsonPrimitive("dirt"))
+                            .add(new JsonPrimitive("stone")
+                    ))
             .object();
 
     private final UIContainer<?> container;
