@@ -218,7 +218,7 @@ public class CaveSettingsTab {
             this.largeNodeMaxBranches = makeIntSlider(gui, malisisText("large_node_max_branches", " %d"), 0, 1000, conf.getInt("largeNodeMaxBranches"));
             this.bigCaveRarity = makeIntSlider(gui, malisisText("big_cave_rarity", " %d"), 0, 1000, conf.getInt("bigCaveRarity"));
             this.caveSizeAdd = makeFloatSlider(gui, malisisText("cave_size_add", " %f"), 0, 100, conf.getFloat("caveSizeAdd"));
-            this.steepStepRarity = makeIntSlider(gui, malisisText("steepStepRarity", " %d"), 0, 1000, conf.getInt("steepStepRarity"));
+            this.steepStepRarity = makeIntSlider(gui, malisisText("steep_step_rarity", " %d"), 0, 1000, conf.getInt("steepStepRarity"));
             this.flattenFactor = makeFloatSlider(gui, malisisText("flatten_factor", " %f"), 0, 1, conf.getFloat("flattenFactor"));
             this.steeperFlattenFactor = makeFloatSlider(gui, malisisText("steeper_flatten_factor", " %f"), 0, 1, conf.getFloat(
                     "steeperFlattenFactor"));
@@ -263,10 +263,11 @@ public class CaveSettingsTab {
             mainArea.add(this.largeNodeMaxBranches, new GridLocation(3, y, 3));
             mainArea.add(this.bigCaveRarity, new GridLocation(0, ++y, 3));
             mainArea.add(this.caveSizeAdd, new GridLocation(3, y, 3));
-            mainArea.add(this.flattenFactor, new GridLocation(0, ++y, 3));
-            mainArea.add(this.steeperFlattenFactor, new GridLocation(3, y, 3));
-            mainArea.add(this.carveStepRarity, new GridLocation(0, ++y, 3));
-            mainArea.add(this.directionChangeFactor, new GridLocation(3, y, 3));
+            mainArea.add(this.steepStepRarity, new GridLocation(0, ++y, 3));
+            mainArea.add(this.flattenFactor, new GridLocation(3, y, 3));
+            mainArea.add(this.steeperFlattenFactor, new GridLocation(0, ++y, 3));
+            mainArea.add(this.carveStepRarity, new GridLocation(3, y, 3));
+            mainArea.add(this.directionChangeFactor, new GridLocation(0, ++y, 6));
             mainArea.add(this.prevHorizDirectionChangeWeight, new GridLocation(0, ++y, 6));
             mainArea.add(this.prevVertDirectionChangeWeight, new GridLocation(0, ++y, 6));
             mainArea.add(this.maxAddDirectionChangeHoriz, new GridLocation(0, ++y, 6));
