@@ -656,6 +656,16 @@ public class CustomGeneratorSettings {
         public BlockStateDesc caveBlock = new BlockStateDesc(Blocks.AIR.getDefaultState());
 
         /**
+         * Minimum chunk Y value required for the cave to spawn.
+         */
+        public int caveMinHeight = Integer.MIN_VALUE/16;
+
+        /**
+         * Maximum chunk Y value required for the cave to spawn.
+         */
+        public int caveMaxHeight = Integer.MAX_VALUE/16;
+
+        /**
          * 1 in CAVE_RARITY attempts will result in generating any caves at all
          * <p>
          * Vanilla value: 7 Multiply by 16 and divide by 8: there are 16 cubes in a vanilla chunk, but only one cube per 8

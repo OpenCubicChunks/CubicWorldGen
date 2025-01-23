@@ -128,7 +128,7 @@ public class CustomCubicGui extends ExtraGui {
         this.oreSettings = new OreSettingsTab(this, jsonView,
                 advancedterrainShapeSettings.getExpectedBaseHeight(), advancedterrainShapeSettings.getExpectedHeightVariation());
         this.lakeSettings = new LakeSettingsTab(this, jsonView);
-        this.caveSettings = new CaveSettingsTab(this, jsonView);
+        this.caveSettings = new CaveSettingsTab(this, jsonView,advancedterrainShapeSettings.getExpectedBaseHeight(), advancedterrainShapeSettings.getExpectedHeightVariation());
 
         tabs = makeTabContainer();
         tabs.addTab(inPanel(this, basicSettings.getContainer()), vanillaText("basic_tab_title"));

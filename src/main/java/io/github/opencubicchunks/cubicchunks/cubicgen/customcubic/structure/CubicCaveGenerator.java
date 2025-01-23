@@ -76,7 +76,7 @@ public class CubicCaveGenerator implements IFlexHandlerStructureGenerator {
 
     protected void generate(World world, Random rand, CubePrimer cube,
                             int cubeXOrigin, int cubeYOrigin, int cubeZOrigin, CubePos generatedCubePos) {
-        if (rand.nextInt(caveConfig.caveRarity) != 0) {
+        if (cubeYOrigin<caveConfig.caveMinHeight || cubeYOrigin>caveConfig.caveMaxHeight || rand.nextInt(caveConfig.caveRarity) != 0) {
             return;
         }
         //very low probability of generating high number

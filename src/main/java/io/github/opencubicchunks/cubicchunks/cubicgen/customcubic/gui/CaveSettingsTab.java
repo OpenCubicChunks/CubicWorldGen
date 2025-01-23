@@ -34,6 +34,7 @@ import com.google.common.eventbus.Subscribe;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBlockStateButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIList;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIRangeSlider;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIVerticalTableLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.CustomGenSettingsSerialization;
@@ -52,6 +53,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.DoubleSupplier;
 import java.util.stream.Collector;
 
 public class CaveSettingsTab {
@@ -60,6 +62,8 @@ public class CaveSettingsTab {
             JsonTransformer.<CaveSettingsTab.UICaveOptionEntry>builder("Write GUI state to json")
                     .valueTransform("caveBlock", (json, cave) -> CustomGenSettingsSerialization.MARSHALLER.serialize(cave.caveBlock.getState()))
                     .setPrimitive("caveRarity", cave -> cave.caveRarity.getValue())
+                    .setPrimitive("caveMinHeight", cave -> cave.caveCubeHeight.getMinValue().intValue())
+                    .setPrimitive("caveMaxHeight", cave -> cave.caveCubeHeight.getMaxValue().intValue())
                     .setPrimitive("maxInitNodes", cave -> cave.maxInitNodes.getValue())
                     .setPrimitive("largeNodeRarity", cave -> cave.largeNodeRarity.getValue())
                     .setPrimitive("largeNodeMaxBranches", cave -> cave.largeNodeMaxBranches.getValue())
@@ -89,6 +93,8 @@ public class CaveSettingsTab {
 
     private static final JsonObject DEFAULT_STANDARD_CAVE = JsonObjectView.empty()
             .put("caveBlock", JsonObjectView.empty().put("Name", "minecraft:air"))
+            .put("caveMinHeight", Integer.MIN_VALUE/16)
+            .put("caveMaxY", Integer.MAX_VALUE/16)
             .put("caveRarity", 16 * 7 / (2 * 2 * 2))
             .put("maxInitNodes", 14)
             .put("largeNodeRarity", 4)
@@ -115,7 +121,12 @@ public class CaveSettingsTab {
 
     private final ArrayList<UIComponent<?>> componentList;
 
-    CaveSettingsTab(ExtraGui gui, JsonObjectView conf) {
+    private final DoubleSupplier baseHeight;
+    private final DoubleSupplier heightVariation;
+
+    CaveSettingsTab(ExtraGui gui, JsonObjectView conf, DoubleSupplier baseHeight, DoubleSupplier heightVariation) {
+        this.baseHeight = baseHeight;
+        this.heightVariation = heightVariation;
         this.componentList = new ArrayList<>();
         UIList<UIComponent<?>, UIComponent<?>> layout = new UIList<>(gui, this.componentList, x -> x);
         layout.setPadding(HORIZONTAL_PADDING, 0);
@@ -175,6 +186,7 @@ public class CaveSettingsTab {
     private class UICaveOptionEntry extends UIVerticalTableLayout<CaveSettingsTab.UICaveOptionEntry> {
         private UIBlockStateButton<?> caveBlock;
         private UILabel caveBlockLabel;
+        private UIRangeSlider<Float> caveCubeHeight;
         private UISlider<Integer> caveRarity;
         private UISlider<Integer> maxInitNodes;
         private UISlider<Integer> largeNodeRarity;
@@ -227,7 +239,11 @@ public class CaveSettingsTab {
             updateCaveLabel();
 
             this.caveRarity = makeIntSlider(gui, malisisText("cave_rarity", " %d"), 1, 128, conf.getInt("caveRarity"));
-            this.maxInitNodes = makeIntSlider(gui, malisisText("max_init_nodes", " %d"), 1, 128, conf.getInt("maxInitNodes"));
+            this.caveCubeHeight = makeRangeSlider(gui,vanillaText("cave_cube_height"),
+                    (float) (-2f*heightVariation.getAsDouble()+baseHeight.getAsDouble())/4,
+                    (float) (2f*heightVariation.getAsDouble()+baseHeight.getAsDouble())/16,
+                    conf.getFloat("caveMinHeight"), conf.getFloat("caveMaxHeight"));
+            this.maxInitNodes = makeIntSlider(gui, malisisText("max_init_nodes"), 1, 128, conf.getInt("maxInitNodes"));
             this.largeNodeRarity = makeIntSlider(gui, malisisText("large_node_rarity", " %d"), 1, 128, conf.getInt("largeNodeRarity"));
             this.largeNodeMaxBranches = makeIntSlider(gui, malisisText("large_node_max_branches", " %d"), 1, 256, conf.getInt("largeNodeMaxBranches"));
             this.bigCaveRarity = makeIntSlider(gui, malisisText("big_cave_rarity", " %d"), 1, 128, conf.getInt("bigCaveRarity"));
@@ -273,6 +289,7 @@ public class CaveSettingsTab {
             int y = -1;
             mainArea.add(this.caveBlock, new GridLocation(0,++y,1));
             mainArea.add(this.caveBlockLabel, new GridLocation(1,y,4));
+            mainArea.add(this.caveCubeHeight, new GridLocation(0, ++y, 6));
             mainArea.add(this.caveRarity, new GridLocation(0, ++y, 3));
             mainArea.add(this.maxInitNodes, new GridLocation(3, y, 3));
             mainArea.add(this.largeNodeRarity, new GridLocation(0, ++y, 3));

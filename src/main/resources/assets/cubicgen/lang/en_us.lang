@@ -107,6 +107,7 @@ cubicgen.gui.cubicgen.make_flat_edges=Make flat edges
 
 cubicgen.gui.cubicgen.add_cave=Add cave
 cubicgen.gui.cubicgen.cave_rarity=Cave rarity
+cubicgen.gui.cubicgen.cave_cube_height=Height %s to %s
 cubicgen.gui.cubicgen.max_init_nodes=Max init nodes
 cubicgen.gui.cubicgen.large_node_rarity=Large node rarity
 cubicgen.gui.cubicgen.large_node_max_branches=Large node max branches

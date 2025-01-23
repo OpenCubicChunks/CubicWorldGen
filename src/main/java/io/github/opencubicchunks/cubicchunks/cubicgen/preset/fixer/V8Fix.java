@@ -61,6 +61,8 @@ public class V8Fix implements IJsonFix {
         if(((JsonPrimitive)jsonElement).asBoolean(true)) {
             JsonObject caveConfig = new JsonObject();
             caveConfig.put("caveBlock", JsonObjectView.empty().put("Name", "minecraft:air").object());
+            caveConfig.put("caveMinHeight", new JsonPrimitive(Integer.MIN_VALUE/16));
+            caveConfig.put("caveMaxHeight", new JsonPrimitive(Integer.MAX_VALUE/16));
             caveConfig.put("caveRarity", new JsonPrimitive(16 * 7 / (2 * 2 * 2)));
             caveConfig.put("maxInitNodes", new JsonPrimitive(14));
             caveConfig.put("largeNodeRarity", new JsonPrimitive(4));
