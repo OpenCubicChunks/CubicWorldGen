@@ -649,6 +649,12 @@ public class CustomGeneratorSettings {
     }
 
     public static class CaveConfig {
+
+        /**
+         * The primary block which is spawned as part of cave generation.
+         */
+        public BlockStateDesc caveBlock = new BlockStateDesc(Blocks.AIR.getDefaultState());
+
         /**
          * 1 in CAVE_RARITY attempts will result in generating any caves at all
          * <p>

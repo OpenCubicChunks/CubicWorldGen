@@ -27,6 +27,7 @@ import blue.endless.jankson.JsonArray;
 import blue.endless.jankson.JsonElement;
 import blue.endless.jankson.JsonObject;
 import blue.endless.jankson.JsonPrimitive;
+import io.github.opencubicchunks.cubicchunks.cubicgen.preset.JsonObjectView;
 
 import java.util.function.Function;
 
@@ -59,6 +60,7 @@ public class V8Fix implements IJsonFix {
     private JsonElement transformCavesConfig(JsonElement jsonElement, Function<JsonObject, JsonObject> jsonObjectJsonObjectFunction) {
         if(((JsonPrimitive)jsonElement).asBoolean(true)) {
             JsonObject caveConfig = new JsonObject();
+            caveConfig.put("caveBlock", JsonObjectView.empty().put("Name", "minecraft:air").object());
             caveConfig.put("caveRarity", new JsonPrimitive(16 * 7 / (2 * 2 * 2)));
             caveConfig.put("maxInitNodes", new JsonPrimitive(14));
             caveConfig.put("largeNodeRarity", new JsonPrimitive(4));

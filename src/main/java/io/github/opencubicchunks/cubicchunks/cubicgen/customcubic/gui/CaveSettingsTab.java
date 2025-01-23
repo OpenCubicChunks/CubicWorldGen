@@ -42,11 +42,11 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.JsonTransform
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
+import net.malisis.core.client.gui.component.decoration.UILabel;
 import net.malisis.core.client.gui.component.interaction.UIButton;
 import net.malisis.core.client.gui.component.interaction.UISlider;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -58,6 +58,7 @@ public class CaveSettingsTab {
 
     private static final JsonTransformer<CaveSettingsTab.UICaveOptionEntry> WRITE_TO_JSON_TRANSFORM =
             JsonTransformer.<CaveSettingsTab.UICaveOptionEntry>builder("Write GUI state to json")
+                    .valueTransform("caveBlock", (json, cave) -> CustomGenSettingsSerialization.MARSHALLER.serialize(cave.caveBlock.getState()))
                     .setPrimitive("caveRarity", cave -> cave.caveRarity.getValue())
                     .setPrimitive("maxInitNodes", cave -> cave.maxInitNodes.getValue())
                     .setPrimitive("largeNodeRarity", cave -> cave.largeNodeRarity.getValue())
@@ -87,6 +88,7 @@ public class CaveSettingsTab {
                     .build();
 
     private static final JsonObject DEFAULT_STANDARD_CAVE = JsonObjectView.empty()
+            .put("blockstate", JsonObjectView.empty().put("Name", "minecraft:air"))
             .put("caveRarity", 16 * 7 / (2 * 2 * 2))
             .put("maxInitNodes", 14)
             .put("largeNodeRarity", 4)
@@ -171,6 +173,8 @@ public class CaveSettingsTab {
     }
 
     private class UICaveOptionEntry extends UIVerticalTableLayout<CaveSettingsTab.UICaveOptionEntry> {
+        private UIBlockStateButton<?> caveBlock;
+        private UILabel caveBlockLabel;
         private UISlider<Integer> caveRarity;
         private UISlider<Integer> maxInitNodes;
         private UISlider<Integer> largeNodeRarity;
@@ -211,6 +215,16 @@ public class CaveSettingsTab {
                     deleteFunc.accept(UICaveOptionEntry.this);
                 }
             });
+
+            this.caveBlock = new UIBlockStateButton<>(gui,conf.getBlockState("caveBlock"));
+            this.caveBlock.onClick(evnt->{
+                UIBlockStateSelect.makeOverlay(gui, state -> {
+                    caveBlock.setBlockState(new BlockStateDesc(state));
+                    updateCaveLabel();
+                }).display();
+            });
+            this.caveBlockLabel = new UILabel(gui, "");
+            updateCaveLabel();
 
             this.caveRarity = makeIntSlider(gui, malisisText("cave_rarity", " %d"), 1, 128, conf.getInt("caveRarity"));
             this.maxInitNodes = makeIntSlider(gui, malisisText("max_init_nodes", " %d"), 1, 128, conf.getInt("maxInitNodes"));
@@ -257,6 +271,8 @@ public class CaveSettingsTab {
 
         private void setupMainArea(UIVerticalTableLayout<?> mainArea) {
             int y = -1;
+            mainArea.add(this.caveBlock, new GridLocation(0,++y,1));
+            mainArea.add(this.caveBlockLabel, new GridLocation(1,y,4));
             mainArea.add(this.caveRarity, new GridLocation(0, ++y, 3));
             mainArea.add(this.maxInitNodes, new GridLocation(3, y, 3));
             mainArea.add(this.largeNodeRarity, new GridLocation(0, ++y, 3));
@@ -339,6 +355,15 @@ public class CaveSettingsTab {
                 caveList.add(conf.object());
                 return caveList.size() - 1;
             }
+        }
+
+        private void updateCaveLabel() {
+            String name = caveBlock.getState().getBlockId();
+            String props = caveBlock.getState().getProperties().entrySet().stream()
+                    .map(e -> e.getKey() + "=" + e.getValue())
+                    .reduce((a, b) -> a + ", " + b).orElse("");
+
+            caveBlockLabel.setText(String.format("%s   [%s]", name, props));
         }
     }
 }

@@ -342,7 +342,7 @@ public class CubicCaveGenerator implements IFlexHandlerStructureGenerator {
 
                     if (shouldCarveBlock(distX, distY, distZ)) {
                         // No lava generation, infinite depth. Lava will be generated differently (or not generated)
-                        cube.setBlockState(localX, localY, localZ, Blocks.AIR.getDefaultState());
+                        cube.setBlockState(localX, localY, localZ, caveConfig.caveBlock.getBlockState());
                     } else if (state.getBlock() == Blocks.DIRT) {
                         //vanilla dirt-grass replacement works by scanning top-down and moving the block
                         //cubic chunks needs to be a bit more hacky about it
