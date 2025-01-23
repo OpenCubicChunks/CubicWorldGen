@@ -94,7 +94,7 @@ public class CaveSettingsTab {
     private static final JsonObject DEFAULT_STANDARD_CAVE = JsonObjectView.empty()
             .put("caveBlock", JsonObjectView.empty().put("Name", "minecraft:air"))
             .put("caveMinHeight", Integer.MIN_VALUE/16)
-            .put("caveMaxY", Integer.MAX_VALUE/16)
+            .put("caveMaxHeight", Integer.MAX_VALUE/16)
             .put("caveRarity", 16 * 7 / (2 * 2 * 2))
             .put("maxInitNodes", 14)
             .put("largeNodeRarity", 4)
