@@ -288,7 +288,7 @@ public class CaveSettingsTab {
 
         private void setupSharedArea(ExtraGui gui, UIVerticalTableLayout<?> mainArea, UIVerticalTableLayout<?> replacedArea) {
             UISplitLayout<?> split =
-                    new UISplitLayout<>(gui, UISplitLayout.Type.SIDE_BY_SIDE, mainArea, replacedArea).sizeWeights(8, 1).autoFitToContent(true).userResizable(false);
+                    new UISplitLayout<>(gui, UISplitLayout.Type.SIDE_BY_SIDE, mainArea, replacedArea).sizeWeights(8, 1).autoFitToContent(true).userResizable(false).setBottomPadding(10);
             this.autoFitToContent(true);
             this.add(split);
             replacedArea.setHeightFunc(() -> ((UIContainer<?>) Objects.requireNonNull(split.getFirst())).getContentHeight());
