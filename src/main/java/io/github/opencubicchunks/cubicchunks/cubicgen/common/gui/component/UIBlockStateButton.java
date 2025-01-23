@@ -63,17 +63,24 @@ public class UIBlockStateButton<T extends UIBlockStateButton<T>> extends UICompo
     public static final int SIZE = 24;
     private BlockStateDesc iBlockState;
     private final List<Consumer<? super UIBlockStateButton<?>>> onClick;
+    private final List<Consumer<? super UIBlockStateButton<?>>> onRightClick;
 
     public UIBlockStateButton(MalisisGui gui, BlockStateDesc iBlockState1) {
         super(gui);
         iBlockState = iBlockState1;
         onClick = new ArrayList<>();
+        onRightClick = new ArrayList<>();
         setTooltip(generateTooltip(iBlockState));
         setSize(SIZE, SIZE);
     }
 
     public T onClick(Consumer<? super UIBlockStateButton<?>> cons) {
         this.onClick.add(cons);
+        return self();
+    }
+
+    public T onRightClick(Consumer<? super UIBlockStateButton<?>> cons) {
+        this.onRightClick.add(cons);
         return self();
     }
 
@@ -102,6 +109,12 @@ public class UIBlockStateButton<T extends UIBlockStateButton<T>> extends UICompo
     public boolean onClick(int x, int y) {
         MalisisGui.playSound(SoundEvents.UI_BUTTON_CLICK);
         onClick.forEach(cons -> cons.accept(self()));
+        return true;
+    }
+
+    @Override public boolean onRightClick(int x, int y) {
+        MalisisGui.playSound(SoundEvents.UI_BUTTON_CLICK);
+        onRightClick.forEach(cons -> cons.accept(self()));
         return true;
     }
 
