@@ -129,7 +129,11 @@ public class UIList<E, C extends UIComponent<?>> extends UILayout<UIList<E, C>> 
             }
             y += c.getHeight();
         }
+        boolean changed = contentHeight != y;
         this.contentHeight = y;
+        if (changed) {
+            this.onContentUpdate();
+        }
     }
 
     public C component(E e) {
