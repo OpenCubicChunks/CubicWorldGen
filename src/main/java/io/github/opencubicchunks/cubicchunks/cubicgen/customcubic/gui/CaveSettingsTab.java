@@ -243,7 +243,7 @@ public class CaveSettingsTab {
                     (float) (-2f*(heightVariation.getAsDouble()/4)+(baseHeight.getAsDouble()/8))/100,
                     (float) (2f*(heightVariation.getAsDouble()/8)+(baseHeight.getAsDouble()/16))/100,
                     conf.getFloat("caveMinHeight"), conf.getFloat("caveMaxHeight"));
-            this.maxInitNodes = makeIntSlider(gui, malisisText("max_init_nodes"), 1, 128, conf.getInt("maxInitNodes"));
+            this.maxInitNodes = makeIntSlider(gui, malisisText("max_init_nodes", " %d"), 1, 128, conf.getInt("maxInitNodes"));
             this.largeNodeRarity = makeIntSlider(gui, malisisText("large_node_rarity", " %d"), 1, 128, conf.getInt("largeNodeRarity"));
             this.largeNodeMaxBranches = makeIntSlider(gui, malisisText("large_node_max_branches", " %d"), 1, 256, conf.getInt("largeNodeMaxBranches"));
             this.bigCaveRarity = makeIntSlider(gui, malisisText("big_cave_rarity", " %d"), 1, 128, conf.getInt("bigCaveRarity"));
