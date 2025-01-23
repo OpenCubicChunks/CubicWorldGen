@@ -273,7 +273,7 @@ public class CaveSettingsTab {
             mainArea.add(this.maxAddDirectionChangeVert, new GridLocation(0, ++y, 6));
             mainArea.add(this.caveFloorDepth, new GridLocation(0, ++y, 3));
             mainArea.add(this.addReplaceableBtn, new GridLocation(5, y, 1));
-            mainArea.add(this.deleteBtn, new GridLocation(2,++y,2));
+            mainArea.add(this.deleteBtn, new GridLocation(3,y,2));
         }
 
         private void setupReplacedArea(ExtraGui gui, JsonObjectView conf) {
