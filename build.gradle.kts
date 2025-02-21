@@ -43,6 +43,7 @@ mcGitVersion {
 }
 
 java.toolchain.languageVersion.set(JavaLanguageVersion.of(8))
+java.toolchain.vendor.set(JvmVendorSpec.IBM)
 
 fancyGradle {
     patches {
