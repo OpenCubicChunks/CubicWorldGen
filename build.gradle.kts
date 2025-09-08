@@ -279,6 +279,9 @@ tasks {
 
     val devShadowJar by creating(ShadowJar::class) {
         configureShadowJar(this, "dev")
+        doLast {
+            substituteVersion(this as Jar)
+        }
     }
 
     reobf {
