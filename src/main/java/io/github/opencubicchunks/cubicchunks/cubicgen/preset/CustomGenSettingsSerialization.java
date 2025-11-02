@@ -338,7 +338,7 @@ public class CustomGenSettingsSerialization {
             int z = obj.getInt("z", 0);
             Set<BlockStateDesc> blockstates = new HashSet<>();
             JsonElement blocks = obj.get("blocks");
-            if (blocks instanceof JsonObject) {
+            if (blocks instanceof JsonObject || blocks instanceof JsonPrimitive) {
                 blockstates.add(marshaller.marshallCarefully(BlockStateDesc.class, blocks));
             } else {
                 JsonArray blockArray = (JsonArray) blocks;

@@ -26,6 +26,7 @@ package io.github.opencubicchunks.cubicchunks.cubicgen;
 import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld;
 import io.github.opencubicchunks.cubicchunks.api.world.ICubicWorldServer;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.ICubeGenerator;
+import io.github.opencubicchunks.cubicchunks.api.worldgen.VanillaCompatibilityGeneratorProviderBase;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomCubicWorldType;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
@@ -35,11 +36,13 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.Dese
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.ForestDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.JungleDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.PlainsDecorator;
+import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.PrePopulator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.SavannaDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.SnowBiomeDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.SwampDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.populator.TaigaDecorator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.flat.FlatCubicWorldType;
+import io.github.opencubicchunks.cubicchunks.cubicgen.hybrid.HybridTerrainGenerator;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -48,12 +51,16 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeBeach;
 import net.minecraft.world.biome.BiomeDesert;
+import net.minecraft.world.biome.BiomeEnd;
 import net.minecraft.world.biome.BiomeForest;
 import net.minecraft.world.biome.BiomeForestMutated;
+import net.minecraft.world.biome.BiomeHell;
 import net.minecraft.world.biome.BiomeHills;
 import net.minecraft.world.biome.BiomeJungle;
 import net.minecraft.world.biome.BiomeMesa;
@@ -67,6 +74,7 @@ import net.minecraft.world.biome.BiomeSnow;
 import net.minecraft.world.biome.BiomeStoneBeach;
 import net.minecraft.world.biome.BiomeSwamp;
 import net.minecraft.world.biome.BiomeTaiga;
+import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -162,6 +170,26 @@ public class CustomCubicMod {
     }
 
     @SubscribeEvent
+    public static void registerCompatGens(RegistryEvent.Register<VanillaCompatibilityGeneratorProviderBase> event) {
+        event.getRegistry().register(new VanillaCompatibilityGeneratorProviderBase() {
+
+            @Override
+            public ICubeGenerator provideGenerator(IChunkGenerator vanillaChunkGenerator, World world) {
+                return new HybridTerrainGenerator(vanillaChunkGenerator, world);
+            }
+
+            // TODO: add support for select modded ones
+            @Override public boolean supportsWorldType(WorldType type) {
+                return type == WorldType.DEFAULT;
+            }
+
+        }.setRegistryName(new ResourceLocation(MODID, "hybrid"))
+                .setUnlocalizedName("cubicgen.gui.worldmenu.type"));
+
+
+    }
+
+    @SubscribeEvent
     public static void registerRegistries(RegistryEvent.NewRegistry evt) {
         CubicBiome.init();
     }
@@ -200,6 +228,12 @@ public class CustomCubicMod {
         autoRegister(event, BiomeTaiga.class, b -> b
                 .decorator(new TaigaDecorator()).defaultDecorators());
 
+        autoRegister(event, BiomeHell.class, b -> b
+                .decoratorProvider(PrePopulator::new)
+                .decoratorProvider(DefaultDecorator.Ores::new));
+        autoRegister(event, BiomeEnd.class, b -> b
+                .decoratorProvider(PrePopulator::new)
+                .decoratorProvider(DefaultDecorator.Ores::new));
     }
 
     private static void autoRegister(RegistryEvent.Register<CubicBiome> event, Class<? extends Biome> cl, Consumer<CubicBiome.Builder> cons) {

@@ -112,6 +112,10 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         init(world, biomeProvider, settings, seed, isMainLayer);
     }
 
+    public static CustomTerrainGenerator createForHybrid(World world, long seed) {
+        return new CustomTerrainGenerator(world, world.getBiomeProvider(), CustomGeneratorSettings.getFromWorldHybrid(world), seed);
+    }
+
     public void reloadPreset(String settings) {
         ((IWorldInfoAccess) world.getWorldInfo()).setGeneratorOptions(settings);
         world.provider.setWorld(world);// this re-creates biome provider
@@ -142,7 +146,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         MinecraftForge.TERRAIN_GEN_BUS.post(strongholdsEvent);
         MinecraftForge.TERRAIN_GEN_BUS.post(ravineEvent);
 
-        this.strongholds = (CubicFeatureGenerator) strongholdsEvent.getNewGen();
+        this.strongholds = !conf.strongholds ? null : (CubicFeatureGenerator) strongholdsEvent.getNewGen();
         this.ravineGenerator = ravineEvent.getNewGen();
 
         this.fillCubeBiomes = !isMainLayer;
@@ -283,20 +287,25 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
             Random rand = Coords.coordsSeedRandom(cube.getWorld().getSeed(), cube.getX(), cube.getY(), cube.getZ());
 
             MinecraftForge.EVENT_BUS.post(new PopulateCubeEvent.Pre(world, rand, pos.getX(), pos.getY(), pos.getZ(), false));
-            strongholds.generateStructure(world, rand, pos);
+            if (conf.strongholds) {
+                strongholds.generateStructure(world, rand, pos);
+            }
             populators.get(cubicBiome.getBiome()).generate(world, rand, pos, cubicBiome.getBiome());
             MinecraftForge.EVENT_BUS.post(new PopulateCubeEvent.Post(world, rand, pos.getX(), pos.getY(), pos.getZ(), false));
-            CubeGeneratorsRegistry.generateWorld(world, rand, pos, cubicBiome.getBiome()); }
+            CubeGeneratorsRegistry.generateWorld(world, rand, pos, cubicBiome.getBiome());
+        }
     }
 
     @Override
     public void recreateStructures(ICube cube) {
-        this.strongholds.generate(world, null, cube.getCoords());
+        if (conf.strongholds) {
+            this.strongholds.generate(world, null, cube.getCoords());
+        }
     }
 
     @Nullable @Override
     public BlockPos getClosestStructure(String name, BlockPos pos, boolean findUnexplored) {
-        if ("Stronghold".equals(name)) {
+        if (conf.strongholds && "Stronghold".equals(name)) {
             return strongholds.getNearestStructurePos((World) world, pos, true);
         }
         return null;
@@ -361,25 +370,5 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         if (this.conf.strongholds) {
             this.strongholds.generate(world, cube, cubePos);
         }
-    }
-
-    public final List<ICubicStructureGenerator> getCaveGenerators() {
-        return caveGenerators;
-    }
-
-    public final ICubicFeatureGenerator getStrongholds() {
-        return strongholds;
-    }
-
-    public final ICubicStructureGenerator getRavineGenerator() {
-        return ravineGenerator;
-    }
-
-    public CustomGeneratorSettings getConfig() {
-        return conf;
-    }
-
-    public Map<Biome, ICubicPopulator> getPopulators() {
-        return populators;
     }
 }

@@ -13,6 +13,8 @@ cubicgen.gui.cubicgen.done=Done
 cubicgen.gui.cubicgen.cancel=Cancel
 cubicgen.gui.cubicgen.presets=Presets
 
+cubicgen.gui.worldmenu.type=Hybrid
+
 cubicgen.gui.cubicgen.basic_tab_title=Customize World Settings%nPage 1 of 5%nBasic settings (Structures marked * not yet implemented)
 cubicgen.gui.cubicgen.ores_tab_title=Customize World Settings%nPage 2 of 5%nOre settings
 cubicgen.gui.cubicgen.lake_tab_title=Customize World Settings%nPage 3 of 5%nLake settings

@@ -48,12 +48,12 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Biomes;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeMesa;
 import net.minecraft.world.biome.BiomeSavannaMutated;
 import net.minecraft.world.biome.BiomeSwamp;
-import net.minecraft.world.biome.BiomeTaiga;
 import net.minecraft.world.storage.ISaveHandler;
 
 import javax.annotation.Nullable;
@@ -65,6 +65,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
@@ -223,6 +224,15 @@ public class CustomGeneratorSettings {
                 "custom_generator_settings.json");
     }
 
+    public static File getHybridPresetFile(World world) {
+        File base = world.getSaveHandler().getWorldDirectory();
+        String saveFolder = world.provider.getSaveFolder();
+        if (saveFolder != null) {
+            base = new File(base, saveFolder);
+        }
+        return new File(base, "/data/" + CustomCubicMod.MODID + "/custom_generator_settings.json");
+    }
+
     public static CustomGeneratorSettings getFromWorld(World world) {
         try {
             String jsonString = world.getWorldInfo().getGeneratorOptions();
@@ -232,6 +242,30 @@ public class CustomGeneratorSettings {
 
             return CustomGenSettingsSerialization.jankson().fromJsonCarefully(jsonString, CustomGeneratorSettings.class);
         } catch (PresetLoadError | DeserializationException err) {
+            throw new RuntimeException(err);
+        } catch (SyntaxError err) {
+            String message = err.getMessage() + "\n" + err.getLineMessage();
+            throw new RuntimeException(message, err);
+        }
+    }
+
+    public static CustomGeneratorSettings getFromWorldHybrid(World world) {
+        try {
+            File presetFile = getHybridPresetFile(world);
+            presetFile.getParentFile().mkdirs();
+            String jsonString;
+            if (presetFile.exists()) {
+                jsonString = new String(Files.readAllBytes(presetFile.toPath()), StandardCharsets.UTF_8);
+            } else {
+                // can't let fixer handle this, as it doesn't know about hybrid world
+                jsonString = hybridDefaults(world.provider.getDimensionType()).toJsonObject().toJson(CustomGenSettingsSerialization.OUT_GRAMMAR);
+            }
+            jsonString = CustomGeneratorSettingsFixer.INSTANCE.fixJsonString(jsonString, null);
+            Files.write(presetFile.toPath(), jsonString.getBytes(StandardCharsets.UTF_8),
+                    StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+
+            return CustomGenSettingsSerialization.jankson().fromJsonCarefully(jsonString, CustomGeneratorSettings.class);
+        } catch (PresetLoadError | DeserializationException | IOException err) {
             throw new RuntimeException(err);
         } catch (SyntaxError err) {
             String message = err.getMessage() + "\n" + err.getLineMessage();
@@ -251,6 +285,18 @@ public class CustomGeneratorSettings {
             CustomCubicMod.LOGGER.error(json);
             CustomCubicMod.LOGGER.catching(e);
         }
+    }
+
+    public static CustomGeneratorSettings hybridDefaults(DimensionType dimType) {
+        // Note: not switch() to avoid issues when we run into modded dimension types
+        if (Objects.requireNonNull(dimType) == DimensionType.OVERWORLD) {
+            return CustomGeneratorSettings.hybridDefaultsOverworld();
+        } else if (dimType == DimensionType.NETHER) {
+            return CustomGeneratorSettings.netherDefaults();
+        } else if (dimType == DimensionType.THE_END) {
+            return CustomGeneratorSettings.endDefaults();
+        }
+        return null;
     }
 
     public static CustomGeneratorSettings defaults() {
@@ -574,6 +620,234 @@ public class CustomGeneratorSettings {
                             .build())
                     .build());
         }
+        return settings;
+    }
+
+    public static CustomGeneratorSettings hybridDefaultsOverworld() {
+        CustomGeneratorSettings settings = CustomGeneratorSettings.defaults();
+        // TODO: figure out how to make structures work
+        settings.strongholds = false;
+        settings.villages = false;
+        settings.mineshafts = false;
+        settings.temples = false;
+        settings.oceanMonuments = false;
+        settings.woodlandMansions = false;
+        return settings;
+    }
+
+    public static CustomGeneratorSettings netherDefaults() {
+        CustomGeneratorSettings settings = new CustomGeneratorSettings();
+        {
+            settings.strongholds = false;
+            settings.villages = false;
+            settings.mineshafts = false;
+            settings.temples = false;
+            settings.oceanMonuments = false;
+            settings.woodlandMansions = false;
+
+            settings.ravines = true;
+            settings.dungeons = false;
+
+            settings.biome = Biome.getIdForBiome(Biomes.HELL);
+
+            settings.heightVariationFactor = 0;
+            settings.specialHeightVariationFactorBelowAverageY = 1;
+            settings.heightVariationOffset = Integer.MAX_VALUE;
+            settings.heightFactor = 0;
+            settings.heightOffset = 0;
+
+            // TODO: take those values from vanilla
+            settings.selectorNoiseFactor = 12.8f;
+            settings.selectorNoiseOffset = -0.03f;
+            settings.selectorNoiseFrequencyX = 1f/116;
+            settings.selectorNoiseFrequencyY = 1f/26;
+            settings.selectorNoiseFrequencyZ = 1f/116;
+            settings.selectorNoiseOctaves = 3;
+
+            settings.lowNoiseFactor = 1.0f;
+            settings.lowNoiseOffset = -0.03f;
+            settings.lowNoiseFrequencyX = 1f/72;
+            settings.lowNoiseFrequencyY = 1f/80;
+            settings.lowNoiseFrequencyZ = 1f/72;
+            settings.lowNoiseOctaves = 3;
+
+            settings.highNoiseFactor = 1;
+            settings.highNoiseOffset = -0.3f;
+            settings.highNoiseFrequencyX = 1f/77;
+            settings.highNoiseFrequencyY = 1f/82;
+            settings.highNoiseFrequencyZ = 1f/77;
+            settings.highNoiseOctaves = 2;
+
+        }
+        {
+
+            settings.standardOres.list.addAll(Arrays.asList(
+                    StandardOreConfig.builder()
+                            .genInBlockstates(Blocks.NETHERRACK.getDefaultState())
+                            .block(Blocks.QUARTZ_ORE.getDefaultState())
+                            .size(14).attempts(16).probability(1f / (256f / ICube.SIZE)).create(),
+                    StandardOreConfig.builder()
+                            .genInBlockstates(Blocks.LAVA.getDefaultState(), Blocks.FLOWING_LAVA.getDefaultState(), Blocks.AIR.getDefaultState())
+                            .placeBlockWhen(
+                                    new AllOfCompositeCondition(Arrays.asList(
+                                            new BlockstateMatchCondition(Blocks.LAVA.getDefaultState(),
+                                                    Blocks.FLOWING_LAVA.getDefaultState(), Blocks.AIR.getDefaultState()),
+                                            new RandomCondition(0.5)
+                                    ))
+                            )
+                            .block(Blocks.GLOWSTONE.getDefaultState())
+                            .size(25).attempts(8).probability(2f / (256f / ICube.SIZE)).create(),
+                    StandardOreConfig.builder()
+                            .genInBlockstates(Blocks.NETHERRACK.getDefaultState())
+                            .block(Blocks.SOUL_SAND.getDefaultState())
+                            .size(33).attempts(10).probability(1f / (256f / ICube.SIZE)).create(),
+                    StandardOreConfig.builder()
+                            .genInBlockstates(Blocks.NETHERRACK.getDefaultState())
+                            .block(Blocks.GRAVEL.getDefaultState())
+                            .size(33).attempts(10).probability(1f / (256f / ICube.SIZE)).create(),
+                    StandardOreConfig.builder()
+                            .genInBlockstates(Blocks.NETHERRACK.getDefaultState())
+                            .block(Blocks.LAVA.getDefaultState())
+                            .size(8).attempts(10).probability(1f / (256f / ICube.SIZE)).create(),
+                    StandardOreConfig.builder()
+                            .genInBlockstates(Blocks.NETHERRACK.getDefaultState())
+                            .block(Blocks.MAGMA.getDefaultState())
+                            .size(33).attempts(4).probability(4f / (256f / ICube.SIZE)).create()
+            ));
+        }
+
+        {
+            settings.lakes.addAll(Arrays.asList(
+                    LakeConfig.builder().setBlock(Blocks.LAVA)
+                            .setBiomes(FilterType.EXCLUDE, new BiomeDesc[0])
+                            .setMainProbability(UserFunction.builder()
+                                    // same as vanilla for y0-127, probabilities near y=256 are very low, so don't use them
+                                    .point(0, 4 / 263f)
+                                    .point(7, 4 / 263f)
+                                    .point(8, 247 / 16306f)
+                                    .point(62, 193 / 16306f)
+                                    .point(63, 48 / 40765f)
+                                    .point(127, 32 / 40765f)
+                                    .point(128, 32 / 40765f)
+                                    .build())
+                            .setSurfaceProbability(UserFunction.builder()
+                                    // sample vanilla probabilities at y=0, 31, 63, 95, 127
+                                    .point(-1, 19921 / 326120f)
+                                    .point(0, 19921 / 326120f)
+                                    .point(31, 1332 / 40765f)
+                                    .point(63, 579 / 81530f)
+                                    .point(95, 161 / 32612f)
+                                    .point(127, 129 / 40765f)
+                                    .point(128, 129 / 40765f)
+                                    .build())
+                            .build()
+            ));
+
+            settings.caves.add(CaveConfig.builder()
+                    .addReplaceableBlock(Blocks.NETHERRACK.getDefaultState()).build());
+        }
+
+
+        {
+            // terrain
+            settings.replacers.add(new DensityRangeReplacerConfig.Builder()
+                    .setMinY(Integer.MIN_VALUE)
+                    .setMaxY(Integer.MAX_VALUE)
+                    .setBiomeFilter(null)
+                    .setBlockFilterType(FilterType.EXCLUDE)
+                    .setFilterBlocks(new ArrayList<>())
+                    .setMinDensity(0)
+                    .setMaxDensity(Double.POSITIVE_INFINITY)
+                    .setBlockInRange(new BlockStateDesc(Blocks.NETHERRACK.getDefaultState()))
+                    .setBlockOutOfRange(null)
+                    .build());
+
+            // ocean. NOTE: another way to do ocean would be to use density range
+            settings.replacers.add(new DensityRangeReplacerConfig.Builder()
+                    .setMinY(Integer.MIN_VALUE)
+                    .setMaxY(0)
+                    .setBiomeFilter(null)
+                    .setBlockFilterType(FilterType.INCLUDE)
+                    .setFilterBlocks(Collections.singletonList(new BlockStateDesc(Blocks.AIR.getDefaultState())))
+                    .setMinDensity(Double.NEGATIVE_INFINITY)
+                    .setMaxDensity(Double.POSITIVE_INFINITY)
+                    .setBlockInRange(new BlockStateDesc(Blocks.LAVA.getDefaultState()))
+                    .setBlockOutOfRange(null)
+                    .build());
+
+
+            settings.replacers.add(new RandomYGradientReplacerConfig.Builder()
+                    .setMinY(Integer.MIN_VALUE / 2)
+                    .setMaxY(Integer.MIN_VALUE / 2 + 5)
+                    .setBiomeFilter(null)
+                    .setBlockToPlace(new BlockStateDesc(Blocks.BEDROCK.getDefaultState()))
+                    .setProbabilityFunction(UserFunction.builder()
+                            .point(Integer.MIN_VALUE >> 1, 1)
+                            .point((Integer.MIN_VALUE >> 1) + 5, 0)
+                            .build())
+                    .build());
+        }
+        return settings;
+    }
+
+    private static CustomGeneratorSettings endDefaults() {
+        CustomGeneratorSettings settings = new CustomGeneratorSettings();
+
+        settings.strongholds = false;
+        settings.alternateStrongholdsPositions = false;
+        settings.villages = false;
+
+        settings.mineshafts = false;
+        settings.temples = false;
+
+        settings.oceanMonuments = false;
+        settings.woodlandMansions = false;
+
+        settings.ravines = false;
+        settings.dungeons = false;
+
+
+        settings.biome = Biome.getIdForBiome(Biomes.SKY);
+
+        settings.heightVariationFactor = 9216;
+        settings.specialHeightVariationFactorBelowAverageY = 64f;
+        settings.heightVariationOffset = 1536;
+        settings.heightFactor = 0.64f;// height scale
+        settings.heightOffset = 160;// sea level
+
+        settings.selectorNoiseFactor = 12f;
+        settings.selectorNoiseOffset = -0.4f;
+        settings.selectorNoiseFrequencyX = 1f/21;
+        settings.selectorNoiseFrequencyY = 1f/120;
+        settings.selectorNoiseFrequencyZ = 1f/21;
+        settings.selectorNoiseOctaves = 3;
+
+        settings.lowNoiseFactor = 1f;
+        settings.lowNoiseOffset = -0.3f;
+        settings.lowNoiseFrequencyX = 1f/72;
+        settings.lowNoiseFrequencyY = 1f/80;
+        settings.lowNoiseFrequencyZ = 1f/72;
+        settings.lowNoiseOctaves = 3;
+
+        settings.highNoiseFactor = 1f;
+        settings.highNoiseOffset = -0.6f;
+        settings.highNoiseFrequencyX = 1f/76;
+        settings.highNoiseFrequencyY = 1f/82;
+        settings.highNoiseFrequencyZ = 1f/76;
+        settings.highNoiseOctaves = 1;
+        // terrain
+        settings.replacers.add(new DensityRangeReplacerConfig.Builder()
+                .setMinY(Integer.MIN_VALUE)
+                .setMaxY(Integer.MAX_VALUE)
+                .setBiomeFilter(null)
+                .setBlockFilterType(FilterType.EXCLUDE)
+                .setFilterBlocks(new ArrayList<>())
+                .setMinDensity(0)
+                .setMaxDensity(Double.POSITIVE_INFINITY)
+                .setBlockInRange(new BlockStateDesc(Blocks.END_STONE.getDefaultState()))
+                .setBlockOutOfRange(null)
+                .build());
+
         return settings;
     }
 
@@ -1927,6 +2201,11 @@ public class CustomGeneratorSettings {
                     return this;
                 }
                 this.placeBlockWhen = new BlockstateMatchCondition(0, 0, 0, new HashSet<>(Arrays.asList(states)));
+                return this;
+            }
+
+            public Builder placeBlockWhen(GenerationCondition condition) {
+                this.placeBlockWhen = condition;
                 return this;
             }
 
