@@ -39,7 +39,7 @@ public class Converters {
 
     public static class Builder {
 
-        protected Converter<Float, Float> currentConverter = Converter.identity();
+        protected Converter<Double, Double> currentConverter = Converter.identity();
 
         public ExponentialBuilder exponential() {
             return new ExponentialBuilder(self());
@@ -57,19 +57,19 @@ public class Converters {
             return composeWithSelf(new ReverseConverter());
         }
 
-        public Builder scale(float scale) {
+        public Builder scale(double scale) {
             return composeWithSelf(new ScaleConverter(scale));
         }
 
-        public Builder offset(float offset) {
+        public Builder offset(double offset) {
             return composeWithSelf(new OffsetConverter(offset));
         }
 
-        public Builder linearScale(float min, float max) {
+        public Builder linearScale(double min, double max) {
             return scale(max - min).offset(min);
         }
 
-        public Builder pow(float power) {
+        public Builder pow(double power) {
             return composeWithSelf(new PowerConverter(power));
         }
 
@@ -77,8 +77,31 @@ public class Converters {
             return new RoundingBuilder(self());
         }
 
-        public Converter<Float, Float> build() {
+        public Converter<Double, Double> build() {
             return self().currentConverter;
+        }
+
+        public Converter<Float, Float> buildFloat() {
+            Converter<Double, Float> dbl2Flt = new Converter<Double, Float>() {
+                @Override protected Float doForward(Double x) {
+                    return x.floatValue();
+                }
+
+                @Override protected Double doBackward(Float x) {
+                    return x.doubleValue();
+                }
+            };
+            Converter<Float, Double> flt2Dbl = new Converter<Float, Double>() {
+                @Override protected Double doForward(Float x) {
+                    return x.doubleValue();
+                }
+
+                @Override protected Float doBackward(Double x) {
+                    return x.floatValue();
+                }
+            };
+
+            return compose(dbl2Flt, compose(self().currentConverter, flt2Dbl));
         }
 
         /**
@@ -95,7 +118,7 @@ public class Converters {
             return this;
         }
 
-        private final Builder composeWithSelf(Converter<Float, Float> conv) {
+        private final Builder composeWithSelf(Converter<Double, Double> conv) {
             Builder self = self();
             self.currentConverter = compose(conv, self.currentConverter);
             return self;
@@ -107,12 +130,12 @@ public class Converters {
         private Builder baseSelf;
 
         boolean hasZero = false;
-        float minExpPos = Float.NaN;
-        float maxExpPos = Float.NaN;
+        double minExpPos = Double.NaN;
+        double maxExpPos = Double.NaN;
 
-        float minExpNeg = Float.NaN;
-        float maxExpNeg = Float.NaN;
-        float baseVal;
+        double minExpNeg = Double.NaN;
+        double maxExpNeg = Double.NaN;
+        double baseVal;
 
         public ExponentialBuilder(Builder baseSelf) {
             this.baseSelf = baseSelf;
@@ -124,21 +147,21 @@ public class Converters {
             return self;
         }
 
-        public ExponentialBuilder withPositiveExponentRange(float min, float max) {
+        public ExponentialBuilder withPositiveExponentRange(double min, double max) {
             ExponentialBuilder self = exponentialSelf();
             self.minExpPos = min;
             self.maxExpPos = max;
             return self;
         }
 
-        public ExponentialBuilder withNegativeExponentRange(float min, float max) {
+        public ExponentialBuilder withNegativeExponentRange(double min, double max) {
             ExponentialBuilder self = exponentialSelf();
             self.minExpNeg = min;
             self.maxExpNeg = max;
             return self;
         }
 
-        public ExponentialBuilder withBaseValue(float baseVal) {
+        public ExponentialBuilder withBaseValue(double baseVal) {
             ExponentialBuilder self = exponentialSelf();
             self.baseVal = baseVal;
             return self;
@@ -159,19 +182,19 @@ public class Converters {
 
         private Builder baseSelf;
 
-        private float negInf = 0, posInf = 1;
+        private double negInf = 0, posInf = 1;
 
         public InfinityBuilder(Builder baseSelf) {
             this.baseSelf = baseSelf;
         }
 
-        public InfinityBuilder negativeAt(float negInf) {
+        public InfinityBuilder negativeAt(double negInf) {
             InfinityBuilder self = infinitySelf();
             self.negInf = negInf;
             return self;
         }
 
-        public InfinityBuilder positiveAt(float posInf) {
+        public InfinityBuilder positiveAt(double posInf) {
             InfinityBuilder self = infinitySelf();
             self.posInf = posInf;
             return self;
@@ -192,13 +215,13 @@ public class Converters {
 
         private Builder baseSelf;
 
-        private float mult = 1;
+        private double mult = 1;
 
         public InverseBuilder(Builder baseSelf) {
             this.baseSelf = baseSelf;
         }
 
-        public InverseBuilder withMultiplier(float mult) {
+        public InverseBuilder withMultiplier(double mult) {
             InverseBuilder self = inverseSelf();
             self.mult = mult;
             return self;
@@ -219,7 +242,7 @@ public class Converters {
 
         private Builder baseSelf;
 
-        float maxExp = Float.NaN;
+        double maxExp = Double.NaN;
         Set<RoundingConverter.RoundingEntry> roundingData = new HashSet<>();
         BiPredicate<Double, Double> isValueInRadius;
 
@@ -227,7 +250,7 @@ public class Converters {
             this.baseSelf = baseSelf;
         }
 
-        public RoundingBuilder withMaxExp(float max) {
+        public RoundingBuilder withMaxExp(double max) {
             RoundingBuilder self = roundingSelf();
             self.maxExp = max;
             return self;
@@ -240,18 +263,18 @@ public class Converters {
             return self;
         }
 
-        public RoundingBuilder withBase(float baseVal, float multiplier) {
+        public RoundingBuilder withBase(double baseVal, double multiplier) {
             RoundingBuilder self = roundingSelf();
             self.roundingData.add(new RoundingConverter.RoundingEntry(baseVal, multiplier));
             return self;
         }
 
-        public RoundingBuilder withBases(float base, float[] multiplier) {
+        public RoundingBuilder withBases(double base, double[] multiplier) {
             RoundingBuilder self = roundingSelf();
             if (multiplier == null) {
                 return self;
             }
-            for (float val : multiplier) {
+            for (double val : multiplier) {
                 self.roundingData.add(new RoundingConverter.RoundingEntry(base, val));
             }
             return self;

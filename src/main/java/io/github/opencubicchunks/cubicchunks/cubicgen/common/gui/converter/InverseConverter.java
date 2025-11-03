@@ -25,19 +25,19 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.converter;
 
 import com.google.common.base.Converter;
 
-public class InverseConverter extends Converter<Float, Float> {
+public class InverseConverter extends Converter<Double, Double> {
 
-    private float mult;
+    private double mult;
 
-    public InverseConverter(float mult) {
+    public InverseConverter(double mult) {
         this.mult = mult;
     }
 
-    @Override protected Float doForward(Float x) {
+    @Override protected Double doForward(Double x) {
         return mult / x;
     }
 
-    @Override protected Float doBackward(Float x) {
+    @Override protected Double doBackward(Double x) {
         return mult / x;
     }
 }

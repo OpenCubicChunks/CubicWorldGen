@@ -25,19 +25,19 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.converter;
 
 import com.google.common.base.Converter;
 
-public class ScaleConverter extends Converter<Float, Float> {
+public class ScaleConverter extends Converter<Double, Double> {
 
-    private float scale;
+    private double scale;
 
-    public ScaleConverter(float scale) {
+    public ScaleConverter(double scale) {
         this.scale = scale;
     }
 
-    @Override protected Float doForward(Float x) {
+    @Override protected Double doForward(Double x) {
         return x * scale;
     }
 
-    @Override protected Float doBackward(Float x) {
+    @Override protected Double doBackward(Double x) {
         return x / scale;
     }
 }

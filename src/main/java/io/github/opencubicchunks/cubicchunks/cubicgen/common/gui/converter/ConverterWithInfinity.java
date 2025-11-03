@@ -25,31 +25,31 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.converter;
 
 import com.google.common.base.Converter;
 
-public class ConverterWithInfinity extends Converter<Float, Float> {
+public class ConverterWithInfinity extends Converter<Double, Double> {
 
-    private final float negative;
-    private final float positive;
+    private final double negative;
+    private final double positive;
 
-    public ConverterWithInfinity(float negative, float positive) {
+    public ConverterWithInfinity(double negative, double positive) {
         this.negative = negative;
         this.positive = positive;
     }
 
-    @Override protected Float doForward(Float v) {
+    @Override protected Double doForward(Double v) {
         if (v <= negative) {
-            return Float.NEGATIVE_INFINITY;
+            return Double.NEGATIVE_INFINITY;
         }
         if (v >= positive) {
-            return Float.POSITIVE_INFINITY;
+            return Double.POSITIVE_INFINITY;
         }
         return v;
     }
 
-    @Override protected Float doBackward(Float v) {
-        if (v == Float.NEGATIVE_INFINITY) {
+    @Override protected Double doBackward(Double v) {
+        if (v == Double.NEGATIVE_INFINITY) {
             return negative;
         }
-        if (v == Float.POSITIVE_INFINITY) {
+        if (v == Double.POSITIVE_INFINITY) {
             return positive;
         }
         return v;

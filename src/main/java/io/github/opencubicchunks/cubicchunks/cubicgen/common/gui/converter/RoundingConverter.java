@@ -32,14 +32,13 @@ import net.minecraft.util.math.MathHelper;
 
 import java.util.Set;
 import java.util.function.BiPredicate;
-import java.util.function.DoublePredicate;
 
-public class RoundingConverter extends Converter<Float, Float> {
+public class RoundingConverter extends Converter<Double, Double> {
 
     private final BiPredicate<Double, Double> isValueInRadius;
     private final Set<RoundingEntry> roundingData;
-    private final float maxExp;
-    private Converter<Float, Float> reverse;
+    private final double maxExp;
+    private Converter<Double, Double> reverse;
 
     RoundingConverter(Converters.RoundingBuilder builder) {
         this.isValueInRadius = builder.isValueInRadius;
@@ -47,11 +46,11 @@ public class RoundingConverter extends Converter<Float, Float> {
         this.maxExp = builder.maxExp;
     }
 
-    void setReverse(Converter<Float, Float> reverse) {
+    void setReverse(Converter<Double, Double> reverse) {
         this.reverse = reverse;
     }
 
-    @Override protected Float doForward(Float input) {
+    @Override protected Double doForward(Double input) {
         double max = -Double.MAX_VALUE;
         double best = 0;
 
@@ -64,7 +63,7 @@ public class RoundingConverter extends Converter<Float, Float> {
                 if (Double.isNaN(roundValue) || Double.isInfinite(roundValue)) {
                     break;
                 }
-                double roundedSlideValue = reverse.convert((float) roundValue);
+                double roundedSlideValue = reverse.convert((double) roundValue);
                 if (isValueInRadius.test(slideValue, roundedSlideValue)) {
                     double v = getDivisor(trySnapDivExp, e);
                     if (v > max) {
@@ -75,7 +74,7 @@ public class RoundingConverter extends Converter<Float, Float> {
                 }
             }
         }
-        return (float) best;
+        return (double) best;
     }
 
     private double getDivisor(int trySnapDivExp, RoundingEntry e) {
@@ -90,7 +89,7 @@ public class RoundingConverter extends Converter<Float, Float> {
         return round(rawValue / divisor) * divisor;
     }
 
-    @Override protected Float doBackward(Float value) {
+    @Override protected Double doBackward(Double value) {
         return value;
     }
 

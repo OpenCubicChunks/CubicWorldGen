@@ -35,14 +35,14 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class ExponentialConverter extends Converter<Float, Float> {
+public class ExponentialConverter extends Converter<Double, Double> {
 
     private final boolean hasZero;
-    private final float minExpPos;
-    private final float maxExpPos;
-    private final float minExpNeg;
-    private final float maxExpNeg;
-    private final float baseValue;
+    private final double minExpPos;
+    private final double maxExpPos;
+    private final double minExpNeg;
+    private final double maxExpNeg;
+    private final double baseValue;
     private final double zeroPos;
     private final double positiveExpStart;
     private final double negativeExpStart;
@@ -50,8 +50,8 @@ public class ExponentialConverter extends Converter<Float, Float> {
     private final double minLinearNegVal;
 
     ExponentialConverter(Converters.ExponentialBuilder builder) {
-        boolean hasPositivePart = !Float.isNaN(builder.minExpPos) && !Double.isNaN(builder.maxExpPos);
-        boolean hasNegativePart = !Float.isNaN(builder.minExpNeg) && !Double.isNaN(builder.maxExpNeg);
+        boolean hasPositivePart = !Double.isNaN(builder.minExpPos) && !Double.isNaN(builder.maxExpPos);
+        boolean hasNegativePart = !Double.isNaN(builder.minExpNeg) && !Double.isNaN(builder.maxExpNeg);
         if (!hasPositivePart) {
             builder.minExpPos = 0;
             builder.maxExpPos = 0;
@@ -156,8 +156,8 @@ public class ExponentialConverter extends Converter<Float, Float> {
     }
 
     @Override
-    protected Float doForward(Float x) {
-        return (float) doForwardsDouble(x);
+    protected Double doForward(Double x) {
+        return (double) doForwardsDouble(x);
     }
 
     private double doForwardsDouble(double x) {
@@ -214,8 +214,8 @@ public class ExponentialConverter extends Converter<Float, Float> {
     }
 
 
-    @Override protected Float doBackward(Float x) {
-        return (float) doBackwardDouble(x);
+    @Override protected Double doBackward(Double x) {
+        return doBackwardDouble(x);
     }
 
     private double doBackwardDouble(double value) {

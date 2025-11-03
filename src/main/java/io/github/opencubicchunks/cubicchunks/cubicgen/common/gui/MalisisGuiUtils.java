@@ -71,7 +71,7 @@ public class MalisisGuiUtils {
         Converter<Float, Float> conv = Converters.builder()
                 .linearScale(min, max).rounding().withBase(2, 1).withBase(10, 1).withBase(2, defMult).withBase(10, defMult).withMaxExp(128)
                 .withRoundingRadiusPredicate(isInRoundRadius)
-                .build();
+                .buildFloat();
 
         UISlider<Float> slider = new UISliderImproved<>(gui, 100, conv, value -> text.apply((double) (float) value)).setValue(defVal);
         wrappedSlider[0] = slider;
@@ -94,7 +94,7 @@ public class MalisisGuiUtils {
                 .rounding().withBase(2, 1).withBase(10, 1).withBase(2, defMult).withBase(10, defMult).withMaxExp(128)
                 .withRoundingRadiusPredicate(isInRoundRadius)
                 .withInfinity().positiveAt((float)Math.pow(2, maxPos)).negativeAt(Float.NaN)
-                .build();
+                .buildFloat();
 
         UISlider<Float> slider = new UISliderImproved<>(gui, 100, conv, value -> text.apply((double) (float) value)).setValue(defaultVal);
         wrappedSlider[0] = slider;
@@ -114,7 +114,7 @@ public class MalisisGuiUtils {
                 .rounding().withBase(2, 1).withBase(10, 1).withBase(2, defMult).withBase(10, defMult).withMaxExp(128)
                 .withRoundingRadiusPredicate(isInRoundRadius)
                 .withInfinity().positiveAt((float)Math.pow(2, maxPos)).negativeAt(Float.NaN)
-                .build();
+                .buildFloat();
 
         UISlider<Float> slider = new UISliderImproved<>(gui, 100, conv, name).setValue(defaultVal);
         wrappedSlider[0] = slider;
@@ -133,7 +133,7 @@ public class MalisisGuiUtils {
                 .exponential().withZero().withBaseValue(2).withNegativeExponentRange(minNeg, maxNeg).withPositiveExponentRange(minPos, maxPos)
                 .rounding().withBase(2, 1).withBase(10, 1).withBase(2, defMult).withBase(10, defMult).withMaxExp(128)
                 .withRoundingRadiusPredicate(isInRoundRadius)
-                .build();
+                .buildFloat();
 
         UISlider<Float> slider = new UISliderImproved<>(gui, 100, conv, name).setValue(defaultVal);
         wrappedSlider[0] = slider;
@@ -174,7 +174,7 @@ public class MalisisGuiUtils {
                 .inverse()
                 .rounding().withBase(2, 1).withBase(10, 1).withBase(2, defMult).withBase(10, defMult).withMaxExp(128)
                 .withRoundingRadiusPredicate(isInRoundRadius)
-                .build();
+                .buildFloat();
 
         UISlider<Float> slider = new UISliderImproved<>(gui, 100, conv, name).setValue(defaultVal);
         wrappedSlider[0] = slider;
@@ -238,7 +238,7 @@ public class MalisisGuiUtils {
                 .linearScale(min, max)
                 .rounding().withBase(2, 1).withBase(10, 1).withMaxExp(maxExp).withRoundingRadiusPredicate(isInRoundRadius)
                 .withInfinity().negativeAt(min).positiveAt(max)
-                .build();
+                .buildFloat();
 
         UIRangeSlider<Float> slider = new UIRangeSlider<>(gui, 100, conv, i18nFormat).setRange(defMin, defMax);
         wrappedSlider[0] = slider;

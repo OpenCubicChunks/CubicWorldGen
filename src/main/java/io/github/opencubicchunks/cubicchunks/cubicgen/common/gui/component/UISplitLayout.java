@@ -264,7 +264,7 @@ public class UISplitLayout<T extends UISplitLayout<T>> extends UIStandardLayout<
         if (button == MouseButton.LEFT) {
             this.isMovingSplit = false;
         }
-        return true;
+        return false;
     }
 
     @Override public void drawForeground(GuiRenderer renderer, int mouseX, int mouseY, float partialTick) {

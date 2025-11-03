@@ -25,19 +25,19 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.converter;
 
 import com.google.common.base.Converter;
 
-public class OffsetConverter extends Converter<Float, Float> {
+public class OffsetConverter extends Converter<Double, Double> {
 
-    private float offset;
+    private double offset;
 
-    public OffsetConverter(float offset) {
+    public OffsetConverter(double offset) {
         this.offset = offset;
     }
 
-    @Override protected Float doForward(Float x) {
+    @Override protected Double doForward(Double x) {
         return x + offset;
     }
 
-    @Override protected Float doBackward(Float x) {
+    @Override protected Double doBackward(Double x) {
         return x - offset;
     }
 }

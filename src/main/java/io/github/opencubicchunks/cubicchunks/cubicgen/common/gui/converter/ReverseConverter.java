@@ -25,13 +25,13 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.converter;
 
 import com.google.common.base.Converter;
 
-public class ReverseConverter extends Converter<Float, Float> {
+public class ReverseConverter extends Converter<Double, Double> {
 
-    @Override protected Float doForward(Float x) {
-        return 1.0f - x;
+    @Override protected Double doForward(Double x) {
+        return 1.0 - x;
     }
 
-    @Override protected Float doBackward(Float x) {
-        return 1.0f - x;
+    @Override protected Double doBackward(Double x) {
+        return 1.0 - x;
     }
 }

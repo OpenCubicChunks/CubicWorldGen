@@ -25,7 +25,7 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.converter;
 
 import com.google.common.base.Converter;
 
-public class PowerConverter extends Converter<Float, Float> {
+public class PowerConverter extends Converter<Double, Double> {
 
     private final double power;
     private final double reversePower;
@@ -35,11 +35,11 @@ public class PowerConverter extends Converter<Float, Float> {
         this.reversePower = 1.0 / power;
     }
 
-    @Override protected Float doForward(Float x) {
-        return (float) Math.pow(x, power);
+    @Override protected Double doForward(Double x) {
+        return Math.pow(x, power);
     }
 
-    @Override protected Float doBackward(Float x) {
-        return (float) Math.pow(x, reversePower);
+    @Override protected Double doBackward(Double x) {
+        return Math.pow(x, reversePower);
     }
 }

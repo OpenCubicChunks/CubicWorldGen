@@ -27,7 +27,10 @@ import blue.endless.jankson.JsonArray;
 import blue.endless.jankson.JsonNull;
 import blue.endless.jankson.JsonObject;
 import com.google.common.eventbus.Subscribe;
+import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.GuiFactory;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiSlider;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBlockStateButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UICheckboxNoAutoSize;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UILayout;
@@ -36,6 +39,7 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIRan
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout.Type;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIVerticalTableLayout;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.WrappedVanillaButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.CustomGenSettingsSerialization;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.JsonObjectView;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.JsonTransformer;
@@ -123,7 +127,7 @@ class OreSettingsTab {
                     .setPrimitive("spawnProbability", ore -> ore.probability.getValue())
                     .setPrimitive("minHeight", ore -> ore.heightRange.getMinValue())
                     .setPrimitive("maxHeight", ore -> ore.heightRange.getMaxValue())
-                    .setPrimitiveIf(ore -> ore.genType == OreGenType.PERIODIC_GAUSSIAN, "heightMean", ore -> ore.mean.getValue())
+                    .setPrimitiveIf(ore -> ore.genType == OreGenType.PERIODIC_GAUSSIAN, "heightMean", ore -> ore.mean.getSliderValue())
                     .setPrimitiveIf(ore -> ore.genType == OreGenType.PERIODIC_GAUSSIAN, "heightStdDeviation", ore -> ore.stdDev.getValue())
                     .setPrimitiveIf(ore -> ore.genType == OreGenType.PERIODIC_GAUSSIAN, "heightSpacing", ore -> ore.spacing.getValue())
                     .build();
@@ -250,7 +254,7 @@ class OreSettingsTab {
         private UISlider<Integer> size;
         private UISlider<Integer> attempts;
 
-        private UISlider<Float> mean;
+        private CwgGuiSlider mean;
         private UISlider<Float> spacing;
 
         private UISlider<Float> stdDev;
@@ -281,7 +285,10 @@ class OreSettingsTab {
             this.size = makeIntSlider(gui, malisisText("spawn_size", " %d"), 1, 50, conf.getInt("spawnSize"));
             this.attempts = makeIntSlider(gui, malisisText("spawn_tries", " %d"), 1, 40, conf.getInt("spawnTries"));
             if (genType == OreGenType.PERIODIC_GAUSSIAN) {
-                this.mean = makeFloatSlider(gui, -4.0f, 4.0f, conf.getFloat("heightMean"), getTranslation("mean_height"));
+                this.mean = GuiFactory.makeSlider(-4.0, 4.0, conf.getDouble("heightMean"),
+                        CustomCubicMod.MODID + ".gui.cubicgen.mean_height",
+                        value -> String.format("%.3f (%.1f)", value, value * heightVariation.getAsDouble()));
+
                 this.spacing = makePositiveExponentialSlider(gui, -1f, 6.0f, conf.getFloat("heightSpacing"), getTranslation("spacing_height"));
                 this.stdDev = makeFloatSlider(gui, 0f, 1f, conf.getFloat("heightStdDeviation"), getTranslation("height_std_dev"));
             } else {
@@ -383,7 +390,7 @@ class OreSettingsTab {
             mainArea.add(this.probability, new GridLocation(0, ++y, 3));
             mainArea.add(this.selectBiomes, new GridLocation(3, y, 3));
             if (this.genType == OreGenType.PERIODIC_GAUSSIAN) {
-                mainArea.add(this.mean, new GridLocation(0, ++y, 3));
+                mainArea.add(new WrappedVanillaButton<>(getGui(), this.mean), new GridLocation(0, ++y, 3));
                 mainArea.add(this.spacing, new GridLocation(3, y, 3));
                 mainArea.add(this.stdDev, new GridLocation(0, ++y, 6));
             }
