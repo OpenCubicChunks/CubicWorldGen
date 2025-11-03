@@ -124,6 +124,9 @@ repositories {
         setUrl("https://files.minecraftforge.net/maven/")
     }
     maven {
+        setUrl("https://maven.daporkchop.net/")
+    }
+    maven {
         setUrl("https://oss.sonatype.org/content/repositories/public/")
     }
     // Note: sponge repository needs to be the second one because flow-noise is both in sponge and sonatype repository
@@ -160,13 +163,14 @@ dependencies {
     testImplementation("it.ozimov:java7-hamcrest-matchers:0.7.0")
     testImplementation("org.mockito:mockito-core:2.1.0-RC.2")
     testImplementation("org.spongepowered:launchwrappertestsuite:1.0-SNAPSHOT")
-    compileOnly("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0-SNAPSHOT")
+    compileOnly("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0.1286.0-SNAPSHOT")
 
     if (hasCubicChunksBuild) {
-        testImplementation("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0-SNAPSHOT")
-        runtimeOnly("io.github.opencubicchunks:cubicchunks:1.12.2-0.0-SNAPSHOT")
+        testImplementation("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0.1286.0-SNAPSHOT")
+        runtimeOnly("io.github.opencubicchunks:cubicchunks:1.12.2-0.0.1286.0-SNAPSHOT")
     } else {
-        testImplementation(fg.deobf("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0-SNAPSHOT"))
+        testImplementation(fg.deobf("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0.1286.0-SNAPSHOT"))
+        runtimeOnly(fg.deobf("io.github.opencubicchunks:cubicchunks:1.12.2-0.0.1286.0-SNAPSHOT"))
     }
     if (!System.getProperty("idea.sync.active", "false").toBoolean()) {
         annotationProcessor("org.spongepowered:mixin:0.8.4:processor")
