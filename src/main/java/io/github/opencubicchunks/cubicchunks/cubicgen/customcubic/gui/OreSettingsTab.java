@@ -122,13 +122,13 @@ class OreSettingsTab {
                                 : null;
                         return CustomGenSettingsSerialization.MARSHALLER.serialize(biomes);
                     })
-                    .setPrimitive("spawnSize", ore -> ore.size.getValue())
-                    .setPrimitive("spawnTries", ore -> ore.attempts.getValue())
-                    .setPrimitive("spawnProbability", ore -> ore.probability.getValue())
+                    .setPrimitive("spawnSize", ore -> (int) Math.round(ore.size.getSliderValue()))
+                    .setPrimitive("spawnTries", ore -> (int) Math.round(ore.attempts.getSliderValue()))
+                    .setPrimitive("spawnProbability", ore -> ore.probability.getSliderValue())
                     .setPrimitive("minHeight", ore -> ore.heightRange.getMinValue())
                     .setPrimitive("maxHeight", ore -> ore.heightRange.getMaxValue())
                     .setPrimitiveIf(ore -> ore.genType == OreGenType.PERIODIC_GAUSSIAN, "heightMean", ore -> ore.mean.getSliderValue())
-                    .setPrimitiveIf(ore -> ore.genType == OreGenType.PERIODIC_GAUSSIAN, "heightStdDeviation", ore -> ore.stdDev.getValue())
+                    .setPrimitiveIf(ore -> ore.genType == OreGenType.PERIODIC_GAUSSIAN, "heightStdDeviation", ore -> ore.stdDev.getSliderValue())
                     .setPrimitiveIf(ore -> ore.genType == OreGenType.PERIODIC_GAUSSIAN, "heightSpacing", ore -> ore.spacing.getValue())
                     .build();
 
@@ -251,15 +251,15 @@ class OreSettingsTab {
         private UIBlockStateButton<?> block;
         private UIComponent<?> name;
 
-        private UISlider<Integer> size;
-        private UISlider<Integer> attempts;
+        private CwgGuiSlider size;
+        private CwgGuiSlider attempts;
 
         private CwgGuiSlider mean;
         private UISlider<Float> spacing;
 
-        private UISlider<Float> stdDev;
+        private CwgGuiSlider stdDev;
 
-        private UISlider<Float> probability;
+        private CwgGuiSlider probability;
         private UICheckBox selectBiomes;
 
         private UIRangeSlider<Float> heightRange;
@@ -282,21 +282,30 @@ class OreSettingsTab {
             this.name = makeLabel(gui);
             UIButton delete = new UIButton(gui, malisisText("delete")).setSize(10, 20).setAutoSize(false);
             UISelect<OreGenType> type = makeUISelect(gui, Arrays.asList(OreGenType.values()));
-            this.size = makeIntSlider(gui, malisisText("spawn_size", " %d"), 1, 50, conf.getInt("spawnSize"));
-            this.attempts = makeIntSlider(gui, malisisText("spawn_tries", " %d"), 1, 40, conf.getInt("spawnTries"));
+
+            this.size = GuiFactory.makeSlider(1, 50, conf.getDouble("spawnSize"),
+                    CustomCubicMod.MODID + ".gui.cubicgen.spawn_size",
+                    value -> Long.toString(Math.round(value)));
+            this.attempts = GuiFactory.makeSlider(1, 40, conf.getDouble("spawnTries"),
+                    CustomCubicMod.MODID + ".gui.cubicgen.spawn_tries",
+                    value -> Long.toString(Math.round(value)));
             if (genType == OreGenType.PERIODIC_GAUSSIAN) {
                 this.mean = GuiFactory.makeSlider(-4.0, 4.0, conf.getDouble("heightMean"),
                         CustomCubicMod.MODID + ".gui.cubicgen.mean_height",
                         value -> String.format("%.3f (%.1f)", value, value * heightVariation.getAsDouble()));
 
                 this.spacing = makePositiveExponentialSlider(gui, -1f, 6.0f, conf.getFloat("heightSpacing"), getTranslation("spacing_height"));
-                this.stdDev = makeFloatSlider(gui, 0f, 1f, conf.getFloat("heightStdDeviation"), getTranslation("height_std_dev"));
+                this.stdDev =  GuiFactory.makeSlider(0, 1, conf.getDouble("heightStdDeviation"),
+                        CustomCubicMod.MODID + ".gui.cubicgen.height_std_dev",
+                        value -> String.format("%.3f (%.1f)", value, value * heightVariation.getAsDouble()));
             } else {
                 this.mean = null;
                 this.spacing = null;
                 this.stdDev = null;
             }
-            this.probability = makeFloatSlider(gui, malisisText("spawn_probability", " %.3f"), conf.getFloat("spawnProbability"));
+            this.probability = GuiFactory.makeSlider(0, 1, conf.getDouble("spawnProbability"),
+                    CustomCubicMod.MODID + ".gui.cubicgen.spawn_probability",
+                    value -> String.format("%.3f", value));
             this.selectBiomes = makeCheckbox(gui, malisisText("select_biomes"), !conf.get("biomes").equals(JsonNull.INSTANCE));
             this.heightRange = makeOreHeightSlider(gui, vanillaText("spawn_range"), -2.0f, 2.0f,
                     conf.getFloat("minHeight"), conf.getFloat("maxHeight"), baseHeight, heightVariation);
@@ -385,14 +394,14 @@ class OreSettingsTab {
 
         private void setupMainArea(UIVerticalTableLayout<?> mainArea) {
             int y = -1;
-            mainArea.add(this.size, new GridLocation(0, ++y, 3));
-            mainArea.add(this.attempts, new GridLocation(3, y, 3));
-            mainArea.add(this.probability, new GridLocation(0, ++y, 3));
+            mainArea.add(new WrappedVanillaButton<>(getGui(), this.size), new GridLocation(0, ++y, 3));
+            mainArea.add(new WrappedVanillaButton<>(getGui(), this.attempts), new GridLocation(3, y, 3));
+            mainArea.add(new WrappedVanillaButton<>(getGui(), this.probability), new GridLocation(0, ++y, 3));
             mainArea.add(this.selectBiomes, new GridLocation(3, y, 3));
             if (this.genType == OreGenType.PERIODIC_GAUSSIAN) {
                 mainArea.add(new WrappedVanillaButton<>(getGui(), this.mean), new GridLocation(0, ++y, 3));
                 mainArea.add(this.spacing, new GridLocation(3, y, 3));
-                mainArea.add(this.stdDev, new GridLocation(0, ++y, 6));
+                mainArea.add(new WrappedVanillaButton<>(getGui(), this.stdDev), new GridLocation(0, ++y, 6));
             }
             mainArea.add(this.heightRange, new GridLocation(0, ++y, 6));
         }
