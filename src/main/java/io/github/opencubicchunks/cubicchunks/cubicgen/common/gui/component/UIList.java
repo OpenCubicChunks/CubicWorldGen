@@ -112,11 +112,15 @@ public class UIList<E, C extends UIComponent<?>> extends UILayout<UIList<E, C>> 
     }
 
     private void doLayout() {
+        int width = getAvailableWidth();
         int y = 0;
         for (E e : data) {
             C c = component(e);
             if (c.getX() != 0 || c.getY() != y) {
                 c.setPosition(0, y);
+            }
+            if (c.getWidth() != width) {
+                c.setSize(width, c.getRawHeight());
             }
             y += c.getHeight();
         }

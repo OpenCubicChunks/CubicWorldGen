@@ -32,17 +32,22 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 
 @Deprecated // this is temporary for incremental migration only
-public class WrappedVanillaButton<T extends WrappedVanillaButton<T>> extends UIComponent<T> {
+public final class WrappedVanillaButton<T extends GuiButton> extends UIComponent<WrappedVanillaButton<T>> {
 
-    private final GuiButton vanillaButton;
+    private final T vanillaButton;
 
-    public WrappedVanillaButton(MalisisGui gui, GuiButton vanillaButton) {
+    public WrappedVanillaButton(MalisisGui gui, T vanillaButton) {
         super(gui);
         this.vanillaButton = vanillaButton;
         setSize(vanillaButton.getButtonWidth(), vanillaButton.height);
+        setPosition(vanillaButton.x, vanillaButton.y);
     }
 
-    public T setEnabled(boolean enabled) {
+    public T get() {
+        return vanillaButton;
+    }
+
+    public WrappedVanillaButton<T> setEnabled(boolean enabled) {
         return super.setEnabled(enabled);
     }
 
@@ -50,14 +55,14 @@ public class WrappedVanillaButton<T extends WrappedVanillaButton<T>> extends UIC
         return super.isEnabled();
     }
 
-    @Override public T setPosition(int x, int y, int anchor) {
+    @Override public WrappedVanillaButton<T> setPosition(int x, int y, int anchor) {
         super.setPosition(x, y, anchor);
         vanillaButton.x = getX();
         vanillaButton.y = getY();
         return self();
     }
 
-    @Override public T setSize(int width, int height) {
+    @Override public WrappedVanillaButton<T> setSize(int width, int height) {
         super.setSize(width, height);
         vanillaButton.setWidth(getWidth());
         vanillaButton.height = getHeight();
@@ -65,8 +70,17 @@ public class WrappedVanillaButton<T extends WrappedVanillaButton<T>> extends UIC
     }
 
     @Override public void drawBackground(GuiRenderer guiRenderer, int mouseX, int mouseY, float partialTick) {
-        vanillaButton.x = (int) (screenX() - ((UIContainer<?>) getParent()).getOffsetX());
-        vanillaButton.y = (int) (screenY() - ((UIContainer<?>) getParent()).getOffsetY());
+        float offsetX = ((UIContainer<?>) getParent()).getOffsetX();
+        float offsetY = ((UIContainer<?>) getParent()).getOffsetY();
+        // MalisisCore is dumb and assumes that if you call those methods we have a scrollbar and computes a NaN which breaks cast to int
+        if (Float.isNaN(offsetX)) {
+            offsetX = 0;
+        }
+        if (Float.isNaN(offsetY)) {
+            offsetY = 0;
+        }
+        vanillaButton.x = (int) (screenX() - offsetX);
+        vanillaButton.y = (int) (screenY() - offsetY);
         vanillaButton.setWidth(getWidth());
         vanillaButton.height = getHeight();
 

@@ -23,10 +23,10 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui;
 
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.malisisText;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.vanillaText;
 
-import com.google.common.eventbus.Subscribe;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.FlatGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBorderLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIColoredPanel;
@@ -37,7 +37,6 @@ import net.malisis.core.client.gui.Anchor;
 import net.malisis.core.client.gui.MalisisGui;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
-import net.malisis.core.client.gui.component.interaction.UIButton;
 import net.malisis.core.renderer.font.FontOptions;
 import net.minecraft.client.gui.GuiCreateWorld;
 
@@ -94,16 +93,13 @@ public class FlatCubicGui extends ExtraGui {
         final int xSize = UIComponent.INHERITED - HORIZONTAL_PADDING * 2 - HORIZONTAL_INSETS * 2;
         final int ySize = VERTICAL_PADDING;
         final int xPos = HORIZONTAL_PADDING + HORIZONTAL_INSETS;
-        UIButton prev = new UIButton(this, malisisText("previous_page")).setSize(BTN_WIDTH, 20);
-        UIButton next = new UIButton(this, malisisText("next_page")).setSize(BTN_WIDTH, 20);
+        CwgGuiButton prev = CwgGuiFactory.makeButton( "previous_page");
+        CwgGuiButton next = CwgGuiFactory.makeButton( "next_page");
+        prev.setWidth(BTN_WIDTH);
+        next.setWidth(BTN_WIDTH);
 
-        UIButton done = new UIButton(this, malisisText("done")).setSize(BTN_WIDTH, 20);
-        done.register(new Object() {
-            @Subscribe
-            public void onClick(UIButton.ClickEvent evt) {
-                FlatCubicGui.this.done();
-            }
-        });
+        CwgGuiButton done = CwgGuiFactory.makeButton( "done", btn -> FlatCubicGui.this.done());
+        done.setWidth(BTN_WIDTH);
 
         UIMultilineLabel label = new UIMultilineLabel(this)
                 .setTextAnchor(Anchor.CENTER)
@@ -112,14 +108,14 @@ public class FlatCubicGui extends ExtraGui {
         UIBorderLayout upperLayout = new UIBorderLayout(this)
                 .setSize(xSize, ySize)
                 .setPosition(xPos, 0)
-                .add(prev, UIBorderLayout.Border.LEFT)
-                .add(next, UIBorderLayout.Border.RIGHT)
+                .add(wrap(this, prev), UIBorderLayout.Border.LEFT)
+                .add(wrap(this, next), UIBorderLayout.Border.RIGHT)
                 .add(label, UIBorderLayout.Border.CENTER);
 
         UIBorderLayout lowerLayout = new UIBorderLayout(this)
                 .setSize(xSize, ySize)
                 .setAnchor(Anchor.BOTTOM).setPosition(xPos, 0)
-                .add(done, UIBorderLayout.Border.CENTER);
+                .add(wrap(this, done), UIBorderLayout.Border.CENTER);
 
         UITabbedContainer tabGroup = new UITabbedContainer(this, prev, next, label::setText);
         tabGroup.add(upperLayout, lowerLayout);

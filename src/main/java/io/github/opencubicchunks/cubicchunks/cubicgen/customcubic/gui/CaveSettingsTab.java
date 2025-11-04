@@ -23,15 +23,21 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui;
 
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeButton;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeIntSlider;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeSlider;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.*;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_PADDING;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.VERTICAL_INSETS;
 
 import blue.endless.jankson.JsonArray;
 import blue.endless.jankson.JsonNull;
 import blue.endless.jankson.JsonObject;
 import blue.endless.jankson.JsonPrimitive;
-import com.google.common.eventbus.Subscribe;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiButton;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiSlider;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBlockStateButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIList;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIRangeSlider;
@@ -44,8 +50,6 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateD
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
 import net.malisis.core.client.gui.component.decoration.UILabel;
-import net.malisis.core.client.gui.component.interaction.UIButton;
-import net.malisis.core.client.gui.component.interaction.UISlider;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -56,45 +60,46 @@ import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.stream.Collector;
 
+// TODO: redesign this UI
 public class CaveSettingsTab {
 
     private static final JsonTransformer<CaveSettingsTab.UICaveOptionEntry> WRITE_TO_JSON_TRANSFORM =
             JsonTransformer.<CaveSettingsTab.UICaveOptionEntry>builder("Write GUI state to json")
                     .valueTransform("caveBlock", (json, cave) -> CustomGenSettingsSerialization.MARSHALLER.serialize(cave.caveBlock.getState()))
-                    .setPrimitive("caveRarity", cave -> cave.caveRarity.getValue())
+                    .setPrimitive("caveRarity", cave -> cave.caveRarity.getSliderValue())
                     .setPrimitive("caveMinHeight", cave -> cave.caveCubeHeight.getMinValue().intValue())
                     .setPrimitive("caveMaxHeight", cave -> cave.caveCubeHeight.getMaxValue().intValue())
-                    .setPrimitive("maxInitNodes", cave -> cave.maxInitNodes.getValue())
-                    .setPrimitive("largeNodeRarity", cave -> cave.largeNodeRarity.getValue())
-                    .setPrimitive("largeNodeMaxBranches", cave -> cave.largeNodeMaxBranches.getValue())
-                    .setPrimitive("bigCaveRarity", cave -> cave.bigCaveRarity.getValue())
-                    .setPrimitive("caveSizeAdd", cave -> cave.caveSizeAdd.getValue())
-                    .setPrimitive("steepStepRarity", cave -> cave.steepStepRarity.getValue())
-                    .setPrimitive("flattenFactor", cave -> cave.flattenFactor.getValue())
-                    .setPrimitive("steeperFlattenFactor", cave -> cave.steeperFlattenFactor.getValue())
-                    .setPrimitive("directionChangeFactor", cave -> cave.directionChangeFactor.getValue())
-                    .setPrimitive("prevHorizDirectionChangeWeight", cave -> cave.prevHorizDirectionChangeWeight.getValue())
-                    .setPrimitive("prevVertDirectionChangeWeight", cave -> cave.prevVertDirectionChangeWeight.getValue())
-                    .setPrimitive("maxAddDirectionChangeHoriz", cave -> cave.maxAddDirectionChangeHoriz.getValue())
-                    .setPrimitive("maxAddDirectionChangeVert", cave -> cave.maxAddDirectionChangeVert.getValue())
-                    .setPrimitive("carveStepRarity", cave -> cave.carveStepRarity.getValue())
-                    .setPrimitive("caveFloorDepth", cave -> cave.caveFloorDepth.getValue())
+                    .setPrimitive("maxInitNodes", cave -> cave.maxInitNodes.getSliderValue())
+                    .setPrimitive("largeNodeRarity", cave -> cave.largeNodeRarity.getSliderValue())
+                    .setPrimitive("largeNodeMaxBranches", cave -> cave.largeNodeMaxBranches.getSliderValue())
+                    .setPrimitive("bigCaveRarity", cave -> cave.bigCaveRarity.getSliderValue())
+                    .setPrimitive("caveSizeAdd", cave -> cave.caveSizeAdd.getSliderValue())
+                    .setPrimitive("steepStepRarity", cave -> cave.steepStepRarity.getSliderValue())
+                    .setPrimitive("flattenFactor", cave -> cave.flattenFactor.getSliderValue())
+                    .setPrimitive("steeperFlattenFactor", cave -> cave.steeperFlattenFactor.getSliderValue())
+                    .setPrimitive("directionChangeFactor", cave -> cave.directionChangeFactor.getSliderValue())
+                    .setPrimitive("prevHorizDirectionChangeWeight", cave -> cave.prevHorizDirectionChangeWeight.getSliderValue())
+                    .setPrimitive("prevVertDirectionChangeWeight", cave -> cave.prevVertDirectionChangeWeight.getSliderValue())
+                    .setPrimitive("maxAddDirectionChangeHoriz", cave -> cave.maxAddDirectionChangeHoriz.getSliderValue())
+                    .setPrimitive("maxAddDirectionChangeVert", cave -> cave.maxAddDirectionChangeVert.getSliderValue())
+                    .setPrimitive("carveStepRarity", cave -> cave.carveStepRarity.getSliderValue())
+                    .setPrimitive("caveFloorDepth", cave -> cave.caveFloorDepth.getSliderValue())
                     .valueTransform("isBlockReplaceable", (json, cave) ->
-                            cave.replacedBlocks.stream().map(button-> button.getState()).collect(Collector.of(
-                        JsonArray::new,
-                        (array, block) -> array.add(CustomGenSettingsSerialization.MARSHALLER.serialize(block)),
-                        (arr1, arr2) -> {
-                            JsonArray arr = new JsonArray();
-                            arr.addAll(arr1);
-                            arr.addAll(arr2);
-                            return arr;
-                        })))
+                            cave.replacedBlocks.stream().map(button -> button.getState()).collect(Collector.of(
+                                    JsonArray::new,
+                                    (array, block) -> array.add(CustomGenSettingsSerialization.MARSHALLER.serialize(block)),
+                                    (arr1, arr2) -> {
+                                        JsonArray arr = new JsonArray();
+                                        arr.addAll(arr1);
+                                        arr.addAll(arr2);
+                                        return arr;
+                                    })))
                     .build();
 
     private static final JsonObject DEFAULT_STANDARD_CAVE = JsonObjectView.empty()
             .put("caveBlock", JsonObjectView.empty().put("Name", "minecraft:air"))
-            .put("caveMinHeight", Integer.MIN_VALUE/16)
-            .put("caveMaxHeight", Integer.MAX_VALUE/16)
+            .put("caveMinHeight", Integer.MIN_VALUE / 16)
+            .put("caveMaxHeight", Integer.MAX_VALUE / 16)
             .put("caveRarity", 16 * 7 / (2 * 2 * 2))
             .put("maxInitNodes", 14)
             .put("largeNodeRarity", 4)
@@ -112,8 +117,8 @@ public class CaveSettingsTab {
             .put("carveStepRarity", 4)
             .put("caveFloorDepth", -0.7)
             .put("isBlockReplaceable", JsonObjectView.JsonArrayView.empty().add(new JsonPrimitive("grass"))
-                            .add(new JsonPrimitive("dirt"))
-                            .add(new JsonPrimitive("stone")
+                    .add(new JsonPrimitive("dirt"))
+                    .add(new JsonPrimitive("stone")
                     ))
             .object();
 
@@ -129,20 +134,12 @@ public class CaveSettingsTab {
         this.heightVariation = heightVariation;
         this.componentList = new ArrayList<>();
         UIList<UIComponent<?>, UIComponent<?>> layout = new UIList<>(gui, this.componentList, x -> x);
-        layout.setPadding(HORIZONTAL_PADDING, 0);
+        layout.setPadding(HORIZONTAL_PADDING, VERTICAL_INSETS);
         layout.setSize(UIComponent.INHERITED, UIComponent.INHERITED);
 
-        layout.add(new UIButton(gui, malisisText("add_cave")).setAutoSize(false).setSize(UIComponent.INHERITED, 30).register(
-                new Object() {
-                    @Subscribe
-                    public void onClick(UIButton.ClickEvent evt) {
-                        componentList.add(1,
-                                new CaveSettingsTab.UICaveOptionEntry(gui,
-                                    JsonObjectView.of(DEFAULT_STANDARD_CAVE.clone()),
-                                    toDelete -> removeEntry(toDelete)));
-                    }
-                }
-        ));
+        layout.add(wrap(gui, makeButton("add_cave", btn ->
+                componentList.add(1, new UICaveOptionEntry(gui, JsonObjectView.of(DEFAULT_STANDARD_CAVE.clone()), this::removeEntry))
+        )));
 
         for (JsonObjectView cave : conf.objectArray("caves")) {
             layout.add(new UICaveOptionEntry(gui, cave, this::removeEntry));
@@ -184,32 +181,32 @@ public class CaveSettingsTab {
     }
 
     private class UICaveOptionEntry extends UIVerticalTableLayout<CaveSettingsTab.UICaveOptionEntry> {
-        private UIBlockStateButton<?> caveBlock;
-        private UILabel caveBlockLabel;
-        private UIRangeSlider<Float> caveCubeHeight;
-        private UISlider<Integer> caveRarity;
-        private UISlider<Integer> maxInitNodes;
-        private UISlider<Integer> largeNodeRarity;
-        private UISlider<Integer> largeNodeMaxBranches;
-        private UISlider<Integer> bigCaveRarity;
-        private UISlider<Float> caveSizeAdd;
-        private UISlider<Integer> steepStepRarity;
-        private UISlider<Float> flattenFactor;
-        private UISlider<Float> steeperFlattenFactor;
-        private UISlider<Float> directionChangeFactor;
-        private UISlider<Float> prevHorizDirectionChangeWeight;
-        private UISlider<Float> prevVertDirectionChangeWeight;
-        private UISlider<Float> maxAddDirectionChangeHoriz;
-        private UISlider<Float> maxAddDirectionChangeVert;
-        private UISlider<Integer> carveStepRarity;
-        private UISlider<Float> caveFloorDepth;
+
+        private final UIBlockStateButton<?> caveBlock;
+        private final UILabel caveBlockLabel;
+        private final UIRangeSlider<Float> caveCubeHeight;
+        private final CwgGuiSlider caveRarity;
+        private final CwgGuiSlider maxInitNodes;
+        private final CwgGuiSlider largeNodeRarity;
+        private final CwgGuiSlider largeNodeMaxBranches;
+        private final CwgGuiSlider bigCaveRarity;
+        private final CwgGuiSlider caveSizeAdd;
+        private final CwgGuiSlider steepStepRarity;
+        private final CwgGuiSlider flattenFactor;
+        private final CwgGuiSlider steeperFlattenFactor;
+        private final CwgGuiSlider directionChangeFactor;
+        private final CwgGuiSlider prevHorizDirectionChangeWeight;
+        private final CwgGuiSlider prevVertDirectionChangeWeight;
+        private final CwgGuiSlider maxAddDirectionChangeHoriz;
+        private final CwgGuiSlider maxAddDirectionChangeVert;
+        private final CwgGuiSlider carveStepRarity;
+        private final CwgGuiSlider caveFloorDepth;
 
         private final Set<UIBlockStateButton> replacedBlocks = new HashSet<>();
         UIVerticalTableLayout<?> replacedArea;
-        private UIButton addReplaceableBtn;
+        private final CwgGuiButton addReplaceableBtn;
 
-        private final Consumer<CaveSettingsTab.UICaveOptionEntry> deleteFunc;
-        private final UIButton deleteBtn;
+        private final CwgGuiButton deleteBtn;
 
         private JsonObjectView conf;
 
@@ -217,19 +214,11 @@ public class CaveSettingsTab {
             super(gui, 1);
             this.conf = conf;
 
-            this.deleteFunc = deleteFunc;
-            this.add(deleteBtn = new UIButton(gui, malisisText("delete")).setSize(10, 20).setAutoSize(false),
-                    new GridLocation(0, 0, 0));
+            deleteBtn = makeButton("delete", btn -> deleteFunc.accept(UICaveOptionEntry.this));
+            deleteBtn.setWidth(10);
 
-            deleteBtn.register(new Object() {
-                @Subscribe
-                public void onDelete(UIButton.ClickEvent evt) {
-                    deleteFunc.accept(UICaveOptionEntry.this);
-                }
-            });
-
-            this.caveBlock = new UIBlockStateButton<>(gui,conf.getBlockState("caveBlock"));
-            this.caveBlock.onClick(evnt->{
+            this.caveBlock = new UIBlockStateButton<>(gui, conf.getBlockState("caveBlock"));
+            this.caveBlock.onClick(evnt -> {
                 UIBlockStateSelect.makeOverlay(gui, state -> {
                     caveBlock.setBlockState(new BlockStateDesc(state));
                     updateCaveLabel();
@@ -238,42 +227,33 @@ public class CaveSettingsTab {
             this.caveBlockLabel = new UILabel(gui, "");
             updateCaveLabel();
 
-            this.caveRarity = makeIntSlider(gui, malisisText("cave_rarity", " %d"), 1, 128, conf.getInt("caveRarity"));
-            this.caveCubeHeight = makeRangeSlider(gui,vanillaText("cave_cube_height"),
-                    (float) (-2f*(heightVariation.getAsDouble()/4)+(baseHeight.getAsDouble()/8))/100,
-                    (float) (2f*(heightVariation.getAsDouble()/8)+(baseHeight.getAsDouble()/16))/100,
+            this.caveRarity = makeIntSlider(1, 128, conf.getInt("caveRarity"), "cave_rarity");
+            this.caveCubeHeight = makeRangeSlider(gui, vanillaText("cave_cube_height"),
+                    (float) (-2f * (heightVariation.getAsDouble() / 4) + (baseHeight.getAsDouble() / 8)) / 100,
+                    (float) (2f * (heightVariation.getAsDouble() / 8) + (baseHeight.getAsDouble() / 16)) / 100,
                     conf.getFloat("caveMinHeight"), conf.getFloat("caveMaxHeight"));
-            this.maxInitNodes = makeIntSlider(gui, malisisText("max_init_nodes", " %d"), 1, 128, conf.getInt("maxInitNodes"));
-            this.largeNodeRarity = makeIntSlider(gui, malisisText("large_node_rarity", " %d"), 1, 128, conf.getInt("largeNodeRarity"));
-            this.largeNodeMaxBranches = makeIntSlider(gui, malisisText("large_node_max_branches", " %d"), 1, 256, conf.getInt("largeNodeMaxBranches"));
-            this.bigCaveRarity = makeIntSlider(gui, malisisText("big_cave_rarity", " %d"), 1, 128, conf.getInt("bigCaveRarity"));
-            this.caveSizeAdd = makeFloatSlider(gui, malisisText("cave_size_add", " %f"), 0, 16, conf.getFloat("caveSizeAdd"));
-            this.steepStepRarity = makeIntSlider(gui, malisisText("steep_step_rarity", " %d"), 1, 128, conf.getInt("steepStepRarity"));
-            this.flattenFactor = makeFloatSlider(gui, malisisText("flatten_factor", " %f"), 0, 1, conf.getFloat("flattenFactor"));
-            this.steeperFlattenFactor = makeFloatSlider(gui, malisisText("steeper_flatten_factor", " %f"), 0, 1, conf.getFloat(
-                    "steeperFlattenFactor"));
-            this.directionChangeFactor = makeFloatSlider(gui, malisisText("direction_change_factor",
-                    " %f"),0, 1, conf.getFloat("directionChangeFactor"));
-            this.prevHorizDirectionChangeWeight = makeFloatSlider(gui, malisisText(
-                    "prev_horiz_direction_change_weight", " %f"), 0, 1, conf.getFloat("prevHorizDirectionChangeWeight"));
-            this.prevVertDirectionChangeWeight = makeFloatSlider(gui, malisisText(
-                    "prev_vert_direction_change_weight", " %f"), 0, 1, conf.getFloat("prevVertDirectionChangeWeight"));
-            this.maxAddDirectionChangeHoriz = makeFloatSlider(gui, malisisText(
-                    "max_add_direction_change_horiz", " %f"), 0, 128, conf.getFloat("maxAddDirectionChangeHoriz"));
-            this.maxAddDirectionChangeVert = makeFloatSlider(gui, malisisText(
-                    "max_add_direction_change_vert", " %f"), 0, 128, conf.getFloat("maxAddDirectionChangeVert"));
-            this.carveStepRarity = makeIntSlider(gui, malisisText("carve_step_rarity", " %d"), 1, 128, conf.getInt("carveStepRarity"));
-            this.caveFloorDepth = makeFloatSlider(gui, malisisText("cave_floor_depth", " %f"), -1, 1, conf.getFloat("caveFloorDepth"));
+            this.maxInitNodes = makeIntSlider(1, 128, conf.getInt("maxInitNodes"), "max_init_nodes");
+            this.largeNodeRarity = makeIntSlider(1, 128, conf.getInt("largeNodeRarity"), "large_node_rarity");
+            this.largeNodeMaxBranches = makeIntSlider(1, 256, conf.getInt("largeNodeMaxBranches"), "large_node_max_branches");
+            this.bigCaveRarity = makeIntSlider(1, 128, conf.getInt("bigCaveRarity"), "big_cave_rarity");
+            this.caveSizeAdd = makeSlider(0, 16, conf.getFloat("caveSizeAdd"), "cave_size_add");
+            this.steepStepRarity = makeIntSlider(1, 128, conf.getInt("steepStepRarity"), "steep_step_rarity");
+            this.flattenFactor = makeSlider(0, 1, conf.getFloat("flattenFactor"), "flatten_factor");
+            this.steeperFlattenFactor = makeSlider(0, 1, conf.getFloat("steeperFlattenFactor"), "steeper_flatten_factor");
+            this.directionChangeFactor = makeSlider(0, 1, conf.getFloat("directionChangeFactor"), "direction_change_factor");
+            this.prevHorizDirectionChangeWeight =
+                    makeSlider(0, 1, conf.getFloat("prevHorizDirectionChangeWeight"), "prev_horiz_direction_change_weight");
+            this.prevVertDirectionChangeWeight =
+                    makeSlider(0, 1, conf.getFloat("prevVertDirectionChangeWeight"), "prev_vert_direction_change_weight");
+            this.maxAddDirectionChangeHoriz = makeSlider(0, 128, conf.getFloat("maxAddDirectionChangeHoriz"), "max_add_direction_change_horiz");
+            this.maxAddDirectionChangeVert = makeSlider(0, 128, conf.getFloat("maxAddDirectionChangeVert"), "max_add_direction_change_vert");
+            this.carveStepRarity = makeIntSlider(1, 128, conf.getInt("carveStepRarity"), "carve_step_rarity");
+            this.caveFloorDepth = makeSlider(-1, 1, conf.getFloat("caveFloorDepth"), "cave_floor_depth");
 
-            this.addReplaceableBtn = new UIButton(gui, malisisText("cave_replacer")).setSize(10, 20).setAutoSize(true).register(
-                    new Object() {
-                        @Subscribe
-                        public void onClick(UIButton.ClickEvent evt) {
-                            UIBlockStateSelect.makeOverlay(gui, state -> {
-                                addReplaceableBlock(gui,new BlockStateDesc(state));
-                            }).display();
-                        }
-                    }
+            this.addReplaceableBtn = makeButton("cave_replacer", btn ->
+                    UIBlockStateSelect.makeOverlay(gui, state -> {
+                        addReplaceableBlock(gui, new BlockStateDesc(state));
+                    }).display()
             );
 
 
@@ -282,32 +262,32 @@ public class CaveSettingsTab {
 
             setupMainArea(mainArea);
             setupReplacedArea(gui, conf);
-            setupSharedArea(gui,mainArea,replacedArea);
+            setupSharedArea(gui, mainArea, replacedArea);
         }
 
         private void setupMainArea(UIVerticalTableLayout<?> mainArea) {
             int y = -1;
-            mainArea.add(this.caveBlock, new GridLocation(0,++y,1));
-            mainArea.add(this.caveBlockLabel, new GridLocation(1,y,4));
+            mainArea.add(this.caveBlock, new GridLocation(0, ++y, 1));
+            mainArea.add(this.caveBlockLabel, new GridLocation(1, y, 4));
             mainArea.add(this.caveCubeHeight, new GridLocation(0, ++y, 6));
-            mainArea.add(this.caveRarity, new GridLocation(0, ++y, 3));
-            mainArea.add(this.maxInitNodes, new GridLocation(3, y, 3));
-            mainArea.add(this.largeNodeRarity, new GridLocation(0, ++y, 3));
-            mainArea.add(this.largeNodeMaxBranches, new GridLocation(3, y, 3));
-            mainArea.add(this.bigCaveRarity, new GridLocation(0, ++y, 3));
-            mainArea.add(this.caveSizeAdd, new GridLocation(3, y, 3));
-            mainArea.add(this.steepStepRarity, new GridLocation(0, ++y, 3));
-            mainArea.add(this.flattenFactor, new GridLocation(3, y, 3));
-            mainArea.add(this.steeperFlattenFactor, new GridLocation(0, ++y, 3));
-            mainArea.add(this.carveStepRarity, new GridLocation(3, y, 3));
-            mainArea.add(this.directionChangeFactor, new GridLocation(0, ++y, 6));
-            mainArea.add(this.prevHorizDirectionChangeWeight, new GridLocation(0, ++y, 6));
-            mainArea.add(this.prevVertDirectionChangeWeight, new GridLocation(0, ++y, 6));
-            mainArea.add(this.maxAddDirectionChangeHoriz, new GridLocation(0, ++y, 6));
-            mainArea.add(this.maxAddDirectionChangeVert, new GridLocation(0, ++y, 6));
-            mainArea.add(this.caveFloorDepth, new GridLocation(0, ++y, 3));
-            mainArea.add(this.addReplaceableBtn, new GridLocation(5, y, 1));
-            mainArea.add(this.deleteBtn, new GridLocation(3,y,2));
+            mainArea.add(wrap(getGui(), this.caveRarity), new GridLocation(0, ++y, 3));
+            mainArea.add(wrap(getGui(), this.maxInitNodes), new GridLocation(3, y, 3));
+            mainArea.add(wrap(getGui(), this.largeNodeRarity), new GridLocation(0, ++y, 3));
+            mainArea.add(wrap(getGui(), this.largeNodeMaxBranches), new GridLocation(3, y, 3));
+            mainArea.add(wrap(getGui(), this.bigCaveRarity), new GridLocation(0, ++y, 3));
+            mainArea.add(wrap(getGui(), this.caveSizeAdd), new GridLocation(3, y, 3));
+            mainArea.add(wrap(getGui(), this.steepStepRarity), new GridLocation(0, ++y, 3));
+            mainArea.add(wrap(getGui(), this.flattenFactor), new GridLocation(3, y, 3));
+            mainArea.add(wrap(getGui(), this.steeperFlattenFactor), new GridLocation(0, ++y, 3));
+            mainArea.add(wrap(getGui(), this.carveStepRarity), new GridLocation(3, y, 3));
+            mainArea.add(wrap(getGui(), this.directionChangeFactor), new GridLocation(0, ++y, 6));
+            mainArea.add(wrap(getGui(), this.prevHorizDirectionChangeWeight), new GridLocation(0, ++y, 6));
+            mainArea.add(wrap(getGui(), this.prevVertDirectionChangeWeight), new GridLocation(0, ++y, 6));
+            mainArea.add(wrap(getGui(), this.maxAddDirectionChangeHoriz), new GridLocation(0, ++y, 6));
+            mainArea.add(wrap(getGui(), this.maxAddDirectionChangeVert), new GridLocation(0, ++y, 6));
+            mainArea.add(wrap(getGui(), this.caveFloorDepth), new GridLocation(0, ++y, 3));
+            mainArea.add(wrap(getGui(), this.addReplaceableBtn), new GridLocation(3, y, 2));
+            mainArea.add(wrap(getGui(), this.deleteBtn), new GridLocation(5, y, 1));
         }
 
         private void setupReplacedArea(ExtraGui gui, JsonObjectView conf) {
@@ -320,8 +300,12 @@ public class CaveSettingsTab {
         }
 
         private void setupSharedArea(ExtraGui gui, UIVerticalTableLayout<?> mainArea, UIVerticalTableLayout<?> replacedArea) {
-            UISplitLayout<?> split =
-                    new UISplitLayout<>(gui, UISplitLayout.Type.SIDE_BY_SIDE, mainArea, replacedArea).sizeWeights(8, 1).autoFitToContent(true).userResizable(false).setBottomPadding(10);
+            UISplitLayout<?> split = new UISplitLayout<>(gui, UISplitLayout.Type.SIDE_BY_SIDE, mainArea, replacedArea)
+                    .autoFitToContent(true)
+                    .setSizeOf(UISplitLayout.Pos.SECOND, UIBlockStateButton.SIZE)
+                    .userResizable(false)
+                    .setRightPadding(4)
+                    .setBottomPadding(10);
             this.autoFitToContent(true);
             this.add(split);
             replacedArea.setHeightFunc(() -> ((UIContainer<?>) Objects.requireNonNull(split.getFirst())).getContentHeight());
@@ -329,18 +313,20 @@ public class CaveSettingsTab {
 
         private void addReplaceableBlock(ExtraGui gui, BlockStateDesc blockState) {
             for (UIBlockStateButton replacedBlock : replacedBlocks) {
-                if(replacedBlock.getState().getBlockState()==(blockState.getBlockState())) {return;}
+                if (replacedBlock.getState().getBlockState() == (blockState.getBlockState())) {
+                    return;
+                }
             }
             UIBlockStateButton<?> newButton = new UIBlockStateButton(gui, blockState) {
 
             };
-            newButton.onClick((evt)-> {
+            newButton.onClick((evt) -> {
                 removeReplaceableBlock(newButton);
                 UIBlockStateSelect.makeOverlay(gui, state -> {
-                    addReplaceableBlock(gui,new BlockStateDesc(state));
+                    addReplaceableBlock(gui, new BlockStateDesc(state));
                 }).display();
             });
-            newButton.onRightClick((evt)-> {
+            newButton.onRightClick((evt) -> {
                 removeReplaceableBlock(newButton);
             });
             replacedBlocks.add(newButton);

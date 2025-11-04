@@ -23,10 +23,10 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui;
 
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeCheckBox;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeIntSlider;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeBiomeList;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeCheckbox;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeIntSlider;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.malisisText;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_INSETS;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_PADDING;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.VERTICAL_INSETS;
@@ -34,33 +34,33 @@ import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.Cus
 
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.BiomeOption;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiCheckBox;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiSlider;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIVerticalTableLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.JsonObjectView;
 import net.malisis.core.client.gui.component.UIComponent;
-import net.malisis.core.client.gui.component.interaction.UICheckBox;
 import net.malisis.core.client.gui.component.interaction.UISelect;
-import net.malisis.core.client.gui.component.interaction.UISlider;
 import net.minecraft.world.biome.Biome;
 
 class BasicSettingsTab {
 
     private final UIVerticalTableLayout container;
 
-    private final UICheckBox strongholds;
-    private final UICheckBox villages;
-    private final UICheckBox mineshafts;
-    private final UICheckBox temples;
-    private final UICheckBox ravines;
-    private final UICheckBox oceanMonuments;
-    private final UICheckBox woodlandMansions;
-    private final UICheckBox dungeons;
-    private final UICheckBox alternateStrongholdsPositions;
+    private final CwgGuiCheckBox strongholds;
+    private final CwgGuiCheckBox villages;
+    private final CwgGuiCheckBox mineshafts;
+    private final CwgGuiCheckBox temples;
+    private final CwgGuiCheckBox ravines;
+    private final CwgGuiCheckBox oceanMonuments;
+    private final CwgGuiCheckBox woodlandMansions;
+    private final CwgGuiCheckBox dungeons;
+    private final CwgGuiCheckBox alternateStrongholdsPositions;
     private final UISelect<BiomeOption> biome;
 
-    private final UISlider<Integer> dungeonCount;
+    private final CwgGuiSlider dungeonCount;
 
-    private final UISlider<Integer> biomeSize;
-    private final UISlider<Integer> riverSize;
+    private final CwgGuiSlider biomeSize;
+    private final CwgGuiSlider riverSize;
 
     BasicSettingsTab(ExtraGui gui, JsonObjectView conf) {
 
@@ -70,39 +70,38 @@ class BasicSettingsTab {
                 .setInsets(VERTICAL_INSETS, VERTICAL_INSETS, HORIZONTAL_INSETS, HORIZONTAL_INSETS)
                 .setRightPadding(HORIZONTAL_PADDING + 6)
 
-                .add(this.dungeons = makeCheckbox(gui, malisisText("dungeons"), conf.getBool("dungeons")),
+                .add(wrap(gui, this.dungeons = makeCheckBox("dungeons", conf.getBool("dungeons"))),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 0, WIDTH_2_COL))
 
-                .add(this.strongholds = makeCheckbox(gui, malisisText("strongholds"), conf.getBool("strongholds")),
+                .add(wrap(gui, this.strongholds = makeCheckBox("strongholds", conf.getBool("strongholds"))),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 0, WIDTH_2_COL))
 
-                .add(this.villages = makeCheckbox(gui, malisisText("villages"), conf.getBool("villages")),
+                .add(wrap(gui, this.villages = makeCheckBox("villages", conf.getBool("villages"))),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 1, WIDTH_2_COL))
-                .add(this.mineshafts = makeCheckbox(gui, malisisText("mineshafts"), conf.getBool("mineshafts")),
+                .add(wrap(gui, this.mineshafts = makeCheckBox("mineshafts", conf.getBool("mineshafts"))),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 1, WIDTH_2_COL))
 
-                .add(this.temples = makeCheckbox(gui, malisisText("temples"), conf.getBool("temples")),
+                .add(wrap(gui, this.temples = makeCheckBox("temples", conf.getBool("temples"))),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 2, WIDTH_2_COL))
-                .add(this.ravines = makeCheckbox(gui, malisisText("ravines"), conf.getBool("ravines")),
+                .add(wrap(gui, this.ravines = makeCheckBox("ravines", conf.getBool("ravines"))),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 2, WIDTH_2_COL))
 
-                .add(this.oceanMonuments = makeCheckbox(gui, malisisText("oceanMonuments"), conf.getBool("oceanMonuments")),
+                .add(wrap(gui, this.oceanMonuments = makeCheckBox("oceanMonuments", conf.getBool("oceanMonuments"))),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 3, WIDTH_2_COL))
-                .add(this.woodlandMansions = makeCheckbox(gui, malisisText("woodlandMansions"), conf.getBool("woodlandMansions")),
+                .add(wrap(gui, this.woodlandMansions = makeCheckBox("woodlandMansions", conf.getBool("woodlandMansions"))),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 3, WIDTH_2_COL))
 
-                .add(this.alternateStrongholdsPositions = makeCheckbox(gui, malisisText("alternate_strongholds"), conf.getBool(
-                        "alternateStrongholdsPositions")),
+                .add(wrap(gui, this.alternateStrongholdsPositions = makeCheckBox("alternate_strongholds", conf.getBool("alternateStrongholdsPositions"))),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 4, WIDTH_2_COL))
 
                 .add(this.biome = makeBiomeList(gui, conf.getInt("biome")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 6, WIDTH_2_COL))
-                .add(this.dungeonCount = makeIntSlider(gui, malisisText("dungeonCount", ": %d"), 1, 100, conf.getInt("dungeonCount")),
+                .add(wrap(gui, this.dungeonCount = makeIntSlider(1, 100, conf.getInt("dungeonCount"), "dungeon_count")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 6, WIDTH_2_COL))
                 
-                .add(this.biomeSize = makeIntSlider(gui, malisisText("biomeSize", ": %d"), 1, 8, conf.getInt("biomeSize")),
+                .add(wrap(gui, this.biomeSize = makeIntSlider(1, 8, conf.getInt("biomeSize"), "biome_size")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, 7, WIDTH_2_COL))
-                .add(this.riverSize = makeIntSlider(gui, malisisText("riverSize", ": %d"), 1, 5, conf.getInt("riverSize")),
+                .add(wrap(gui, this.riverSize = makeIntSlider(1, 5, conf.getInt("riverSize"), "river_size")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, 7, WIDTH_2_COL));
 
         this.container = layout;
@@ -123,8 +122,8 @@ class BasicSettingsTab {
         conf.put("woodlandMansions", woodlandMansions.isChecked());
         conf.put("dungeons", dungeons.isChecked());
         conf.put("biome", biome.getSelectedValue().getBiome() == null ? -1 : Biome.getIdForBiome(biome.getSelectedValue().getBiome()));
-        conf.put("dungeonCount", dungeonCount.getValue());
-        conf.put("biomeSize", biomeSize.getValue());
-        conf.put("riverSize", riverSize.getValue());
+        conf.put("dungeonCount", dungeonCount.getSliderValue());
+        conf.put("biomeSize", biomeSize.getSliderValue());
+        conf.put("riverSize", riverSize.getSliderValue());
     }
 }

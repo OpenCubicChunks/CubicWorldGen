@@ -23,12 +23,10 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 
-import com.google.common.eventbus.Subscribe;
 import mcp.MethodsReturnNonnullByDefault;
 import net.malisis.core.client.gui.MalisisGui;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
-import net.malisis.core.client.gui.component.interaction.UIButton;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
@@ -41,8 +39,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public class UITabbedContainer extends UIContainer<UITabbedContainer> {
 
-    private final UIButton previous;
-    private final UIButton next;
+    private final CwgGuiButton previous;
+    private final CwgGuiButton next;
     private final List<Tab> tabs = new ArrayList<>();
     private final Consumer<String> onTitleUpdate;
     private int currentTab = -1;
@@ -52,22 +50,12 @@ public class UITabbedContainer extends UIContainer<UITabbedContainer> {
      *
      * @param gui the gui
      */
-    public UITabbedContainer(MalisisGui gui, UIButton previous, UIButton next, Consumer<String> onTitleUpdate) {
+    public UITabbedContainer(MalisisGui gui, CwgGuiButton previous, CwgGuiButton next, Consumer<String> onTitleUpdate) {
         super(gui);
         this.previous = previous;
         this.next = next;
-        next.register(new Object() {
-            @Subscribe
-            public void onClick(UIButton.ClickEvent evt) {
-                updateTab(currentTab + 1);
-            }
-        });
-        previous.register(new Object() {
-            @Subscribe
-            public void onClick(UIButton.ClickEvent evt) {
-                updateTab(currentTab - 1);
-            }
-        });
+        next.onClick(btn -> updateTab(currentTab + 1));
+        previous.onClick(btn -> updateTab(currentTab - 1));
         this.onTitleUpdate = onTitleUpdate;
     }
 
@@ -80,11 +68,11 @@ public class UITabbedContainer extends UIContainer<UITabbedContainer> {
             currentTab = -1;
         }
         if (currentTab == -1) {
-            previous.setEnabled(true);
-            next.setEnabled(false);
+            previous.enabled = true;
+            next.enabled = false;
         } else {
-            previous.setEnabled(currentTab > 0);
-            next.setEnabled(currentTab < tabs.size() - 1);
+            previous.enabled = currentTab > 0;
+            next.enabled = currentTab < tabs.size() - 1;
         }
         if (previousTab != -1) {
             // remove the previous tab

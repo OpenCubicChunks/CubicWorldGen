@@ -23,7 +23,8 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui;
 
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.malisisText;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeButton;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.vanillaText;
 
 import blue.endless.jankson.JsonGrammar;
@@ -33,6 +34,7 @@ import com.google.common.eventbus.Subscribe;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.GuiOverlay;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.NoTranslationFont;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBorderLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIColoredPanel;
@@ -40,26 +42,20 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIMul
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UITabbedContainer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UITextFieldFixed;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.WrappedVanillaButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.CustomGenSettingsSerialization;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.JsonObjectView;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.CustomGeneratorSettingsFixer;
 import mcp.MethodsReturnNonnullByDefault;
 import net.malisis.core.client.gui.Anchor;
-import net.malisis.core.client.gui.GuiRenderer;
-import net.malisis.core.client.gui.GuiTexture;
 import net.malisis.core.client.gui.MalisisGui;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
-import net.malisis.core.client.gui.component.interaction.UIButton;
 import net.malisis.core.client.gui.component.interaction.UITextField;
 import net.malisis.core.client.gui.event.ComponentEvent;
 import net.malisis.core.renderer.font.FontOptions;
 import net.minecraft.client.gui.GuiCreateWorld;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -153,8 +149,10 @@ public class CustomCubicGui extends ExtraGui {
         final int xSize = UIComponent.INHERITED - HORIZONTAL_PADDING * 2 - HORIZONTAL_INSETS * 2;
         final int ySize = VERTICAL_PADDING;
         final int xPos = HORIZONTAL_PADDING + HORIZONTAL_INSETS;
-        UIButton prev = new UIButton(this, malisisText("previous_page")).setSize(BTN_WIDTH, 20);
-        UIButton next = new UIButton(this, malisisText("next_page")).setSize(BTN_WIDTH, 20);
+        CwgGuiButton prev = makeButton( "previous_page");
+        CwgGuiButton next = makeButton( "next_page");
+        prev.setWidth(BTN_WIDTH);
+        next.setWidth(BTN_WIDTH);
 
         UIMultilineLabel label = new UIMultilineLabel(this)
                 .setTextAnchor(Anchor.CENTER)
@@ -163,109 +161,97 @@ public class CustomCubicGui extends ExtraGui {
         UIBorderLayout upperLayout = new UIBorderLayout(this)
                 .setSize(xSize, ySize)
                 .setPosition(xPos, 0)
-                .add(prev, UIBorderLayout.Border.LEFT)
-                .add(next, UIBorderLayout.Border.RIGHT)
+                .add(wrap(this, prev), UIBorderLayout.Border.LEFT)
+                .add(wrap(this, next), UIBorderLayout.Border.RIGHT)
                 .add(label, UIBorderLayout.Border.CENTER);
 
-        UIButton done = new UIButton(this, malisisText("done")).setAutoSize(false).setSize(BTN_WIDTH, 20);
-        done.register(new Object() {
-            @Subscribe
-            public void onClick(UIButton.ClickEvent evt) {
-                CustomCubicGui.this.done();
-            }
-        });
-        done.setPosition(0, 0);
+        CwgGuiButton done = makeButton("done", btn -> CustomCubicGui.this.done());
+        done.setWidth(BTN_WIDTH);
+        done.x = 0;
+        done.y = 0;
 
-        UIButton sharePreset = new UIButton(this, malisisText("presets")).setAutoSize(false).setSize(BTN_WIDTH, 20);
-        sharePreset.register(new Object() {
-            @Subscribe
-            public void onClick(UIButton.ClickEvent evt) {
-                new GuiOverlay(CustomCubicGui.this, gui -> {
-                    UIButton done, cancel;
-                    UITextField textMinified, textExpanded;
+        CwgGuiButton sharePreset = makeButton("presets");
+        sharePreset.setWidth(BTN_WIDTH);
+        sharePreset.x = BTN_WIDTH + 10;
 
-                    UISplitLayout<?> presetsSplit = new UISplitLayout<>(gui, UISplitLayout.Type.STACKED,
-                            textMinified = new UITextFieldFixed(gui, "").setSize(0, 10),
-                            textExpanded = new UITextFieldFixed(gui, "", true)
-                    ).setSizeOf(UISplitLayout.Pos.FIRST, 20).setPadding(0, 3);
+        sharePreset.onClick(btn -> {
+            new GuiOverlay(CustomCubicGui.this, gui -> {
+                CwgGuiButton doneShare, cancelShare;
+                UITextField textMinified, textExpanded;
 
-                    UISplitLayout<?> presetsButtonsSplit = new UISplitLayout<>(gui, UISplitLayout.Type.STACKED,
-                            presetsSplit,
-                            new UISplitLayout<>(gui, UISplitLayout.Type.SIDE_BY_SIDE,
-                                    done = new UIButton(gui, malisisText("presets.done")).setAutoSize(false).setSize(0, 20),
-                                    cancel = new UIButton(gui, malisisText("presets.cancel")).setAutoSize(false).setSize(0, 20)
-                            ).setPadding(0, 3)
-                    ).setSizeOf(UISplitLayout.Pos.SECOND, 26).setPadding(HORIZONTAL_PADDING, 0);
+                UISplitLayout<?> presetsSplit = new UISplitLayout<>(gui, UISplitLayout.Type.STACKED,
+                        textMinified = new UITextFieldFixed(gui, "").setSize(0, 10),
+                        textExpanded = new UITextFieldFixed(gui, "", true)
+                ).setSizeOf(UISplitLayout.Pos.FIRST, 20).setPadding(0, 3);
 
-                    textMinified.register(new Object() {
-                        @Subscribe
-                        public void onChange(ComponentEvent.ValueChange<UITextField, String> event) {
-                            float scroll = textExpanded.getOffsetY();
-                            try {
-                                JsonObject jsonConf = CustomGeneratorSettings.asJsonObject(event.getNewValue());
-                                textExpanded.setText(getFormattedJson(jsonConf));
-                                textExpanded.setOffsetY(scroll, 0);// delta doesn't appear to be used
-                            } catch (Exception ex) {
-                                CustomCubicMod.LOGGER.catching(ex);
-                                textExpanded.setText(I18n.format("cubicgen.gui.cubicgen.presets.invalid_json"));
-                            }
+                UISplitLayout<?> presetsButtonsSplit = new UISplitLayout<>(gui, UISplitLayout.Type.STACKED,
+                        presetsSplit,
+                        new UISplitLayout<>(gui, UISplitLayout.Type.SIDE_BY_SIDE,
+                                wrap(gui, doneShare = makeButton("presets.done")),
+                                wrap(gui, cancelShare = makeButton("presets.cancel"))
+                        ).setPadding(0, 3)
+                ).setSizeOf(UISplitLayout.Pos.SECOND, 26).setPadding(HORIZONTAL_PADDING, 0);
+
+                textMinified.register(new Object() {
+                    @Subscribe
+                    public void onChange(ComponentEvent.ValueChange<UITextField, String> event) {
+                        float scroll = textExpanded.getOffsetY();
+                        try {
+                            JsonObject jsonConf = CustomGeneratorSettings.asJsonObject(event.getNewValue());
+                            textExpanded.setText(getFormattedJson(jsonConf));
+                            textExpanded.setOffsetY(scroll, 0);// delta doesn't appear to be used
+                        } catch (Exception ex) {
+                            CustomCubicMod.LOGGER.catching(ex);
+                            textExpanded.setText(I18n.format("cubicgen.gui.cubicgen.presets.invalid_json"));
                         }
-                    });
+                    }
+                });
 
-                    textExpanded.register(new Object() {
-                        @Subscribe
-                        public void onChange(ComponentEvent.ValueChange<UITextField, String> event) {
-                            try {
-                                JsonObject jsonConf = CustomGeneratorSettings.asJsonObject(event.getNewValue());
-                                textMinified.setText(getSettingsJson(jsonConf));
-                            } catch (Exception ex) {
-                                CustomCubicMod.LOGGER.catching(ex);
-                                textMinified.setText(I18n.format("cubicgen.gui.cubicgen.presets.invalid_json"));
-                            }
+                textExpanded.register(new Object() {
+                    @Subscribe
+                    public void onChange(ComponentEvent.ValueChange<UITextField, String> event) {
+                        try {
+                            JsonObject jsonConf = CustomGeneratorSettings.asJsonObject(event.getNewValue());
+                            textMinified.setText(getSettingsJson(jsonConf));
+                        } catch (Exception ex) {
+                            CustomCubicMod.LOGGER.catching(ex);
+                            textMinified.setText(I18n.format("cubicgen.gui.cubicgen.presets.invalid_json"));
                         }
-                    });
+                    }
+                });
 
-                    updateConfig();
+                updateConfig();
 
-                    textExpanded.setFont(NoTranslationFont.DEFAULT);
-                    textExpanded.setText(getFormattedJson(jsonConf));
+                textExpanded.setFont(NoTranslationFont.DEFAULT);
+                textExpanded.setText(getFormattedJson(jsonConf));
 
-                    // if we don't set the size before setting the text and jumping to the end,
-                    // the end will be shown at the beginning of the
-                    // textField, making the text invisible by default
-                    textMinified.setSize(gui.width - HORIZONTAL_PADDING*2, 10);
-                    textMinified.setFont(NoTranslationFont.DEFAULT);
-                    textMinified.setText(getSettingsJson(jsonConf));
-                    textMinified.getCursorPosition().jumpToEnd();
+                // if we don't set the size before setting the text and jumping to the end,
+                // the end will be shown at the beginning of the
+                // textField, making the text invisible by default
+                textMinified.setSize(gui.width - HORIZONTAL_PADDING * 2, 10);
+                textMinified.setFont(NoTranslationFont.DEFAULT);
+                textMinified.setText(getSettingsJson(jsonConf));
+                textMinified.getCursorPosition().jumpToEnd();
 
-                    done.register(new Object() {
-                        @Subscribe
-                        public void onClick(UIButton.ClickEvent evt) {
-                            try {
-                                JsonObject settings = CustomGeneratorSettings.asJsonObject(textMinified.getText());
-                                CustomCubicGui.this.reinit(settings);
-                                mc.displayGuiScreen(CustomCubicGui.this);
-                            } catch (Exception ex) {
-                                CustomCubicMod.LOGGER.catching(ex);
-                                done.setFontOptions(FontOptions.builder().color(0x00FF2222).build());
-                            }
-                        }
-                    });
-                    cancel.register(new Object() {
-                        @Subscribe
-                        public void onClick(UIButton.ClickEvent evt) {
+                doneShare.onClick(ben2 -> {
+                        try {
+                            JsonObject settings = CustomGeneratorSettings.asJsonObject(textMinified.getText());
+                            CustomCubicGui.this.reinit(settings);
                             mc.displayGuiScreen(CustomCubicGui.this);
+                        } catch (Exception ex) {
+                            CustomCubicMod.LOGGER.catching(ex);
+                            // TODO: COLORS
+                            // doneShare.setFontOptions(FontOptions.builder().color(0x00FF2222).build());
                         }
                     });
-                    presetsButtonsSplit.setSize(UIComponent.INHERITED, UIComponent.INHERITED);
-                    return inPanel(gui, presetsButtonsSplit);
-                }).guiScreenAlpha(255).display();
-            }
+                cancelShare.onClick(btn2 -> mc.displayGuiScreen(CustomCubicGui.this));
+                presetsButtonsSplit.setSize(UIComponent.INHERITED, UIComponent.INHERITED);
+                return inPanel(gui, presetsButtonsSplit);
+            }).guiScreenAlpha(255).display();
         });
-        sharePreset.setPosition(BTN_WIDTH + 10, 0);
 
         UIContainer<?> container = new UIContainer<>(this);
-        container.add(done, sharePreset);
+        container.add(wrap(this, done), wrap(this, sharePreset));
         container.setSize(BTN_WIDTH * 2 + 10, 20);
 
         UIBorderLayout lowerLayout = new UIBorderLayout(this)

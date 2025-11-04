@@ -46,11 +46,8 @@ cubicgen.gui.cubicgen.from=From:
 #################################
 
 cubicgen.gui.cubicgen.biome=Biome
-cubicgen.gui.cubicgen.biomeSize=Biome Size
-cubicgen.gui.cubicgen.riverSize=River Size
-
-cubicgen.gui.cubicgen.water_level=Ocean Level
-cubicgen.gui.cubicgen.lavaOceans=Lava Oceans
+cubicgen.gui.cubicgen.biome_size=Biome Size: %s
+cubicgen.gui.cubicgen.river_size=River Size: %s
 
 cubicgen.gui.cubicgen.caves=Caves
 cubicgen.gui.cubicgen.ravines=Ravines
@@ -58,7 +55,7 @@ cubicgen.gui.cubicgen.ravines=Ravines
 cubicgen.gui.cubicgen.mineshafts=Mineshafts*
 
 cubicgen.gui.cubicgen.dungeons=Dungeons
-cubicgen.gui.cubicgen.dungeonCount=Dungeon Count
+cubicgen.gui.cubicgen.dungeon_count=Dungeon Count: %s
 
 cubicgen.gui.cubicgen.strongholds=Strongholds
 cubicgen.gui.cubicgen.alternate_strongholds=Alternate Stronghold Positions
@@ -83,12 +80,12 @@ cubicgen.gui.cubicgen.select_biomes=Restrict to biomes...
 cubicgen.gui.cubicgen.spawn_size=Spawn Size: %s
 cubicgen.gui.cubicgen.spawn_tries=Spawn Tries: %s
 cubicgen.gui.cubicgen.spawn_probability=Probability: %s
-cubicgen.gui.cubicgen.spawn_maxprobability=Max. Probability:
+cubicgen.gui.cubicgen.spawn_maxprobability=Max. Probability: %s
 cubicgen.gui.cubicgen.spawn_range=Height %s%%%% to %s%%%% (blocks: %s to %s)
 
 cubicgen.gui.cubicgen.mean_height=Center of first belt: %s
 cubicgen.gui.cubicgen.height_std_dev=Height Std. Dev. Factor: %s
-cubicgen.gui.cubicgen.spacing_height=Height Spacing: %s%%%% (blocks: %s)
+cubicgen.gui.cubicgen.spacing_height=Height Spacing: %s
 
 #################################
 ######### lake settings #########
@@ -109,23 +106,23 @@ cubicgen.gui.cubicgen.make_flat_edges=Make flat edges
 #################################
 
 cubicgen.gui.cubicgen.add_cave=Add cave
-cubicgen.gui.cubicgen.cave_rarity=Cave rarity
+cubicgen.gui.cubicgen.cave_rarity=Cave rarity: %s
 cubicgen.gui.cubicgen.cave_cube_height=Height %s to %s
-cubicgen.gui.cubicgen.max_init_nodes=Max init nodes
-cubicgen.gui.cubicgen.large_node_rarity=Large node rarity
-cubicgen.gui.cubicgen.large_node_max_branches=Large node max branches
-cubicgen.gui.cubicgen.big_cave_rarity=Big cave rarity
-cubicgen.gui.cubicgen.cave_size_add=Cave size add
-cubicgen.gui.cubicgen.steep_step_rarity=Steep step rarity
-cubicgen.gui.cubicgen.flatten_factor=Flatten factor
-cubicgen.gui.cubicgen.steeper_flatten_factor=Steeper flatten factor
-cubicgen.gui.cubicgen.direction_change_factor=Direction change factor
-cubicgen.gui.cubicgen.prev_horiz_direction_change_weight=Prev horiz change weight
-cubicgen.gui.cubicgen.prev_vert_direction_change_weight=Prev vert change weight
-cubicgen.gui.cubicgen.max_add_direction_change_horiz=Max add direction change horiz
-cubicgen.gui.cubicgen.max_add_direction_change_vert=Max add direction change vert
-cubicgen.gui.cubicgen.carve_step_rarity=Carve step rarity
-cubicgen.gui.cubicgen.cave_floor_depth=Cave floor depth
+cubicgen.gui.cubicgen.max_init_nodes=Max init nodes: %s
+cubicgen.gui.cubicgen.large_node_rarity=Large node rarity: %s
+cubicgen.gui.cubicgen.large_node_max_branches=Large node max branches: %s
+cubicgen.gui.cubicgen.big_cave_rarity=Big cave rarity: %s
+cubicgen.gui.cubicgen.cave_size_add=Cave size add: %s
+cubicgen.gui.cubicgen.steep_step_rarity=Steep step rarity: %s
+cubicgen.gui.cubicgen.flatten_factor=Flatten factor: %s
+cubicgen.gui.cubicgen.steeper_flatten_factor=Steeper flatten factor: %s
+cubicgen.gui.cubicgen.direction_change_factor=Direction change factor: %s
+cubicgen.gui.cubicgen.prev_horiz_direction_change_weight=Prev horiz change weight: %s
+cubicgen.gui.cubicgen.prev_vert_direction_change_weight=Prev vert change weight: %s
+cubicgen.gui.cubicgen.max_add_direction_change_horiz=Max add direction change horiz: %s
+cubicgen.gui.cubicgen.max_add_direction_change_vert=Max add direction change vert: %s
+cubicgen.gui.cubicgen.carve_step_rarity=Carve step rarity: %s
+cubicgen.gui.cubicgen.cave_floor_depth=Cave floor depth: %s
 cubicgen.gui.cubicgen.cave_replacer=Add replacer
 
 #################################
@@ -139,7 +136,7 @@ cubicgen.gui.cubicgen.expected_base_height=Expected base height
 cubicgen.gui.cubicgen.expected_height_variation=Expected height variation
 
 cubicgen.gui.cubicgen.keep_preview_visible=Keep preview visible
-cubicgen.gui.cubicgen.biome_scale=Preview biome size
+cubicgen.gui.cubicgen.biome_scale=Preview biome size: %s
 cubicgen.gui.cubicgen.biome_offset=Preview biome offset
 cubicgen.gui.cubicgen.lock_xz_together=Set period Z=X
 cubicgen.gui.cubicgen.preview_horizontal_axis=Show horizontal axis
@@ -147,41 +144,41 @@ cubicgen.gui.cubicgen.preview_disabled=(preview disabled)
 cubicgen.gui.cubicgen.show_preview=Show preview
 
 cubicgen.gui.cubicgen.height_variation_group=Height variation:
-cubicgen.gui.cubicgen.height_variation_factor_slider=Factor
-cubicgen.gui.cubicgen.height_variation_offset_slider=Offset
-cubicgen.gui.cubicgen.height_variation_special_factor_slider=Special
+cubicgen.gui.cubicgen.height_variation_factor_slider=Factor: %s
+cubicgen.gui.cubicgen.height_variation_offset_slider=Offset: %s
+cubicgen.gui.cubicgen.height_variation_special_factor_slider=Special: %s
 
 cubicgen.gui.cubicgen.height_group=Height:
-cubicgen.gui.cubicgen.height_factor=Factor
-cubicgen.gui.cubicgen.height_offset=Offset
+cubicgen.gui.cubicgen.height_factor=Factor: %s
+cubicgen.gui.cubicgen.height_offset=Offset: %s
 
 cubicgen.gui.cubicgen.depth_noise_group=Depth noise:
-cubicgen.gui.cubicgen.depth_noise_factor=Factor
-cubicgen.gui.cubicgen.depth_noise_offset=Offset
-cubicgen.gui.cubicgen.depth_noise_period_x=Period X:
-cubicgen.gui.cubicgen.depth_noise_period_z=Period Z:
-cubicgen.gui.cubicgen.depth_noise_octaves=Octaves
+cubicgen.gui.cubicgen.depth_noise_factor=Factor: %s
+cubicgen.gui.cubicgen.depth_noise_offset=Offset: %s
+cubicgen.gui.cubicgen.depth_noise_period_x=Period X: %s
+cubicgen.gui.cubicgen.depth_noise_period_z=Period Z: %s
+cubicgen.gui.cubicgen.depth_noise_octaves=Octaves: %s
 
 cubicgen.gui.cubicgen.selector_noise_group=Selector noise:
-cubicgen.gui.cubicgen.selector_noise_factor=Factor
-cubicgen.gui.cubicgen.selector_noise_offset=Offset
-cubicgen.gui.cubicgen.selector_noise_period_x=Period X:
-cubicgen.gui.cubicgen.selector_noise_period_y=Period Y:
-cubicgen.gui.cubicgen.selector_noise_period_z=Period Z:
-cubicgen.gui.cubicgen.selector_noise_octaves=Octaves
+cubicgen.gui.cubicgen.selector_noise_factor=Factor: %s
+cubicgen.gui.cubicgen.selector_noise_offset=Offset: %s
+cubicgen.gui.cubicgen.selector_noise_period_x=Period X: %s
+cubicgen.gui.cubicgen.selector_noise_period_y=Period Y: %s
+cubicgen.gui.cubicgen.selector_noise_period_z=Period Z: %s
+cubicgen.gui.cubicgen.selector_noise_octaves=Octaves: %s
 
 cubicgen.gui.cubicgen.low_noise_group=Low noise:
-cubicgen.gui.cubicgen.low_noise_factor=Factor
-cubicgen.gui.cubicgen.low_noise_offset=Offset
-cubicgen.gui.cubicgen.low_noise_period_x=Period X:
-cubicgen.gui.cubicgen.low_noise_period_y=Period Y:
-cubicgen.gui.cubicgen.low_noise_period_z=Period Z:
-cubicgen.gui.cubicgen.low_noise_octaves=Octaves
+cubicgen.gui.cubicgen.low_noise_factor=Factor: %s
+cubicgen.gui.cubicgen.low_noise_offset=Offset: %s
+cubicgen.gui.cubicgen.low_noise_period_x=Period X: %s
+cubicgen.gui.cubicgen.low_noise_period_y=Period Y: %s
+cubicgen.gui.cubicgen.low_noise_period_z=Period Z: %s
+cubicgen.gui.cubicgen.low_noise_octaves=Octaves: %s
 
 cubicgen.gui.cubicgen.high_noise_group=High noise:
-cubicgen.gui.cubicgen.high_noise_factor=Factor
-cubicgen.gui.cubicgen.high_noise_offset=Offset
-cubicgen.gui.cubicgen.high_noise_period_x=Period X:
-cubicgen.gui.cubicgen.high_noise_period_y=Period Y:
-cubicgen.gui.cubicgen.high_noise_period_z=Period Z:
-cubicgen.gui.cubicgen.high_noise_octaves=Octaves
+cubicgen.gui.cubicgen.high_noise_factor=Factor: %s
+cubicgen.gui.cubicgen.high_noise_offset=Offset: %s
+cubicgen.gui.cubicgen.high_noise_period_x=Period X: %s
+cubicgen.gui.cubicgen.high_noise_period_y=Period Y: %s
+cubicgen.gui.cubicgen.high_noise_period_z=Period Z: %s
+cubicgen.gui.cubicgen.high_noise_octaves=Octaves: %s

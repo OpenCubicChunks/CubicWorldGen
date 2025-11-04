@@ -23,6 +23,9 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui;
 
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeButton;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeCheckBoxUnlocalized;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.*;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_PADDING;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.preset.CustomGenSettingsSerialization.deserializeUserFunction;
@@ -30,9 +33,10 @@ import static io.github.opencubicchunks.cubicchunks.cubicgen.preset.CustomGenSet
 import blue.endless.jankson.JsonArray;
 import blue.endless.jankson.JsonObject;
 import blue.endless.jankson.JsonPrimitive;
-import com.google.common.eventbus.Subscribe;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.GuiOverlay;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiButton;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiCheckBox;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBlockStateButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIList;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIProbabilityDistributionEditor;
@@ -48,8 +52,6 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockDesc;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
-import net.malisis.core.client.gui.component.interaction.UIButton;
-import net.malisis.core.client.gui.component.interaction.UICheckBox;
 import net.malisis.core.client.gui.component.interaction.UISelect;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
@@ -71,7 +73,7 @@ public class LakeSettingsTab {
                     .setPrimitive("block", lake -> lake.blockstate.getBlockName())
                     .setPrimitive("biomeSelect", lake -> lake.biomeSelectMode.getSelectedValue().toString())
                     .valueTransform("biomes", (json, lake) -> lake.biomeCheckBoxes.keySet().stream()
-                            .filter(UICheckBox::isChecked)
+                            .filter(CwgGuiCheckBox::isChecked)
                             .map(lake.biomeCheckBoxes::get)
                             .collect(Collector.of(
                                     JsonArray::new,
@@ -109,17 +111,9 @@ public class LakeSettingsTab {
         layout.setPadding(HORIZONTAL_PADDING, 0);
         layout.setSize(UIComponent.INHERITED, UIComponent.INHERITED);
 
-        layout.add(new UIButton(gui, malisisText("add_lake")).setAutoSize(false).setSize(UIComponent.INHERITED, 30).register(
-                new Object() {
-                    @Subscribe
-                    public void onClick(UIButton.ClickEvent evt) {
-                        componentList.add(1,
-                                new LakeSettingsTab.UILakeEntry(gui,
-                                        JsonObjectView.of(DEFAULT_LAKE.clone()),
-                                        toDelete -> removeEntry(toDelete)));
-                    }
-                }
-        ));
+        layout.add(wrap(gui, makeButton("add_lake", btn ->
+                componentList.add(1, new UILakeEntry(gui, JsonObjectView.of(DEFAULT_LAKE.clone()), this::removeEntry))
+        )));
 
         for (JsonObjectView lake : conf.objectArray("lakes")) {
             layout.add(new UILakeEntry(gui, lake, this::removeEntry));
@@ -186,7 +180,7 @@ public class LakeSettingsTab {
 
         private final UIContainer<?> nameLabel;
 
-        private final UIButton deleteBtn;
+        private final CwgGuiButton deleteBtn;
 
 
         private final UIComponent<?> mainProbabilityLabel;
@@ -198,12 +192,12 @@ public class LakeSettingsTab {
 
         private final UISplitLayout<?> biomeSelectionSplit;
         private final UISelect<CustomGeneratorSettings.FilterType> biomeSelectMode;
-        private final UIButton selectAllBiomesBtn;
-        private final UIButton invertBiomeSelection;
+        private final CwgGuiButton selectAllBiomesBtn;
+        private final CwgGuiButton invertBiomeSelection;
         private final UIVerticalTableLayout<?> biomeTable;
         private final Consumer<UILakeEntry> deleteFunc;
         private final ArrayList<String> biomes;
-        private final Map<UICheckBox, String> biomeCheckBoxes;
+        private final Map<CwgGuiCheckBox, String> biomeCheckBoxes;
 
         private JsonObjectView conf;
 
@@ -221,8 +215,7 @@ public class LakeSettingsTab {
 
             this.add(blockstate = new UIBlockStateButton<>(gui, new BlockDesc(conf.getString("block")).defaultState()), new GridLocation(0, gridY, 1));
             this.add(nameLabel = makeLabel(gui), new GridLocation(1, gridY, 4));
-            this.add(deleteBtn = new UIButton(gui, malisisText("delete")).setSize(10, 20).setAutoSize(false),
-                    new GridLocation(5, gridY, 1));
+            this.add(wrap(gui, deleteBtn = makeButton("delete")), new GridLocation(5, gridY, 1));
 
             gridY++;
             this.add(mainProbabilityLabel = label(gui, malisisText("lakes.main_probability")), new GridLocation(0, gridY, 6));
@@ -247,8 +240,8 @@ public class LakeSettingsTab {
                     .setInsets(1, 1, 0, 0);
             biomeSelectionLeft.add(
                     biomeSelectMode = makeUISelect(gui, Arrays.asList(CustomGeneratorSettings.FilterType.values())),
-                    selectAllBiomesBtn = new UIButton(gui, malisisText("select_all")).setSize(10, 20),
-                    invertBiomeSelection = new UIButton(gui, malisisText("invert_selection")).setSize(10, 20)
+                    wrap(gui, selectAllBiomesBtn = makeButton("select_all")),
+                    wrap(gui, invertBiomeSelection = makeButton("invert_selection"))
             );
             biomeSelectMode.select(CustomGeneratorSettings.FilterType.valueOf(conf.getString("biomeSelect")));
 
@@ -264,11 +257,10 @@ public class LakeSettingsTab {
                 }
             }
             biomeCheckBoxes = new HashMap<>();
-            for (int i = 0; i < biomes.size(); i++) {
-                String biome = biomes.get(i);
-                UICheckBox checkbox = makeBiomeCheckbox(gui, biome, i, selectedBiomes.contains(biome));
+            for (String biome : biomes) {
+                CwgGuiCheckBox checkbox = makeBiomeCheckbox(biome, selectedBiomes.contains(biome));
                 biomeCheckBoxes.put(checkbox, biome);
-                biomeTable.add(checkbox);
+                biomeTable.add(wrap(gui, checkbox));
             }
             biomeSelectionSplit = new UISplitLayout<>(gui, UISplitLayout.Type.SIDE_BY_SIDE, biomeSelectionLeft, biomeTable);
             biomeSelectionSplit.setSize(10, 62);
@@ -276,21 +268,15 @@ public class LakeSettingsTab {
             gridY++;
             this.add(biomeSelectionSplit, new GridLocation(0, gridY, 6));
 
-            selectAllBiomesBtn.register(new Object() {
-                @Subscribe
-                public void onClick(UIButton.ClickEvent evt) {
-                    for (UICheckBox biomeCheckBox : biomeCheckBoxes.keySet()) {
-                        biomeCheckBox.setChecked(true);
-                    }
+            selectAllBiomesBtn.onClick(btn -> {
+                for (CwgGuiCheckBox biomeCheckBox : biomeCheckBoxes.keySet()) {
+                    biomeCheckBox.setIsChecked(true);
                 }
             });
 
-            invertBiomeSelection.register(new Object() {
-                @Subscribe
-                public void onClick(UIButton.ClickEvent evt) {
-                    for (UICheckBox biomeCheckBox : biomeCheckBoxes.keySet()) {
-                        biomeCheckBox.setChecked(!biomeCheckBox.isChecked());
-                    }
+            invertBiomeSelection.onClick(btn -> {
+                for (CwgGuiCheckBox biomeCheckBox : biomeCheckBoxes.keySet()) {
+                    biomeCheckBox.setIsChecked(!biomeCheckBox.isChecked());
                 }
             });
 
@@ -301,12 +287,7 @@ public class LakeSettingsTab {
                     }).display()
             );
 
-            deleteBtn.register(new Object() {
-                @Subscribe
-                public void onDelete(UIButton.ClickEvent evt) {
-                    deleteFunc.accept(UILakeEntry.this);
-                }
-            });
+            deleteBtn.onClick(btn -> deleteFunc.accept(UILakeEntry.this));
             graphMiniViewMain.onClick(c -> {
                 new GuiOverlay(gui,
                         overlay ->
@@ -327,9 +308,9 @@ public class LakeSettingsTab {
             this.autoFitToContent(true);
         }
 
-        private UICheckBox makeBiomeCheckbox(ExtraGui gui, String biome, int i, boolean checked) {
+        private CwgGuiCheckBox makeBiomeCheckbox(String biome, boolean checked) {
             String biomeName = Objects.requireNonNull(ForgeRegistries.BIOMES.getValue(new ResourceLocation(biome))).getBiomeName();
-            return new UICheckBox(gui, biomeName).setChecked(checked);
+            return makeCheckBoxUnlocalized(biomeName, checked);
         }
 
         int writeJson(JsonObjectView rootJson) {

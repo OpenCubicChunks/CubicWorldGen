@@ -27,12 +27,11 @@ import blue.endless.jankson.JsonArray;
 import blue.endless.jankson.JsonNull;
 import blue.endless.jankson.JsonObject;
 import com.google.common.eventbus.Subscribe;
-import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.GuiFactory;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiCheckBox;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiSlider;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBlockStateButton;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UICheckboxNoAutoSize;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UILayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIList;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIRangeSlider;
@@ -48,10 +47,7 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateD
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
 import net.malisis.core.client.gui.component.interaction.UIButton;
-import net.malisis.core.client.gui.component.interaction.UICheckBox;
 import net.malisis.core.client.gui.component.interaction.UISelect;
-import net.malisis.core.client.gui.component.interaction.UISlider;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
@@ -62,11 +58,17 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.DoubleSupplier;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeButton;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeCheckBox;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeCheckBoxUnlocalized;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeIntSlider;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeSlider;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.*;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_PADDING;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.VERTICAL_INSETS;
 
 class OreSettingsTab {
 
@@ -116,7 +118,7 @@ class OreSettingsTab {
                     .valueTransform("biomes", (json, ore) -> {
                         Set<BiomeDesc> biomes = ore.selectBiomes.isChecked() ?
                                 ore.biomesArea.getData().stream()
-                                        .filter(b -> ore.biomesArea.component(b).isChecked())
+                                        .filter(b -> ore.biomesArea.component(b).get().isChecked())
                                         .map(BiomeDesc::new)
                                         .collect(Collectors.toSet())
                                 : null;
@@ -129,7 +131,7 @@ class OreSettingsTab {
                     .setPrimitive("maxHeight", ore -> ore.heightRange.getMaxValue())
                     .setPrimitiveIf(ore -> ore.genType == OreGenType.PERIODIC_GAUSSIAN, "heightMean", ore -> ore.mean.getSliderValue())
                     .setPrimitiveIf(ore -> ore.genType == OreGenType.PERIODIC_GAUSSIAN, "heightStdDeviation", ore -> ore.stdDev.getSliderValue())
-                    .setPrimitiveIf(ore -> ore.genType == OreGenType.PERIODIC_GAUSSIAN, "heightSpacing", ore -> ore.spacing.getValue())
+                    .setPrimitiveIf(ore -> ore.genType == OreGenType.PERIODIC_GAUSSIAN, "heightSpacing", ore -> ore.spacing.getSliderValue())
                     .build();
 
     private static final JsonObject DEFAULT_STANDARD_ORE = JsonObjectView.empty()
@@ -155,17 +157,14 @@ class OreSettingsTab {
         this.heightVariation = heightVariation;
         this.componentList = new ArrayList<>();
         UIList<UIComponent<?>, UIComponent<?>> layout = new UIList<>(gui, this.componentList, x -> x);
-        layout.setPadding(HORIZONTAL_PADDING, 0);
+        layout.setPadding(HORIZONTAL_PADDING, VERTICAL_INSETS);
         layout.setSize(UIComponent.INHERITED, UIComponent.INHERITED);
 
-        layout.add(new UIButton(gui, malisisText("add_ore")).setAutoSize(false).setSize(UIComponent.INHERITED, 30).register(
-                new Object() {
-                    @Subscribe
-                    public void onClick(UIButton.ClickEvent evt) {
-                        componentList.add(1, new UIOreOptionEntry(gui, JsonObjectView.of(DEFAULT_STANDARD_ORE.clone()), OreGenType.UNIFORM));
-                    }
-                }
-        ));
+        layout.add(wrap(gui, makeButton("add_ore", btn -> {
+            JsonObjectView newJson = JsonObjectView.of(DEFAULT_STANDARD_ORE.clone());
+            UIOreOptionEntry newEntry = new UIOreOptionEntry(gui, newJson, OreGenType.UNIFORM);
+            componentList.add(1, newEntry);
+        })));
 
         for (JsonObjectView c : conf.objectArray("standardOres")) {
             layout.add(new UIOreOptionEntry(gui, c, OreGenType.UNIFORM));
@@ -255,16 +254,16 @@ class OreSettingsTab {
         private CwgGuiSlider attempts;
 
         private CwgGuiSlider mean;
-        private UISlider<Float> spacing;
+        private CwgGuiSlider spacing;
 
         private CwgGuiSlider stdDev;
 
         private CwgGuiSlider probability;
-        private UICheckBox selectBiomes;
+        private CwgGuiCheckBox selectBiomes;
 
         private UIRangeSlider<Float> heightRange;
 
-        private UIList<String, UICheckBox> biomesArea;
+        private UIList<String, WrappedVanillaButton<CwgGuiCheckBox>> biomesArea;
 
         private JsonObjectView conf;
         private OreGenType genType;
@@ -283,30 +282,28 @@ class OreSettingsTab {
             UIButton delete = new UIButton(gui, malisisText("delete")).setSize(10, 20).setAutoSize(false);
             UISelect<OreGenType> type = makeUISelect(gui, Arrays.asList(OreGenType.values()));
 
-            this.size = GuiFactory.makeSlider(1, 50, conf.getDouble("spawnSize"),
-                    CustomCubicMod.MODID + ".gui.cubicgen.spawn_size",
-                    value -> Long.toString(Math.round(value)));
-            this.attempts = GuiFactory.makeSlider(1, 40, conf.getDouble("spawnTries"),
-                    CustomCubicMod.MODID + ".gui.cubicgen.spawn_tries",
-                    value -> Long.toString(Math.round(value)));
+            this.size = makeIntSlider(1, 50, conf.getInt("spawnSize"), "spawn_size");
+            this.attempts = makeIntSlider(1, 40, conf.getInt("spawnTries"), "spawn_tries");
             if (genType == OreGenType.PERIODIC_GAUSSIAN) {
-                this.mean = GuiFactory.makeSlider(-4.0, 4.0, conf.getDouble("heightMean"),
-                        CustomCubicMod.MODID + ".gui.cubicgen.mean_height",
+                this.mean = makeSlider(-4.0, 4.0, conf.getDouble("heightMean"),
+                        "mean_height",
                         value -> String.format("%.3f (%.1f)", value, value * heightVariation.getAsDouble()));
 
-                this.spacing = makePositiveExponentialSlider(gui, -1f, 6.0f, conf.getFloat("heightSpacing"), getTranslation("spacing_height"));
-                this.stdDev =  GuiFactory.makeSlider(0, 1, conf.getDouble("heightStdDeviation"),
-                        CustomCubicMod.MODID + ".gui.cubicgen.height_std_dev",
+                this.spacing = CwgGuiFactory.makePositiveExponentialSlider(-1, 6.0, conf.getDouble("heightSpacing"),
+                        "spacing_height",
+                        value -> String.format("%.3f (%.1f)", value, value * heightVariation.getAsDouble()));
+
+                this.stdDev =  makeSlider(0, 1, conf.getDouble("heightStdDeviation"),
+                        "height_std_dev",
                         value -> String.format("%.3f (%.1f)", value, value * heightVariation.getAsDouble()));
             } else {
                 this.mean = null;
                 this.spacing = null;
                 this.stdDev = null;
             }
-            this.probability = GuiFactory.makeSlider(0, 1, conf.getDouble("spawnProbability"),
-                    CustomCubicMod.MODID + ".gui.cubicgen.spawn_probability",
-                    value -> String.format("%.3f", value));
-            this.selectBiomes = makeCheckbox(gui, malisisText("select_biomes"), !conf.get("biomes").equals(JsonNull.INSTANCE));
+            this.probability = makeSlider(0, 1, conf.getDouble("spawnProbability"),
+                    "spawn_probability", value -> String.format("%.3f", value));
+            this.selectBiomes = makeCheckBox("select_biomes", !conf.get("biomes").equals(JsonNull.INSTANCE));
             this.heightRange = makeOreHeightSlider(gui, vanillaText("spawn_range"), -2.0f, 2.0f,
                     conf.getFloat("minHeight"), conf.getFloat("maxHeight"), baseHeight, heightVariation);
 
@@ -318,7 +315,7 @@ class OreSettingsTab {
             // use new ArrayList so it can be sorted
             biomesArea = new UIList<>(gui,
                     ForgeRegistries.BIOMES.getKeys().stream().map(ResourceLocation::toString).collect(Collectors.toList()),
-                    this::makeBiomeCheckbox);
+                    name1 -> wrap(gui, makeBiomeCheckbox(name1)));
 
             this.block.onClick(btn ->
                     UIBlockStateSelect.makeOverlay(gui, state -> {
@@ -332,12 +329,7 @@ class OreSettingsTab {
                     container.remove(UIOreOptionEntry.this);
                 }
             });
-            this.selectBiomes.register(new Object() {
-                @Subscribe
-                public void onClick(UICheckBox.CheckEvent evt) {
-                    allowSelectBiomes(biomesArea, evt.isChecked());
-                }
-            });
+            this.selectBiomes.onClick(check -> allowSelectBiomes(biomesArea, check.isChecked()));
             type.register(new Object() {
                 @Subscribe
                 public void onClick(UISelect.SelectEvent<OreGenType> evt) {
@@ -360,11 +352,6 @@ class OreSettingsTab {
             allowSelectBiomes(biomesArea, this.selectBiomes.isChecked());
             setupBiomeArea(conf, biomesArea);
             setupThis(gui, deleteTypeArea, mainArea, biomesArea);
-        }
-
-        Function<Double, String> getTranslation(String mean_height) {
-            return val -> I18n.format(vanillaText(mean_height),
-                    String.format("%.3f", val), String.format("%.1f", val * heightVariation.getAsDouble()));
         }
 
         private JsonObject toJson() {
@@ -394,34 +381,34 @@ class OreSettingsTab {
 
         private void setupMainArea(UIVerticalTableLayout<?> mainArea) {
             int y = -1;
-            mainArea.add(new WrappedVanillaButton<>(getGui(), this.size), new GridLocation(0, ++y, 3));
-            mainArea.add(new WrappedVanillaButton<>(getGui(), this.attempts), new GridLocation(3, y, 3));
-            mainArea.add(new WrappedVanillaButton<>(getGui(), this.probability), new GridLocation(0, ++y, 3));
-            mainArea.add(this.selectBiomes, new GridLocation(3, y, 3));
+            mainArea.add(wrap(getGui(), this.size), new GridLocation(0, ++y, 3));
+            mainArea.add(wrap(getGui(), this.attempts), new GridLocation(3, y, 3));
+            mainArea.add(wrap(getGui(), this.probability), new GridLocation(0, ++y, 3));
+            mainArea.add(wrap(getGui(), this.selectBiomes), new GridLocation(3, y, 3));
             if (this.genType == OreGenType.PERIODIC_GAUSSIAN) {
-                mainArea.add(new WrappedVanillaButton<>(getGui(), this.mean), new GridLocation(0, ++y, 3));
-                mainArea.add(this.spacing, new GridLocation(3, y, 3));
-                mainArea.add(new WrappedVanillaButton<>(getGui(), this.stdDev), new GridLocation(0, ++y, 6));
+                mainArea.add(wrap(getGui(), this.mean), new GridLocation(0, ++y, 3));
+                mainArea.add(wrap(getGui(), this.spacing), new GridLocation(3, y, 3));
+                mainArea.add(wrap(getGui(), this.stdDev), new GridLocation(0, ++y, 6));
             }
             mainArea.add(this.heightRange, new GridLocation(0, ++y, 6));
         }
 
-        private void allowSelectBiomes(UIList<String, UICheckBox> biomes, boolean checked) {
+        private void allowSelectBiomes(UIList<String, WrappedVanillaButton<CwgGuiCheckBox>> biomes, boolean checked) {
             biomes.setVisible(checked);
             if (!biomes.isVisible()) {
-                biomes.getData().forEach(e -> biomes.component(e).setChecked(true));
+                biomes.getData().forEach(e -> biomes.component(e).get().setIsChecked(true));
             }
         }
 
-        private void setupBiomeArea(JsonObjectView conf, UIList<String, UICheckBox> biomesArea) {
+        private void setupBiomeArea(JsonObjectView conf, UIList<String, WrappedVanillaButton<CwgGuiCheckBox>> biomesArea) {
             biomesArea.setRightPadding(6);
 
             if (!conf.get("biomes").equals(JsonNull.INSTANCE)) {
-                conf.forEachString("biomes", b -> biomesArea.component(b).setChecked(true));
+                conf.forEachString("biomes", b -> biomesArea.component(b).get().setIsChecked(true));
             }
 
             ((List<String>) biomesArea.getData()).sort((b1, b2) ->
-                    biomesArea.component(b1).isChecked() && !biomesArea.component(b2).isChecked() ? 1 : 0
+                    biomesArea.component(b1).get().isChecked() && !biomesArea.component(b2).get().isChecked() ? 1 : 0
             );
         }
 
@@ -437,10 +424,10 @@ class OreSettingsTab {
             biomesArea.setHeightFunc(() -> ((UIContainer<?>) Objects.requireNonNull(split.getFirst())).getContentHeight());
         }
 
-        private UICheckBox makeBiomeCheckbox(String name) {
+        private CwgGuiCheckBox makeBiomeCheckbox(String name) {
             Biome biome = ForgeRegistries.BIOMES.getValue(new ResourceLocation(name));
             String text = biome == null ? name : String.format("%s (%s)", biome.getBiomeName(), biome.getRegistryName());
-            return new UICheckboxNoAutoSize(getGui(), text);
+            return makeCheckBoxUnlocalized(text, false);
         }
 
         private UIContainer<?> makeLabel(ExtraGui gui) {

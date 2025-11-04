@@ -30,8 +30,10 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.math.MathHelper;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 
+// TODO: fix vanilla rendering for large widths
 public class CwgGuiSlider extends GuiButton {
 
     private final String textFormat;
@@ -40,6 +42,7 @@ public class CwgGuiSlider extends GuiButton {
 
     private double sliderPosition;
     private boolean mousePressed;
+    private Consumer<CwgGuiSlider> updateHandler = x -> {};
 
     public CwgGuiSlider(String textFormat, Function<Double, String> valueToString, Converter<Double, Double> positionToValue, double defaultValue) {
         super(0, 0, 0, "");
@@ -47,6 +50,10 @@ public class CwgGuiSlider extends GuiButton {
         this.valueToString = valueToString;
         this.positionToValue = positionToValue;
         this.sliderPosition = positionToValue.reverse().convert(defaultValue);
+    }
+
+    public void onUpdate(Consumer<CwgGuiSlider> updateHandler) {
+        this.updateHandler = updateHandler;
     }
 
     public double getSliderPosition() {
@@ -57,18 +64,24 @@ public class CwgGuiSlider extends GuiButton {
         return positionToValue.convert(getSliderPosition());
     }
 
+    public void setSliderValue(double sliderValue) {
+        this.sliderPosition = positionToValue.reverse().convert(sliderValue);
+    }
+
     @Override protected int getHoverState(boolean mouseOver) {
         return 0;
     }
 
     // this is actually a draw() method
+
     @Override protected void mouseDragged(Minecraft mc, int mouseX, int mouseY) {
-        if (!enabled || !visible) {
+        if (!visible) {
             return;
         }
-        if (mousePressed) {
+        if (mousePressed && enabled) {
             double position = (mouseX - (this.x + 4.0)) / (this.width - 8.0);
             this.sliderPosition = MathHelper.clamp(position, 0, 1);
+            updateHandler.accept(this);
         }
 
         this.displayString = I18n.format(textFormat, valueToString.apply(getSliderValue()));
@@ -86,6 +99,7 @@ public class CwgGuiSlider extends GuiButton {
 
         double position = (mouseX - (this.x + 4.0)) / (this.width - 8.0);
         this.sliderPosition = MathHelper.clamp(position, 0, 1);
+        updateHandler.accept(this);
 
         return true;
     }
