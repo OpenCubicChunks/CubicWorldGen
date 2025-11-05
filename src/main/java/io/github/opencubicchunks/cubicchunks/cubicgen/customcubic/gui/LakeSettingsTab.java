@@ -35,9 +35,9 @@ import blue.endless.jankson.JsonObject;
 import blue.endless.jankson.JsonPrimitive;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.GuiOverlay;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiBlockStateButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiCheckBox;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBlockStateButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIList;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIProbabilityDistributionEditor;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
@@ -176,7 +176,7 @@ public class LakeSettingsTab {
         +------+------+------+------+------+------+
         */
 
-        private final UIBlockStateButton<?> blockstate;
+        private final CwgGuiBlockStateButton blockstate;
 
         private final UIContainer<?> nameLabel;
 
@@ -213,7 +213,8 @@ public class LakeSettingsTab {
 
             int gridY = 0;
 
-            this.add(blockstate = new UIBlockStateButton<>(gui, new BlockDesc(conf.getString("block")).defaultState()), new GridLocation(0, gridY, 1));
+            this.add(wrap(gui, blockstate = new CwgGuiBlockStateButton(new BlockDesc(conf.getString("block")).defaultState())),
+                    new GridLocation(0, gridY, 1));
             this.add(nameLabel = makeLabel(gui), new GridLocation(1, gridY, 4));
             this.add(wrap(gui, deleteBtn = makeButton("delete")), new GridLocation(5, gridY, 1));
 

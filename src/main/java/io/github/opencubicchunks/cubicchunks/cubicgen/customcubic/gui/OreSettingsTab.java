@@ -29,9 +29,9 @@ import blue.endless.jankson.JsonObject;
 import com.google.common.eventbus.Subscribe;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiBlockStateButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiCheckBox;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiSlider;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBlockStateButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UILayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIList;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIRangeSlider;
@@ -114,7 +114,7 @@ class OreSettingsTab {
             JsonTransformer.<UIOreOptionEntry>builder("Write GUI state to json")
                     .passthroughWithDefault("generateWhen", JsonNull.INSTANCE)
                     .passthroughWithDefault("placeBlockWhen", JsonNull.INSTANCE)
-                    .valueTransform("blockstate", (json, ore) -> CustomGenSettingsSerialization.MARSHALLER.serialize(ore.block.getState()))
+                    .valueTransform("blockstate", (json, ore) -> CustomGenSettingsSerialization.MARSHALLER.serialize(ore.block.getBlockState()))
                     .valueTransform("biomes", (json, ore) -> {
                         Set<BiomeDesc> biomes = ore.selectBiomes.isChecked() ?
                                 ore.biomesArea.getData().stream()
@@ -247,7 +247,7 @@ class OreSettingsTab {
         |<---VERTICAL TABLE LAYOUT--->|<-UI LIST->|
                   (MAIN AREA)         \->Split layout
         */
-        private UIBlockStateButton<?> block;
+        private CwgGuiBlockStateButton block;
         private UIComponent<?> name;
 
         private CwgGuiSlider size;
@@ -277,7 +277,7 @@ class OreSettingsTab {
 
         private void init(ExtraGui gui) {
             this.removeAll();
-            this.block = new UIBlockStateButton<>(gui, conf.getBlockState("blockstate"));
+            this.block = new CwgGuiBlockStateButton(conf.getBlockState("blockstate"));
             this.name = makeLabel(gui);
             UIButton delete = new UIButton(gui, malisisText("delete")).setSize(10, 20).setAutoSize(false);
             UISelect<OreGenType> type = makeUISelect(gui, Arrays.asList(OreGenType.values()));
@@ -418,7 +418,7 @@ class OreSettingsTab {
 
             this.autoFitToContent(true);
             this.add(this.name, new GridLocation(1, 0, 4));
-            this.add(this.block, new GridLocation(0, 0, 1));
+            this.add(wrap(gui, this.block), new GridLocation(0, 0, 1));
             this.add(deleteTypeArea, new GridLocation(5, 0, 1));
             this.add(split, new GridLocation(0, 1, 6));
             biomesArea.setHeightFunc(() -> ((UIContainer<?>) Objects.requireNonNull(split.getFirst())).getContentHeight());
@@ -440,8 +440,8 @@ class OreSettingsTab {
 
             ((UIContainer<?>) label).removeAll();
 
-            String name = block.getState().getBlockId();
-            String props = block.getState().getProperties().entrySet().stream()
+            String name = block.getBlockState().getBlockId();
+            String props = block.getBlockState().getProperties().entrySet().stream()
                     .map(e -> e.getKey() + "=" + e.getValue())
                     .reduce((a, b) -> a + ", " + b).orElse("");
 

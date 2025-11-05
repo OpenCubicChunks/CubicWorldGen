@@ -27,9 +27,13 @@ import net.malisis.core.client.gui.GuiRenderer;
 import net.malisis.core.client.gui.MalisisGui;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
+import net.malisis.core.client.gui.component.decoration.UITooltip;
 import net.malisis.core.util.MouseButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
+import org.lwjgl.opengl.GL11;
 
 @Deprecated // this is temporary for incremental migration only
 public final class WrappedVanillaButton<T extends GuiButton> extends UIComponent<WrappedVanillaButton<T>> {
@@ -41,6 +45,18 @@ public final class WrappedVanillaButton<T extends GuiButton> extends UIComponent
         this.vanillaButton = vanillaButton;
         setSize(vanillaButton.getButtonWidth(), vanillaButton.height);
         setPosition(vanillaButton.x, vanillaButton.y);
+        // render foreground from fake tooltip for proper z-ordering
+        this.setTooltip(new UITooltip(gui, "") {
+            @Override public void drawBackground(GuiRenderer renderer, int mouseX, int mouseY, float partialTick) {
+            }
+
+            @Override public void drawForeground(GuiRenderer guiRenderer, int mouseX, int mouseY, float partialTick) {
+                guiRenderer.draw();
+                vanillaButton.drawButtonForegroundLayer(mouseX, mouseY);
+                guiRenderer.next();
+                resyncGlState(guiRenderer);
+            }
+        });
     }
 
     public T get() {
@@ -86,15 +102,27 @@ public final class WrappedVanillaButton<T extends GuiButton> extends UIComponent
 
         guiRenderer.draw();
         vanillaButton.drawButton(Minecraft.getMinecraft(), mouseX, mouseY, partialTick);
+        resyncGlState(guiRenderer);
+    }
+
+    private static void resyncGlState(GuiRenderer guiRenderer) {
         // vanilla components can change it from under malisiscore, and malisiscore doesn't actually update if it thinks nothing changed
         Minecraft.getMinecraft().getTextureManager().bindTexture(guiRenderer.getDefaultTexture().getResourceLocation());
         guiRenderer.bindDefaultTexture();
+        // in vanilla it's enabled by default, in malisiscore it's disabled by default
+        GlStateManager.disableRescaleNormal();
+        // MalisisCore has standard item lighting disabled by default
+        RenderHelper.disableStandardItemLighting();
+        // ... but colorMaterial is enabled
+        GlStateManager.enableColorMaterial();
+        // resync blending state, by default disabled in vanilla, enabled in malisis
+        GlStateManager.enableBlend();
+        guiRenderer.enableBlending();
+        // Malisis always uses GL11.GL_SMOOTH shade model, vanilla uses flat by default
+        GlStateManager.shadeModel(GL11.GL_SMOOTH);
     }
 
-    @Override public void drawForeground(GuiRenderer guiRenderer, int mouseX, int mouseY, float partialTick) {
-        guiRenderer.draw();
-        vanillaButton.drawButtonForegroundLayer(mouseX, mouseY);
-        guiRenderer.next();
+    @Override public void drawForeground(GuiRenderer renderer, int mouseX, int mouseY, float partialTick) {
     }
 
     @Override public boolean onButtonPress(int x, int y, MouseButton button) {

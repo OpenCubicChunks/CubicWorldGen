@@ -28,7 +28,7 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.DummyWorld;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.GuiOverlay;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBlockStateButton;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiBlockStateButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIOptionScrollbar;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UITextFieldFixed;
 import net.malisis.core.client.gui.Anchor;
@@ -194,13 +194,13 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
     @Override public void drawForeground(GuiRenderer renderer, int mouseX, int mouseY, float partialTick) {
         // half of that on the left, half on the right
         int addPadding =
-                (int) Math.round((getAvailableWidth() - getLineStates() * UIBlockStateButton.SIZE) * 0.5);
+                (int) Math.round((getAvailableWidth() - getLineStates() * CwgGuiBlockStateButton.SIZE) * 0.5);
 
         double offsetY = getOffsetY();
         double pixelsOffset = offsetY * (getContentHeight() - getAvailableHeight());
 
-        int lineStart = (int) (pixelsOffset / UIBlockStateButton.SIZE);
-        int lineEnd = MathHelper.ceil((pixelsOffset + getAvailableHeight()) / UIBlockStateButton.SIZE);
+        int lineStart = (int) (pixelsOffset / CwgGuiBlockStateButton.SIZE);
+        int lineEnd = MathHelper.ceil((pixelsOffset + getAvailableHeight()) / CwgGuiBlockStateButton.SIZE);
 
         int itemStart = lineStart * getLineStates();
         int itemEnd = lineEnd * getLineStates();
@@ -212,8 +212,8 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
             int num = idx % getLineStates();
 
             shape.resetState();
-            shape.setSize(UIBlockStateButton.SIZE, UIBlockStateButton.SIZE);
-            shape.setPosition(num * UIBlockStateButton.SIZE + getLeftPadding() + addPadding, (int) (line * UIBlockStateButton.SIZE - pixelsOffset +
+            shape.setSize(CwgGuiBlockStateButton.SIZE, CwgGuiBlockStateButton.SIZE);
+            shape.setPosition(num * CwgGuiBlockStateButton.SIZE + getLeftPadding() + addPadding, (int) (line * CwgGuiBlockStateButton.SIZE - pixelsOffset +
                     getTopPadding()));
             rp.setAlpha(200);
             rp.setColor(0);
@@ -240,8 +240,8 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
             Minecraft.getMinecraft().entityRenderer.enableLightmap();
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, blockTexture.getGlTextureId());
 
-            drawState(filteredStates.get(i), num * UIBlockStateButton.SIZE + PADDING_HORIZ + addPadding,
-                    (int) (line * UIBlockStateButton.SIZE - pixelsOffset + PADDING_VERT));
+            drawState(filteredStates.get(i), num * CwgGuiBlockStateButton.SIZE + PADDING_HORIZ + addPadding,
+                    (int) (line * CwgGuiBlockStateButton.SIZE - pixelsOffset + PADDING_VERT));
         }
 
 
@@ -290,19 +290,19 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
     private int getSelectedIdx(int mouseX, int mouseY) {
 
         int addPadding =
-                (int) Math.round((getAvailableWidth() - getLineStates() * UIBlockStateButton.SIZE) * 0.5);
+                (int) Math.round((getAvailableWidth() - getLineStates() * CwgGuiBlockStateButton.SIZE) * 0.5);
 
         mouseX -= getLeftPadding() + addPadding;
         mouseY -= getTopPadding();
 
-        if (mouseX < 0 || mouseX >= getLineStates() * UIBlockStateButton.SIZE) {
+        if (mouseX < 0 || mouseX >= getLineStates() * CwgGuiBlockStateButton.SIZE) {
             return -1;
         }
-        int column = mouseX / UIBlockStateButton.SIZE;
+        int column = mouseX / CwgGuiBlockStateButton.SIZE;
 
         double pixelsOffset = getOffsetY() * (getContentHeight() - getAvailableHeight());
         int totalY = (int) (mouseY + pixelsOffset);
-        int row = totalY / UIBlockStateButton.SIZE;
+        int row = totalY / CwgGuiBlockStateButton.SIZE;
 
         return row * getLineStates() + column;
     }
@@ -312,7 +312,7 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
     }
 
     private int getLineStates() {
-        return (int) (getAvailableWidth() / UIBlockStateButton.SIZE);
+        return (int) (getAvailableWidth() / CwgGuiBlockStateButton.SIZE);
     }
 
     private int getLineCount() {
@@ -326,7 +326,7 @@ public class UIBlockStateSelect<T extends UIBlockStateSelect<T>> extends UIConta
 
     @Override
     public int getContentHeight() {
-        return getLineCount() * UIBlockStateButton.SIZE;
+        return getLineCount() * CwgGuiBlockStateButton.SIZE;
     }
 
     private void setFilterText(String text) {

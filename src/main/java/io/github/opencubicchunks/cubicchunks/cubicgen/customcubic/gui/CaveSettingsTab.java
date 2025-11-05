@@ -35,14 +35,16 @@ import blue.endless.jankson.JsonArray;
 import blue.endless.jankson.JsonNull;
 import blue.endless.jankson.JsonObject;
 import blue.endless.jankson.JsonPrimitive;
+import io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common.IUIContainer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiBlockStateButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiSlider;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBlockStateButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIList;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIRangeSlider;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIVerticalTableLayout;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.WrappedVanillaButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.CustomGenSettingsSerialization;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.JsonObjectView;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.JsonTransformer;
@@ -63,9 +65,9 @@ import java.util.stream.Collector;
 // TODO: redesign this UI
 public class CaveSettingsTab {
 
-    private static final JsonTransformer<CaveSettingsTab.UICaveOptionEntry> WRITE_TO_JSON_TRANSFORM =
-            JsonTransformer.<CaveSettingsTab.UICaveOptionEntry>builder("Write GUI state to json")
-                    .valueTransform("caveBlock", (json, cave) -> CustomGenSettingsSerialization.MARSHALLER.serialize(cave.caveBlock.getState()))
+    private static final JsonTransformer<UICaveOptionEntry> WRITE_TO_JSON_TRANSFORM =
+            JsonTransformer.<UICaveOptionEntry>builder("Write GUI state to json")
+                    .valueTransform("caveBlock", (json, cave) -> CustomGenSettingsSerialization.MARSHALLER.serialize(cave.caveBlock.getBlockState()))
                     .setPrimitive("caveRarity", cave -> cave.caveRarity.getSliderValue())
                     .setPrimitive("caveMinHeight", cave -> cave.caveCubeHeight.getMinValue().intValue())
                     .setPrimitive("caveMaxHeight", cave -> cave.caveCubeHeight.getMaxValue().intValue())
@@ -85,7 +87,7 @@ public class CaveSettingsTab {
                     .setPrimitive("carveStepRarity", cave -> cave.carveStepRarity.getSliderValue())
                     .setPrimitive("caveFloorDepth", cave -> cave.caveFloorDepth.getSliderValue())
                     .valueTransform("isBlockReplaceable", (json, cave) ->
-                            cave.replacedBlocks.stream().map(button -> button.getState()).collect(Collector.of(
+                            cave.replacedBlocks.stream().map(CwgGuiBlockStateButton::getBlockState).collect(Collector.of(
                                     JsonArray::new,
                                     (array, block) -> array.add(CustomGenSettingsSerialization.MARSHALLER.serialize(block)),
                                     (arr1, arr2) -> {
@@ -180,9 +182,9 @@ public class CaveSettingsTab {
 
     }
 
-    private class UICaveOptionEntry extends UIVerticalTableLayout<CaveSettingsTab.UICaveOptionEntry> {
+    private class UICaveOptionEntry extends UIVerticalTableLayout<UICaveOptionEntry> {
 
-        private final UIBlockStateButton<?> caveBlock;
+        private final CwgGuiBlockStateButton caveBlock;
         private final UILabel caveBlockLabel;
         private final UIRangeSlider<Float> caveCubeHeight;
         private final CwgGuiSlider caveRarity;
@@ -202,7 +204,7 @@ public class CaveSettingsTab {
         private final CwgGuiSlider carveStepRarity;
         private final CwgGuiSlider caveFloorDepth;
 
-        private final Set<UIBlockStateButton> replacedBlocks = new HashSet<>();
+        private final Set<CwgGuiBlockStateButton> replacedBlocks = new HashSet<>();
         UIVerticalTableLayout<?> replacedArea;
         private final CwgGuiButton addReplaceableBtn;
 
@@ -210,14 +212,14 @@ public class CaveSettingsTab {
 
         private JsonObjectView conf;
 
-        UICaveOptionEntry(ExtraGui gui, JsonObjectView conf, Consumer<CaveSettingsTab.UICaveOptionEntry> deleteFunc) {
+        UICaveOptionEntry(ExtraGui gui, JsonObjectView conf, Consumer<UICaveOptionEntry> deleteFunc) {
             super(gui, 1);
             this.conf = conf;
 
             deleteBtn = makeButton("delete", btn -> deleteFunc.accept(UICaveOptionEntry.this));
             deleteBtn.setWidth(10);
 
-            this.caveBlock = new UIBlockStateButton<>(gui, conf.getBlockState("caveBlock"));
+            this.caveBlock = new CwgGuiBlockStateButton(conf.getBlockState("caveBlock"));
             this.caveBlock.onClick(evnt -> {
                 UIBlockStateSelect.makeOverlay(gui, state -> {
                     caveBlock.setBlockState(new BlockStateDesc(state));
@@ -267,7 +269,7 @@ public class CaveSettingsTab {
 
         private void setupMainArea(UIVerticalTableLayout<?> mainArea) {
             int y = -1;
-            mainArea.add(this.caveBlock, new GridLocation(0, ++y, 1));
+            mainArea.add(wrap(getGui(), this.caveBlock), new GridLocation(0, ++y, 1));
             mainArea.add(this.caveBlockLabel, new GridLocation(1, y, 4));
             mainArea.add(this.caveCubeHeight, new GridLocation(0, ++y, 6));
             mainArea.add(wrap(getGui(), this.caveRarity), new GridLocation(0, ++y, 3));
@@ -302,7 +304,7 @@ public class CaveSettingsTab {
         private void setupSharedArea(ExtraGui gui, UIVerticalTableLayout<?> mainArea, UIVerticalTableLayout<?> replacedArea) {
             UISplitLayout<?> split = new UISplitLayout<>(gui, UISplitLayout.Type.SIDE_BY_SIDE, mainArea, replacedArea)
                     .autoFitToContent(true)
-                    .setSizeOf(UISplitLayout.Pos.SECOND, UIBlockStateButton.SIZE)
+                    .setSizeOf(UISplitLayout.Pos.SECOND, CwgGuiBlockStateButton.SIZE)
                     .userResizable(false)
                     .setRightPadding(4)
                     .setBottomPadding(10);
@@ -312,29 +314,28 @@ public class CaveSettingsTab {
         }
 
         private void addReplaceableBlock(ExtraGui gui, BlockStateDesc blockState) {
-            for (UIBlockStateButton replacedBlock : replacedBlocks) {
-                if (replacedBlock.getState().getBlockState() == (blockState.getBlockState())) {
+            for (CwgGuiBlockStateButton replacedBlock : replacedBlocks) {
+                if (replacedBlock.getBlockState().getBlockState() == (blockState.getBlockState())) {
                     return;
                 }
             }
-            UIBlockStateButton<?> newButton = new UIBlockStateButton(gui, blockState) {
-
-            };
+            CwgGuiBlockStateButton newButton = new CwgGuiBlockStateButton(blockState);
             newButton.onClick((evt) -> {
                 removeReplaceableBlock(newButton);
                 UIBlockStateSelect.makeOverlay(gui, state -> {
                     addReplaceableBlock(gui, new BlockStateDesc(state));
                 }).display();
             });
-            newButton.onRightClick((evt) -> {
-                removeReplaceableBlock(newButton);
-            });
             replacedBlocks.add(newButton);
-            replacedArea.add(newButton);
+            replacedArea.add(wrap(gui, newButton));
         }
 
-        private void removeReplaceableBlock(UIBlockStateButton<?> button) {
-            replacedArea.remove(button);
+        private void removeReplaceableBlock(CwgGuiBlockStateButton button) {
+            // TODO: this is slow
+            UIComponent<?> component = ((IUIContainer) replacedArea).getComponents().stream()
+                    .filter(x -> x instanceof WrappedVanillaButton && ((WrappedVanillaButton<?>) x).get() == button)
+                    .findAny().get();
+            replacedArea.remove(component);
             replacedBlocks.remove(button);
         }
 
@@ -361,8 +362,8 @@ public class CaveSettingsTab {
         }
 
         private void updateCaveLabel() {
-            String name = caveBlock.getState().getBlockId();
-            String props = caveBlock.getState().getProperties().entrySet().stream()
+            String name = caveBlock.getBlockState().getBlockId();
+            String props = caveBlock.getBlockState().getProperties().entrySet().stream()
                     .map(e -> e.getKey() + "=" + e.getValue())
                     .reduce((a, b) -> a + ", " + b).orElse("");
 

@@ -33,6 +33,7 @@ import net.malisis.core.client.gui.component.interaction.UIButton;
 import net.malisis.core.renderer.font.FontOptions;
 import net.minecraft.init.Blocks;
 
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.malisisText;
 
 import com.google.common.eventbus.Subscribe;
@@ -48,7 +49,7 @@ public class UIFlatTerrainLayer extends UIContainer<UIFlatTerrainLayer> {
     private final FlatLayersTab flatLayersTab;
     private final UIButton addLayer;
     private final UIButton removeLayer;
-    private final UIBlockStateButton<?> block;
+    private final CwgGuiBlockStateButton block;
     private final UILabel blockName;
     private final UILabel blockProperties;
     private final UILabel from;
@@ -66,14 +67,14 @@ public class UIFlatTerrainLayer extends UIContainer<UIFlatTerrainLayer> {
         this.flatLayersTab = flatLayersTabFor;
         this.gui = guiFor;
 
-        this.block = new UIBlockStateButton(gui, layer.blockState);
+        this.block = new CwgGuiBlockStateButton(layer.blockState);
         this.blockName = new UILabel(gui).setPosition(30, 0).setFontOptions(whiteFontWithShadow);
         this.blockProperties = new UILabel(gui).setPosition(30, 10).setFontOptions(whiteFontWithShadow);
         this.block.onClick(btn -> UIBlockStateSelect.makeOverlay(gui, state -> {
             block.setBlockState(new BlockStateDesc(state));
             updateLabels();
         }).display());
-        add(block);
+        add(wrap(gui, block));
         updateLabels();
         add(blockName);
         add(blockProperties);
@@ -138,6 +139,6 @@ public class UIFlatTerrainLayer extends UIContainer<UIFlatTerrainLayer> {
     }
 
     public FlatLayer toLayer() {
-        return new FlatLayer(fromField.getValue(), toField.getValue(), block.getState());
+        return new FlatLayer(fromField.getValue(), toField.getValue(), block.getBlockState());
     }
 }
