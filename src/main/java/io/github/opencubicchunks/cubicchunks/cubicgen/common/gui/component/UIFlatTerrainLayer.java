@@ -23,20 +23,16 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIVerticalTableLayout.GridLocation;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
-import net.malisis.core.client.gui.Anchor;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
-import net.malisis.core.client.gui.component.decoration.UILabel;
 import net.malisis.core.client.gui.component.decoration.UISeparator;
-import net.malisis.core.client.gui.component.interaction.UIButton;
-import net.malisis.core.renderer.font.FontOptions;
 import net.minecraft.init.Blocks;
 
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeButton;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeLabel;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.malisisText;
-
-import com.google.common.eventbus.Subscribe;
 
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.FlatLayer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.FlatCubicGui;
@@ -47,85 +43,94 @@ public class UIFlatTerrainLayer extends UIContainer<UIFlatTerrainLayer> {
 
     private static final int BTN_WIDTH = 90;
     private final FlatLayersTab flatLayersTab;
-    private final UIButton addLayer;
-    private final UIButton removeLayer;
+    private final CwgGuiButton addLayer;
+    private final CwgGuiButton removeLayer;
     private final CwgGuiBlockStateButton block;
-    private final UILabel blockName;
-    private final UILabel blockProperties;
-    private final UILabel from;
-    private final UILabel to;
+    private final CwgGuiLabel blockName;
+    private final CwgGuiLabel blockProperties;
+    private final CwgGuiLabel from;
+    private final CwgGuiLabel to;
     private final UISeparator separator;
     private final UIIntegerInputField fromField;
     private final UIIntegerInputField toField;
-    private final FontOptions whiteFontWithShadow = FontOptions.builder().color(0xFFFFFF).shadow().build();
 
     private final FlatCubicGui gui;
 
     public UIFlatTerrainLayer(FlatCubicGui guiFor, FlatLayersTab flatLayersTabFor, FlatLayer layer) {
         super(guiFor);
-        this.setSize(UIComponent.INHERITED, 60);
         this.flatLayersTab = flatLayersTabFor;
         this.gui = guiFor;
 
         this.block = new CwgGuiBlockStateButton(layer.blockState);
-        this.blockName = new UILabel(gui).setPosition(30, 0).setFontOptions(whiteFontWithShadow);
-        this.blockProperties = new UILabel(gui).setPosition(30, 10).setFontOptions(whiteFontWithShadow);
         this.block.onClick(btn -> UIBlockStateSelect.makeOverlay(gui, state -> {
             block.setBlockState(new BlockStateDesc(state));
             updateLabels();
         }).display());
-        add(wrap(gui, block));
+
+        this.blockName = makeLabel("");
+        this.blockProperties = makeLabel("");
+
         updateLabels();
-        add(blockName);
-        add(blockProperties);
 
-        addLayer = new UIButton(gui, malisisText("add_layer")).setSize(BTN_WIDTH, 20).setPosition(0, 0)
-                .setAnchor(Anchor.RIGHT).register(new Object() {
+        addLayer = makeButton("add_layer");
+        addLayer.onClick(btn -> addLayer());
 
-                    @Subscribe
-                    public void onClick(UIButton.ClickEvent evt) {
-                        UIFlatTerrainLayer.this.addLayer();
-                    }
-                });
-        add(addLayer);
+        removeLayer = makeButton("remove_layer");
+        removeLayer.y = 20;
+        removeLayer.onClick(btn -> removeLayer());
 
-        removeLayer = new UIButton(gui, malisisText("remove_layer")).setSize(BTN_WIDTH, 20).setPosition(0, 20)
-                .setAnchor(Anchor.RIGHT).register(new Object() {
+        from = makeLabel("from");
+        to = makeLabel("to_exclusively");
 
-                    @Subscribe
-                    public void onClick(UIButton.ClickEvent evt) {
-                        UIFlatTerrainLayer.this.removeLayer();
-                    }
-                });
-        add(removeLayer);
+        fromField = new UIIntegerInputField(gui, layer.fromY);
+        toField = new UIIntegerInputField(gui, layer.toY);
 
-        toField = (UIIntegerInputField) new UIIntegerInputField(gui, layer.toY).setPosition(0, 45, Anchor.RIGHT)
-                .setSize(80, 5);
-        add(toField);
+        separator = new UISeparator(gui, false).setColor(0x767676);
 
-        to = new UILabel(gui, malisisText("to_exclusively"), false)
-                .setPosition(-10 - toField.getWidth(), 47, Anchor.RIGHT).setFontOptions(whiteFontWithShadow);
-        add(to);
+                /*
+        The layout:
 
-        from = new UILabel(gui, malisisText("from"), false).setPosition(0, 47).setFontOptions(whiteFontWithShadow);
-        add(from);
+                  left/right split, size to fit second
+                                   v
+        +-----------------------------------------+
+        | BLOCKSTATE               |   ADD LAYER^ |
+        |                          | REMOVE LAYER |
+        +--------------------+--------------------+ < vertical table layout, 2 columns, top one takes 2 columns
+        | From [     ]       | To [     ]         |
+        +--------------------+--------------------+
+        */
 
-        fromField = (UIIntegerInputField) new UIIntegerInputField(gui, layer.fromY)
-                .setPosition(from.getWidth() + 10, 45).setSize(80, 5);
-        add(fromField);
+        UIContainer<?> blockstateContainer = new UIContainer<>(gui);
+        blockstateContainer.add(wrap(gui, block));
+        blockstateContainer.add(wrap(gui, blockName).setPosition(CwgGuiBlockStateButton.PADDED_SIZE, 0));
+        blockstateContainer.add(wrap(gui, blockProperties).setPosition(CwgGuiBlockStateButton.PADDED_SIZE, 10));
+        blockstateContainer.setSize(0, CwgGuiBlockStateButton.PADDED_SIZE); // width set by layout
 
-        separator = new UISeparator(gui, false).setColor(0x767676).setPosition(0, to.getY() + to.getHeight() + 3)
-                .setSize(UIComponent.INHERITED, 1);
-        super.add(separator);
+        UIVerticalTableLayout<?> buttonsContainer = new UIVerticalTableLayout<>(gui, 1).autoFitToContent(true);
+        buttonsContainer.add(wrap(gui, addLayer), new GridLocation(0, 0, 1));
+        buttonsContainer.add(wrap(gui, removeLayer), new GridLocation(0,  1, 1));
+
+        UILayout<?> blockstateButtonsSplit = new UISplitLayout<>(gui, UISplitLayout.Type.SIDE_BY_SIDE, blockstateContainer, buttonsContainer)
+                .userResizable(false).setSizeOf(UISplitLayout.Pos.SECOND, BTN_WIDTH).autoFitToContent(true);
+
+        UISplitLayout<?> fromLayout = new UISplitLayout<>(gui, UISplitLayout.Type.SIDE_BY_SIDE,
+                wrap(gui, from), fromField).setSizeOf(UISplitLayout.Pos.FIRST, 50).autoFitToContent(true);
+        UISplitLayout<?> toLayout = new UISplitLayout<>(gui, UISplitLayout.Type.SIDE_BY_SIDE,
+                wrap(gui, to), toField).setSizeOf(UISplitLayout.Pos.FIRST, 90).autoFitToContent(true);
+
+        UIVerticalTableLayout<?> main = new UIVerticalTableLayout<>(gui, 2);
+        main.add(blockstateButtonsSplit, new GridLocation(0, 0, 2));
+        main.add(fromLayout, new GridLocation(0, 1, 1));
+        main.add(toLayout, new GridLocation(1, 1, 1));
+        main.add(separator, new GridLocation(0, 2, 2));
+
+        add(main);
+        this.setSize(UIComponent.INHERITED, 70);
     }
 
     private void updateLabels() {
-        blockName.setText(block.getBlockName());
-        blockProperties.setText(block.getBlockProperties());
-    }
-
-    protected void saveConfig() {
-        this.gui.saveConfig();
+        blockName.displayString = block.getBlockName();
+        blockProperties.displayString = block.getBlockProperties();
     }
 
     protected void removeLayer() {

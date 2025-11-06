@@ -52,6 +52,7 @@ import net.minecraft.util.math.BlockPos;
 public class CwgGuiBlockStateButton extends GuiButton {
 
     public static final int SIZE = 24;
+    public static final int PADDED_SIZE = SIZE + 6;
     private String tooltip;
     private BlockStateDesc blockState;
     private Consumer<CwgGuiBlockStateButton> onClick;

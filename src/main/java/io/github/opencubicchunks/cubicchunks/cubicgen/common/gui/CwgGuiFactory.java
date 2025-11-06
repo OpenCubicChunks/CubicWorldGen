@@ -27,6 +27,7 @@ import com.google.common.base.Converter;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiCheckBox;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiLabel;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiSlider;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.WrappedVanillaButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.converter.Converters;
@@ -48,6 +49,25 @@ public class CwgGuiFactory {
 
     public static <T extends GuiButton> WrappedVanillaButton<T> wrap(MalisisGui gui, T vanillaComponent) {
         return new WrappedVanillaButton<>(gui, vanillaComponent);
+    }
+
+    public static CwgGuiLabel makeLabel(String formatString) {
+        return makeLabel(formatString, 0xFFFFFFFF, 0, 0);
+    }
+
+    public static CwgGuiLabel makeLabel(String formatString, int color) {
+        return makeLabel(str(formatString), color, 0, 0);
+    }
+
+    public static CwgGuiLabel makeLabel(String formatString, int x, int y) {
+        return makeLabel(formatString, 0xFFFFFFFF, x, y);
+    }
+
+    public static CwgGuiLabel makeLabel(String formatString, int color, int x, int y) {
+        CwgGuiLabel label = new CwgGuiLabel(str(formatString), color);
+        label.x = x;
+        label.y = y;
+        return label;
     }
 
     public static CwgGuiButton makeButton(String formatString) {

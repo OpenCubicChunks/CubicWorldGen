@@ -304,7 +304,7 @@ public class CaveSettingsTab {
         private void setupSharedArea(ExtraGui gui, UIVerticalTableLayout<?> mainArea, UIVerticalTableLayout<?> replacedArea) {
             UISplitLayout<?> split = new UISplitLayout<>(gui, UISplitLayout.Type.SIDE_BY_SIDE, mainArea, replacedArea)
                     .autoFitToContent(true)
-                    .setSizeOf(UISplitLayout.Pos.SECOND, CwgGuiBlockStateButton.SIZE)
+                    .setSizeOf(UISplitLayout.Pos.SECOND, CwgGuiBlockStateButton.PADDED_SIZE)
                     .userResizable(false)
                     .setRightPadding(4)
                     .setBottomPadding(10);
