@@ -39,7 +39,8 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.FlatCubicGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.FlatLayersTab;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.UIBlockStateSelect;
 
-public class UIFlatTerrainLayer extends UIContainer<UIFlatTerrainLayer> {
+// TODO: avoid actually extending layouts
+public final class UIFlatTerrainLayer extends UIVerticalTableLayout<UIFlatTerrainLayer> {
 
     private static final int BTN_WIDTH = 90;
     private final FlatLayersTab flatLayersTab;
@@ -57,7 +58,7 @@ public class UIFlatTerrainLayer extends UIContainer<UIFlatTerrainLayer> {
     private final FlatCubicGui gui;
 
     public UIFlatTerrainLayer(FlatCubicGui guiFor, FlatLayersTab flatLayersTabFor, FlatLayer layer) {
-        super(guiFor);
+        super(guiFor, 2);
         this.flatLayersTab = flatLayersTabFor;
         this.gui = guiFor;
 
@@ -118,14 +119,12 @@ public class UIFlatTerrainLayer extends UIContainer<UIFlatTerrainLayer> {
         UISplitLayout<?> toLayout = new UISplitLayout<>(gui, UISplitLayout.Type.SIDE_BY_SIDE,
                 wrap(gui, to), toField).setSizeOf(UISplitLayout.Pos.FIRST, 90).autoFitToContent(true);
 
-        UIVerticalTableLayout<?> main = new UIVerticalTableLayout<>(gui, 2);
-        main.add(blockstateButtonsSplit, new GridLocation(0, 0, 2));
-        main.add(fromLayout, new GridLocation(0, 1, 1));
-        main.add(toLayout, new GridLocation(1, 1, 1));
-        main.add(separator, new GridLocation(0, 2, 2));
+        this.add(blockstateButtonsSplit, new GridLocation(0, 0, 2));
+        this.add(fromLayout, new GridLocation(0, 1, 1));
+        this.add(toLayout, new GridLocation(1, 1, 1));
+        this.add(separator, new GridLocation(0, 2, 2));
+        this.autoFitToContent(true);
 
-        add(main);
-        this.setSize(UIComponent.INHERITED, 70);
     }
 
     private void updateLabels() {
