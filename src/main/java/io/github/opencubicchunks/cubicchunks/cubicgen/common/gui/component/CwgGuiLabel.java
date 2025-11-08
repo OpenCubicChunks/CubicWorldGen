@@ -29,25 +29,15 @@ import net.minecraft.client.resources.I18n;
 
 public class CwgGuiLabel extends GuiButton {
 
-    private int color;
-
     public CwgGuiLabel(String formatString, int color) {
         super(0, 0, 0, I18n.format(formatString));
-        this.color = color;
+        this.packedFGColour = color;
         this.height = Minecraft.getMinecraft().fontRenderer.FONT_HEIGHT;
-    }
-
-    public int getColor() {
-        return color;
-    }
-
-    public void setColor(int color) {
-        this.color = color;
     }
 
     @Override public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
         if (this.visible) {
-            drawString(mc.fontRenderer, displayString, x + 2, y + 2, color);
+            McGuiRender.drawWidgetString(mc, this, packedFGColour, enabled, false);
         }
     }
 }

@@ -72,6 +72,20 @@ public class CwgGuiSlider extends GuiButton {
         return 0;
     }
 
+    @Override public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+        if (!this.visible) {
+            return;
+        }
+        this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
+
+        McGuiRender.prepareWidgetRender(mc);
+        McGuiRender.drawSliderBg(this.x, this.y, this.width, this.height);
+
+        this.mouseDragged(mc, mouseX, mouseY);
+
+        McGuiRender.drawWidgetStringCentered(mc, this, packedFGColour, enabled, hovered);
+    }
+
     // this is actually a draw() method
 
     @Override protected void mouseDragged(Minecraft mc, int mouseX, int mouseY) {

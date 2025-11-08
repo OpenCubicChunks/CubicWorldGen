@@ -52,4 +52,20 @@ public class CwgGuiButton extends GuiButton {
         }
         return false;
     }
+
+
+    @Override public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+        if (!this.visible) {
+            return;
+        }
+        this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
+
+        McGuiRender.prepareWidgetRender(mc);
+        McGuiRender.ButtonMode mode = McGuiRender.ButtonMode.values()[this.getHoverState(this.hovered)];
+        McGuiRender.drawButtonBg(mode, this.x, this.y, this.width, this.height);
+
+        this.mouseDragged(mc, mouseX, mouseY);
+
+        McGuiRender.drawWidgetStringCentered(mc, this, packedFGColour, enabled, hovered);
+    }
 }
