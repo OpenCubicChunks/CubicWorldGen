@@ -25,16 +25,16 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 
 import com.google.common.base.Converter;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.math.MathHelper;
+import net.minecraftforge.fml.client.config.GuiButtonExt;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 // TODO: fix vanilla rendering for large widths
-public class CwgGuiSlider extends GuiButton {
+public class CwgGuiSlider extends GuiButtonExt {
 
     private final String textFormat;
     private final Function<Double, String> valueToString;
@@ -70,20 +70,6 @@ public class CwgGuiSlider extends GuiButton {
 
     @Override protected int getHoverState(boolean mouseOver) {
         return 0;
-    }
-
-    @Override public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
-        if (!this.visible) {
-            return;
-        }
-        this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
-
-        McGuiRender.prepareWidgetRender(mc);
-        McGuiRender.drawSliderBg(this.x, this.y, this.width, this.height);
-
-        this.mouseDragged(mc, mouseX, mouseY);
-
-        McGuiRender.drawWidgetStringCentered(mc, this, packedFGColour, enabled, hovered);
     }
 
     // this is actually a draw() method

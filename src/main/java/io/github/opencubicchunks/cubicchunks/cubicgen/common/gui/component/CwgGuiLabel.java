@@ -23,21 +23,22 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 
+import io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common.accessor.IGuiLabel;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiLabel;
 import net.minecraft.client.resources.I18n;
 
-public class CwgGuiLabel extends GuiButton {
+public class CwgGuiLabel extends GuiLabel {
 
-    public CwgGuiLabel(String formatString, int color) {
-        super(0, 0, 0, I18n.format(formatString));
-        this.packedFGColour = color;
-        this.height = Minecraft.getMinecraft().fontRenderer.FONT_HEIGHT;
+    public CwgGuiLabel(String text, int xIn, int yIn, int widthIn, int heightIn, int colorIn) {
+        super(Minecraft.getMinecraft().fontRenderer, 0, xIn, yIn, widthIn, heightIn, colorIn);
+        setText(text);
     }
 
-    @Override public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
-        if (this.visible) {
-            McGuiRender.drawWidgetString(mc, this, packedFGColour, enabled, false);
+    public void setText(String text) {
+        ((IGuiLabel) this).getLabels().clear();
+        for (String s : I18n.format(text).split("\n")) {
+            addLine(s);
         }
     }
 }

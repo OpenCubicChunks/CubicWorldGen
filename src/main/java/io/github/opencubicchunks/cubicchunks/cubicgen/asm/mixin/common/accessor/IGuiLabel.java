@@ -21,34 +21,19 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
+package io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common.accessor;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.I18n;
-import net.minecraftforge.fml.client.config.GuiButtonExt;
+import net.minecraft.client.gui.GuiLabel;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
-import java.util.function.Consumer;
+import java.util.List;
 
-import javax.annotation.Nullable;
-
-public class CwgGuiButton extends GuiButtonExt {
-
-    private Consumer<CwgGuiButton> onClick;
-
-    public CwgGuiButton(String formatString, @Nullable Consumer<CwgGuiButton> onClick) {
-        super(0, 0, 0, I18n.format(formatString));
-        this.onClick = onClick;
-    }
-
-    public void onClick(Consumer<CwgGuiButton> handler) {
-        this.onClick = handler;
-    }
-
-    @Override public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
-        if (super.mousePressed(mc, mouseX, mouseY)) {
-            this.onClick.accept(this);
-            return true;
-        }
-        return false;
-    }
+@Mixin(GuiLabel.class)
+public interface IGuiLabel {
+    @Accessor int getWidth();
+    @Accessor int getHeight();
+    @Accessor void setWidth(int width);
+    @Accessor void setHeight(int height);
+    @Accessor List<String> getLabels();
 }

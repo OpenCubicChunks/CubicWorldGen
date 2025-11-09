@@ -42,7 +42,6 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIMul
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UITabbedContainer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UITextFieldFixed;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.WrappedVanillaButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.CustomGenSettingsSerialization;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.JsonObjectView;

@@ -23,9 +23,7 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIVerticalTableLayout.GridLocation;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
-import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
 import net.malisis.core.client.gui.component.decoration.UISeparator;
 import net.minecraft.init.Blocks;
@@ -128,8 +126,8 @@ public final class UIFlatTerrainLayer extends UIVerticalTableLayout<UIFlatTerrai
     }
 
     private void updateLabels() {
-        blockName.displayString = block.getBlockName();
-        blockProperties.displayString = block.getBlockProperties();
+        blockName.setText(block.getBlockName());
+        blockProperties.setText(block.getBlockProperties());
     }
 
     protected void removeLayer() {

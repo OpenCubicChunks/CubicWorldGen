@@ -29,10 +29,12 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGu
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiCheckBox;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiLabel;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiSlider;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.WrappedVanillaButton;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.WrappedVanillaComponent;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.converter.Converters;
 import net.malisis.core.client.gui.MalisisGui;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiLabel;
+import net.minecraft.client.gui.GuiTextField;
 
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
@@ -47,8 +49,16 @@ public class CwgGuiFactory {
         throw new Error();
     }
 
-    public static <T extends GuiButton> WrappedVanillaButton<T> wrap(MalisisGui gui, T vanillaComponent) {
-        return new WrappedVanillaButton<>(gui, vanillaComponent);
+    public static <T extends GuiButton> WrappedVanillaComponent<T> wrap(MalisisGui gui, T vanillaComponent) {
+        return WrappedVanillaComponent.of(gui, vanillaComponent);
+    }
+
+    public static <T extends GuiLabel> WrappedVanillaComponent<T> wrap(MalisisGui gui, T vanillaComponent) {
+        return WrappedVanillaComponent.of(gui, vanillaComponent);
+    }
+
+    public static <T extends GuiTextField> WrappedVanillaComponent<T> wrap(MalisisGui gui, T vanillaComponent) {
+        return WrappedVanillaComponent.of(gui, vanillaComponent);
     }
 
     public static CwgGuiLabel makeLabel(String formatString) {
@@ -64,9 +74,7 @@ public class CwgGuiFactory {
     }
 
     public static CwgGuiLabel makeLabel(String formatString, int color, int x, int y) {
-        CwgGuiLabel label = new CwgGuiLabel(str(formatString), color);
-        label.x = x;
-        label.y = y;
+        CwgGuiLabel label = new CwgGuiLabel(str(formatString), x, y, 10, 10, color);
         return label;
     }
 

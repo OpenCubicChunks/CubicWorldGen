@@ -44,7 +44,7 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UILis
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIRangeSlider;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIVerticalTableLayout;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.WrappedVanillaButton;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.WrappedVanillaComponent;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.CustomGenSettingsSerialization;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.JsonObjectView;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.JsonTransformer;
@@ -333,7 +333,7 @@ public class CaveSettingsTab {
         private void removeReplaceableBlock(CwgGuiBlockStateButton button) {
             // TODO: this is slow
             UIComponent<?> component = ((IUIContainer) replacedArea).getComponents().stream()
-                    .filter(x -> x instanceof WrappedVanillaButton && ((WrappedVanillaButton<?>) x).get() == button)
+                    .filter(x -> x instanceof WrappedVanillaComponent && ((WrappedVanillaComponent<?>) x).get() == button)
                     .findAny().get();
             replacedArea.remove(component);
             replacedBlocks.remove(button);

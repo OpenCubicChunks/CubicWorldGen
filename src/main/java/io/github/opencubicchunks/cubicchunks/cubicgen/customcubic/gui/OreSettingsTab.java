@@ -38,7 +38,7 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIRan
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout.Type;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIVerticalTableLayout;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.WrappedVanillaButton;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.WrappedVanillaComponent;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.CustomGenSettingsSerialization;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.JsonObjectView;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.JsonTransformer;
@@ -263,7 +263,7 @@ class OreSettingsTab {
 
         private UIRangeSlider<Float> heightRange;
 
-        private UIList<String, WrappedVanillaButton<CwgGuiCheckBox>> biomesArea;
+        private UIList<String, WrappedVanillaComponent<CwgGuiCheckBox>> biomesArea;
 
         private JsonObjectView conf;
         private OreGenType genType;
@@ -393,14 +393,14 @@ class OreSettingsTab {
             mainArea.add(this.heightRange, new GridLocation(0, ++y, 6));
         }
 
-        private void allowSelectBiomes(UIList<String, WrappedVanillaButton<CwgGuiCheckBox>> biomes, boolean checked) {
+        private void allowSelectBiomes(UIList<String, WrappedVanillaComponent<CwgGuiCheckBox>> biomes, boolean checked) {
             biomes.setVisible(checked);
             if (!biomes.isVisible()) {
                 biomes.getData().forEach(e -> biomes.component(e).get().setIsChecked(true));
             }
         }
 
-        private void setupBiomeArea(JsonObjectView conf, UIList<String, WrappedVanillaButton<CwgGuiCheckBox>> biomesArea) {
+        private void setupBiomeArea(JsonObjectView conf, UIList<String, WrappedVanillaComponent<CwgGuiCheckBox>> biomesArea) {
             biomesArea.setRightPadding(6);
 
             if (!conf.get("biomes").equals(JsonNull.INSTANCE)) {

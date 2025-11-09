@@ -19,6 +19,7 @@
         "common.accessor.IBiomeProvider",
         "common.accessor.IBiomeSnow",
         "common.accessor.IBiomeTaiga",
+        "common.accessor.IGuiLabel",
         "common.accessor.INoiseGeneratorImproved",
         "common.extras.FarLands",
         "common.IUIContainer",
