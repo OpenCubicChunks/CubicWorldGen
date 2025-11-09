@@ -78,7 +78,6 @@ public class CwgGuiFactory {
             }
         });
         field.setText(String.valueOf(defaultValue));
-        field.setEnableBackgroundDrawing();
         return field;
     }
 
