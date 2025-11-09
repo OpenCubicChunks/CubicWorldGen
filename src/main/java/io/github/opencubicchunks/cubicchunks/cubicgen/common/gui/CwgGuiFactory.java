@@ -28,10 +28,12 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiCheckBox;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiLabel;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiSeparator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiSlider;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.WrappedVanillaComponent;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.converter.Converters;
 import net.malisis.core.client.gui.MalisisGui;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiLabel;
 import net.minecraft.client.gui.GuiTextField;
@@ -59,6 +61,25 @@ public class CwgGuiFactory {
 
     public static <T extends GuiTextField> WrappedVanillaComponent<T> wrap(MalisisGui gui, T vanillaComponent) {
         return WrappedVanillaComponent.of(gui, vanillaComponent);
+    }
+
+    public static CwgGuiSeparator makeSeparator() {
+        return new CwgGuiSeparator(0, 0);
+    }
+
+    public static GuiTextField makeIntTextField(int defaultValue) {
+        GuiTextField field = new GuiTextField(0, Minecraft.getMinecraft().fontRenderer, 0, 0, 0, 20);
+        field.setValidator(str -> {
+            try {
+                Integer.parseInt(str);
+                return true;
+            } catch (NumberFormatException ignored) {
+                return false;
+            }
+        });
+        field.setText(String.valueOf(defaultValue));
+        field.setEnableBackgroundDrawing();
+        return field;
     }
 
     public static CwgGuiLabel makeLabel(String formatString) {

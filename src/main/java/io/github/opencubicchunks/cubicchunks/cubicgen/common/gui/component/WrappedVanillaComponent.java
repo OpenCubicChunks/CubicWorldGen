@@ -94,9 +94,28 @@ public final class WrappedVanillaComponent<T extends Gui> extends UIComponent<Wr
         return new WrappedVanillaComponent<>(
                 gui, fld,
                 () -> fld.x, () -> fld.y, x -> fld.x = x, y -> fld.y = y,
-                () -> fld.width, () -> fld.height, width -> fld.width = width, height -> fld.height = height,
+                () -> fld.width, () -> fld.height, width -> {
+                    fld.width = width;
+                    // changing width affects line wrapping?
+                    fld.setSelectionPos(fld.getSelectionEnd());
+                }, height -> fld.height = height,
                 fld::getVisible, fld::setVisible, fld::getVisible,
-                (mc, mouseX, mouseY, partialTick) -> fld.drawTextBox(),
+                (mc, mouseX, mouseY, partialTick) -> {
+                    // vanilla renders outline 1 px out of bounds...
+                    if (fld.getEnableBackgroundDrawing()) {
+                        fld.x += 1;
+                        fld.y += 1;
+                        fld.width -= 2;
+                        fld.height -= 2;
+                    }
+                    fld.drawTextBox();
+                    if (fld.getEnableBackgroundDrawing()) {
+                        fld.x -= 1;
+                        fld.y -= 1;
+                        fld.width += 2;
+                        fld.height += 2;
+                    }
+                },
                 GuiRender.NULL,
                 (mc, mouseX, mouseY) -> fld.mouseClicked(mouseX, mouseY, 0),
                 MouseHandler.NULL, fld::textboxKeyTyped

@@ -25,11 +25,13 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
 import net.malisis.core.client.gui.component.container.UIContainer;
-import net.malisis.core.client.gui.component.decoration.UISeparator;
+import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.init.Blocks;
 
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeButton;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeIntTextField;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeLabel;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeSeparator;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
 
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.FlatLayer;
@@ -49,9 +51,9 @@ public final class UIFlatTerrainLayer extends UIVerticalTableLayout<UIFlatTerrai
     private final CwgGuiLabel blockProperties;
     private final CwgGuiLabel from;
     private final CwgGuiLabel to;
-    private final UISeparator separator;
-    private final UIIntegerInputField fromField;
-    private final UIIntegerInputField toField;
+    private final CwgGuiSeparator separator;
+    private final GuiTextField fromField;
+    private final GuiTextField toField;
 
     private final FlatCubicGui gui;
 
@@ -81,10 +83,10 @@ public final class UIFlatTerrainLayer extends UIVerticalTableLayout<UIFlatTerrai
         from = makeLabel("from");
         to = makeLabel("to_exclusively");
 
-        fromField = new UIIntegerInputField(gui, layer.fromY);
-        toField = new UIIntegerInputField(gui, layer.toY);
+        fromField = makeIntTextField(layer.fromY);
+        toField = makeIntTextField(layer.toY);
 
-        separator = new UISeparator(gui, false).setColor(0x767676);
+        separator = makeSeparator();
 
                 /*
         The layout:
@@ -113,14 +115,14 @@ public final class UIFlatTerrainLayer extends UIVerticalTableLayout<UIFlatTerrai
                 .userResizable(false).setSizeOf(UISplitLayout.Pos.SECOND, BTN_WIDTH).autoFitToContent(true);
 
         UISplitLayout<?> fromLayout = new UISplitLayout<>(gui, UISplitLayout.Type.SIDE_BY_SIDE,
-                wrap(gui, from), fromField).setSizeOf(UISplitLayout.Pos.FIRST, 50).autoFitToContent(true);
+                wrap(gui, from), wrap(gui, fromField)).setSizeOf(UISplitLayout.Pos.FIRST, 50).autoFitToContent(true);
         UISplitLayout<?> toLayout = new UISplitLayout<>(gui, UISplitLayout.Type.SIDE_BY_SIDE,
-                wrap(gui, to), toField).setSizeOf(UISplitLayout.Pos.FIRST, 90).autoFitToContent(true);
+                wrap(gui, to), wrap(gui, toField)).setSizeOf(UISplitLayout.Pos.FIRST, 90).autoFitToContent(true);
 
         this.add(blockstateButtonsSplit, new GridLocation(0, 0, 2));
         this.add(fromLayout, new GridLocation(0, 1, 1));
         this.add(toLayout, new GridLocation(1, 1, 1));
-        this.add(separator, new GridLocation(0, 2, 2));
+        this.add(wrap(gui, separator), new GridLocation(0, 2, 2));
         this.autoFitToContent(true);
 
     }
@@ -135,12 +137,12 @@ public final class UIFlatTerrainLayer extends UIVerticalTableLayout<UIFlatTerrai
     }
 
     protected void addLayer() {
-        int to = this.toField.getValue();
+        int to = Integer.parseInt(this.toField.getText());
         FlatLayer newLayer = new FlatLayer(to, to + 1, new BlockStateDesc(Blocks.SANDSTONE.getDefaultState()));
         this.flatLayersTab.add(this, newLayer);
     }
 
     public FlatLayer toLayer() {
-        return new FlatLayer(fromField.getValue(), toField.getValue(), block.getBlockState());
+        return new FlatLayer(Integer.parseInt(fromField.getText()), Integer.parseInt(toField.getText()), block.getBlockState());
     }
 }

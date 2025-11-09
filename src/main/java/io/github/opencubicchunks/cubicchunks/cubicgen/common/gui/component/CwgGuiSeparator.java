@@ -26,17 +26,23 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 
-public class McGuiRender {
+public class CwgGuiSeparator extends GuiButton {
 
-    public static void drawWidgetString(Minecraft mc, GuiButton btn, int colorOverride, boolean enabled, boolean hovered) {
-        int color = 0xe0e0e0;
-        if (colorOverride != 0) {
-            color = colorOverride;
-        } else if (!enabled) {
-            color = 0xa0a0a0;
-        } else if (hovered) {
-            color = 0xffffa0;
+    public CwgGuiSeparator(int x, int y) {
+        super(0, x, y, "");
+        height = 5;
+    }
+
+    @Override public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+        if (visible) {
+            drawHorizontalLine(x, x + width, y + height / 2, packedFGColour == 0 ? 0xFF767676 : packedFGColour);
         }
-        btn.drawString(mc.fontRenderer, btn.displayString, btn.x, btn.y + (btn.height - 8) / 2, color);
+    }
+
+    @Override public void mouseReleased(int mouseX, int mouseY) {
+    }
+
+    @Override public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
+        return false;
     }
 }
