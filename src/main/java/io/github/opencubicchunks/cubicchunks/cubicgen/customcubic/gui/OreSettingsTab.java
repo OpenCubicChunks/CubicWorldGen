@@ -28,9 +28,9 @@ import blue.endless.jankson.JsonNull;
 import blue.endless.jankson.JsonObject;
 import com.google.common.eventbus.Subscribe;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiBlockStateButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiCheckBox;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiLabel;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiSlider;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UILayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIList;
@@ -60,11 +60,13 @@ import java.util.Set;
 import java.util.function.DoubleSupplier;
 import java.util.stream.Collectors;
 
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeButton;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeCheckBox;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeCheckBoxUnlocalized;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeIntSlider;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeSlider;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.button;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.checkBox;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.checkBoxUnloc;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.intSlider;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.label;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.positiveExponentialSlider;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.slider;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.*;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_PADDING;
@@ -160,7 +162,7 @@ class OreSettingsTab {
         layout.setPadding(HORIZONTAL_PADDING, VERTICAL_INSETS);
         layout.setSize(UIComponent.INHERITED, UIComponent.INHERITED);
 
-        layout.add(wrap(gui, makeButton("add_ore", btn -> {
+        layout.add(wrap(gui, button("add_ore", btn -> {
             JsonObjectView newJson = JsonObjectView.of(DEFAULT_STANDARD_ORE.clone());
             UIOreOptionEntry newEntry = new UIOreOptionEntry(gui, newJson, OreGenType.UNIFORM);
             componentList.add(1, newEntry);
@@ -248,7 +250,7 @@ class OreSettingsTab {
                   (MAIN AREA)         \->Split layout
         */
         private CwgGuiBlockStateButton block;
-        private UIComponent<?> name;
+        private CwgGuiLabel name;
 
         private CwgGuiSlider size;
         private CwgGuiSlider attempts;
@@ -278,32 +280,31 @@ class OreSettingsTab {
         private void init(ExtraGui gui) {
             this.removeAll();
             this.block = new CwgGuiBlockStateButton(conf.getBlockState("blockstate"));
-            this.name = makeLabel(gui);
+            this.name = label();
             UIButton delete = new UIButton(gui, malisisText("delete")).setSize(10, 20).setAutoSize(false);
             UISelect<OreGenType> type = makeUISelect(gui, Arrays.asList(OreGenType.values()));
 
-            this.size = makeIntSlider(1, 50, conf.getInt("spawnSize"), "spawn_size");
-            this.attempts = makeIntSlider(1, 40, conf.getInt("spawnTries"), "spawn_tries");
+            this.size = intSlider(1, 50, conf.getInt("spawnSize"), "spawn_size");
+            this.attempts = intSlider(1, 40, conf.getInt("spawnTries"), "spawn_tries");
             if (genType == OreGenType.PERIODIC_GAUSSIAN) {
-                this.mean = makeSlider(-4.0, 4.0, conf.getDouble("heightMean"),
+                this.mean = slider(-4.0, 4.0, conf.getDouble("heightMean"),
                         "mean_height",
-                        value -> String.format("%.3f (%.1f)", value, value * heightVariation.getAsDouble()));
+                        value -> new Object[]{value * heightVariation.getAsDouble() + baseHeight.getAsDouble(), value});
 
-                this.spacing = CwgGuiFactory.makePositiveExponentialSlider(-1, 6.0, conf.getDouble("heightSpacing"),
+                this.spacing = positiveExponentialSlider(-1, 6.0, conf.getDouble("heightSpacing"),
                         "spacing_height",
-                        value -> String.format("%.3f (%.1f)", value, value * heightVariation.getAsDouble()));
+                        value -> new Object[]{value * heightVariation.getAsDouble(), value});
 
-                this.stdDev =  makeSlider(0, 1, conf.getDouble("heightStdDeviation"),
+                this.stdDev = slider(0, 1, conf.getDouble("heightStdDeviation"),
                         "height_std_dev",
-                        value -> String.format("%.3f (%.1f)", value, value * heightVariation.getAsDouble()));
+                        value -> new Object[]{value * heightVariation.getAsDouble(), value});
             } else {
                 this.mean = null;
                 this.spacing = null;
                 this.stdDev = null;
             }
-            this.probability = makeSlider(0, 1, conf.getDouble("spawnProbability"),
-                    "spawn_probability", value -> String.format("%.3f", value));
-            this.selectBiomes = makeCheckBox("select_biomes", !conf.get("biomes").equals(JsonNull.INSTANCE));
+            this.probability = slider(0, 1, conf.getDouble("spawnProbability"), "spawn_probability");
+            this.selectBiomes = checkBox("select_biomes", !conf.get("biomes").equals(JsonNull.INSTANCE));
             this.heightRange = makeOreHeightSlider(gui, vanillaText("spawn_range"), -2.0f, 2.0f,
                     conf.getFloat("minHeight"), conf.getFloat("maxHeight"), baseHeight, heightVariation);
 
@@ -320,7 +321,7 @@ class OreSettingsTab {
             this.block.onClick(btn ->
                     UIBlockStateSelect.makeOverlay(gui, state -> {
                         block.setBlockState(new BlockStateDesc(state));
-                        updateLabel(gui, name);
+                        updateLabel();
                     }).display()
             );
             delete.register(new Object() {
@@ -417,7 +418,7 @@ class OreSettingsTab {
                     new UISplitLayout<>(gui, Type.SIDE_BY_SIDE, mainArea, biomesArea).sizeWeights(2, 1).autoFitToContent(true).userResizable(false);
 
             this.autoFitToContent(true);
-            this.add(this.name, new GridLocation(1, 0, 4));
+            this.add(wrap(gui, this.name), new GridLocation(1, 0, 4));
             this.add(wrap(gui, this.block), new GridLocation(0, 0, 1));
             this.add(deleteTypeArea, new GridLocation(5, 0, 1));
             this.add(split, new GridLocation(0, 1, 6));
@@ -427,28 +428,11 @@ class OreSettingsTab {
         private CwgGuiCheckBox makeBiomeCheckbox(String name) {
             Biome biome = ForgeRegistries.BIOMES.getValue(new ResourceLocation(name));
             String text = biome == null ? name : String.format("%s (%s)", biome.getBiomeName(), biome.getRegistryName());
-            return makeCheckBoxUnlocalized(text, false);
+            return checkBoxUnloc(text, false);
         }
 
-        private UIContainer<?> makeLabel(ExtraGui gui) {
-            UIVerticalTableLayout<?> label = new UIVerticalTableLayout<>(gui, 1).setInsets(0, 0, 0, 0);
-            updateLabel(gui, label);
-            return label;
-        }
-
-        private void updateLabel(ExtraGui gui, UIComponent<?> label) {
-
-            ((UIContainer<?>) label).removeAll();
-
-            String name = block.getBlockState().getBlockId();
-            String props = block.getBlockState().getProperties().entrySet().stream()
-                    .map(e -> e.getKey() + "=" + e.getValue())
-                    .reduce((a, b) -> a + ", " + b).orElse("");
-
-            UIComponent<?> l1 = label(gui, name);
-            UIComponent<?> l2 = label(gui, String.format("[%s]", props));
-            ((UIContainer<?>) label).add(l1, l2);
-            label.setSize(label.getWidth(), l1.getHeight() + l2.getHeight());
+        private void updateLabel() {
+            name.setLines(block.getBlockName(), block.getBlockProperties());
         }
     }
 

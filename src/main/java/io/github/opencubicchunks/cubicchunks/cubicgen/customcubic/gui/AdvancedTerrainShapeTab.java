@@ -23,15 +23,13 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui;
 
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeCheckBox;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeIntSlider;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeInvertedPositiveExponentialSlider;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makePositiveExponentialSlider;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeSlider;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeSymmetricExponentialSlider;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.checkBox;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.doubleTextField;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.label;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.positiveExponentialSlider;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.slider;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.symmetricExponentialSlider;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.floatInput;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.label;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeUISelect;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.malisisText;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_INSETS;
@@ -42,6 +40,8 @@ import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.Cus
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.WIDTH_3_COL;
 
 import com.google.common.eventbus.Subscribe;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiCheckBox;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiSlider;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
@@ -50,8 +50,8 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.preset.JsonObjectView;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
 import net.malisis.core.client.gui.component.interaction.UISelect;
-import net.malisis.core.client.gui.component.interaction.UITextField;
 import net.malisis.core.client.gui.event.ComponentEvent;
+import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
@@ -64,9 +64,9 @@ class AdvancedTerrainShapeTab {
     private final UIContainer<?> container;
 
     private final CwgGuiCheckBox lockExpectedHeights;
-    private final UITextField expectedBaseHeight;
-    private final UITextField expectedHeightVariation;
-    private final UITextField actualHeight;
+    private final GuiTextField expectedBaseHeight;
+    private final GuiTextField expectedHeightVariation;
+    private final GuiTextField actualHeight;
 
     private final CwgGuiSlider heightVariationFactor;
     private final CwgGuiSlider heightVariationSpecialFactor;
@@ -115,7 +115,6 @@ class AdvancedTerrainShapeTab {
 
         int gridY = -1;
 
-        String PERIOD_FMT = " %.2f";
         UIVerticalTableLayout<?> table = new UIVerticalTableLayout(gui, 6);
         table.setPadding(HORIZONTAL_PADDING, 0);
 
@@ -123,130 +122,129 @@ class AdvancedTerrainShapeTab {
                 .setRightPadding(6)
 
                 //expected heights
-                .add(label(gui, malisisText("expected_heights_group")),
+                .add(wrap(gui, CwgGuiFactory.label("expected_heights_group")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_1_COL * 0, gridY += 2, WIDTH_1_COL))
-                .add(wrap(gui, this.lockExpectedHeights = makeCheckBox("lock_expected_heights", true)),
+                .add(wrap(gui, this.lockExpectedHeights = checkBox("lock_expected_heights", true)),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, ++gridY, WIDTH_2_COL))
-                .add(floatInput(gui, malisisText("actual_height"),
-                        this.actualHeight = new UITextField(gui, ""), (float) conf.getDouble("actualHeight")),
+                .add(doubleInput(gui, "actual_height", this.actualHeight = doubleTextField(conf.getDouble("actualHeight"))),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, gridY, WIDTH_2_COL))
-                .add(floatInput(gui, malisisText("expected_base_height"),
-                        this.expectedBaseHeight = new UITextField(gui, ""), (float) conf.getDouble("expectedBaseHeight")),
+                .add(doubleInput(gui, "expected_base_height",
+                        this.expectedBaseHeight = doubleTextField(conf.getDouble("expectedBaseHeight"))),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, ++gridY, WIDTH_2_COL))
-                .add(floatInput(gui, malisisText("expected_height_variation"),
-                        this.expectedHeightVariation = new UITextField(gui, ""), (float) conf.getDouble("expectedHeightVariation")),
+                .add(doubleInput(gui, "expected_height_variation",
+                        this.expectedHeightVariation = doubleTextField(conf.getDouble("expectedHeightVariation"))),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, gridY, WIDTH_2_COL))
                 // height variation
-                .add(label(gui, malisisText("height_variation_group")),
+                .add(wrap(gui, CwgGuiFactory.label("height_variation_group")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_1_COL * 0, ++gridY, WIDTH_1_COL))
-                .add(wrap(gui, this.heightVariationFactor = makePositiveExponentialSlider(
+                .add(wrap(gui, this.heightVariationFactor = positiveExponentialSlider(
                                 0, 20, conf.getDouble("heightVariationFactor"), "height_variation_factor_slider")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 0, ++gridY, WIDTH_3_COL))
-                .add(wrap(gui, this.heightVariationSpecialFactor = makePositiveExponentialSlider(
+                .add(wrap(gui, this.heightVariationSpecialFactor = positiveExponentialSlider(
                                 -6, 6,
                                 conf.getDouble("specialHeightVariationFactorBelowAverageY"), "height_variation_special_factor_slider")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 1, gridY, WIDTH_3_COL))
-                .add(wrap(gui, this.heightVariationOffset = makeSymmetricExponentialSlider(
+                .add(wrap(gui, this.heightVariationOffset = symmetricExponentialSlider(
                         0, 20, conf.getDouble("heightVariationOffset"), "height_variation_offset_slider")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 2, gridY, WIDTH_3_COL))
 
                 // height
-                .add(label(gui, malisisText("height_group")),
+                .add(wrap(gui, CwgGuiFactory.label("height_group")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_1_COL * 0, ++gridY, WIDTH_1_COL))
-                .add(wrap(gui, this.heightFactor = makeSymmetricExponentialSlider(
+                .add(wrap(gui, this.heightFactor = symmetricExponentialSlider(
                         1, 20, conf.getDouble("heightFactor"), "height_factor")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, ++gridY, WIDTH_2_COL))
-                .add(wrap(gui, this.heightOffset = makeSymmetricExponentialSlider(
+                .add(wrap(gui, this.heightOffset = symmetricExponentialSlider(
                         1, 20, conf.getDouble("heightOffset"), "height_offset")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, gridY, WIDTH_2_COL))
 
                 // depth noise
-                .add(label(gui, malisisText("depth_noise_group")),
+                .add(wrap(gui, CwgGuiFactory.label("depth_noise_group")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_1_COL * 0, ++gridY, WIDTH_1_COL))
-                .add(wrap(gui, this.depthNoisePeriodX = makeInvertedPositiveExponentialSlider(
+                .add(wrap(gui, this.depthNoisePeriodX = CwgGuiFactory.invertedPositiveExponentialSlider(
                         -8, MAX_NOISE_FREQ_POWER, 1.0 / conf.getDouble("depthNoiseFrequencyX"), "depth_noise_period_x")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, ++gridY, WIDTH_2_COL))
-                .add(wrap(gui, this.depthNoisePeriodZ = makeInvertedPositiveExponentialSlider(
+                .add(wrap(gui, this.depthNoisePeriodZ = CwgGuiFactory.invertedPositiveExponentialSlider(
                         -8, MAX_NOISE_FREQ_POWER, 1.0 / conf.getDouble("depthNoiseFrequencyZ"), "depth_noise_period_z")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, gridY, WIDTH_2_COL))
 
-                .add(wrap(gui, this.depthNoiseOctaves = makeIntSlider(
+                .add(wrap(gui, this.depthNoiseOctaves = CwgGuiFactory.intSlider(
                         1, 16, conf.getInt("depthNoiseOctaves"), "depth_noise_octaves")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 0, ++gridY, WIDTH_3_COL))
-                .add(wrap(gui, this.depthNoiseFactor = makePositiveExponentialSlider(
+                .add(wrap(gui, this.depthNoiseFactor = positiveExponentialSlider(
                          1, 12, conf.getDouble("depthNoiseFactor"), "depth_noise_factor")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 1, gridY, WIDTH_3_COL))
-                .add(wrap(gui, this.depthNoiseOffset = makeSymmetricExponentialSlider(
+                .add(wrap(gui, this.depthNoiseOffset = symmetricExponentialSlider(
                         1, 12, conf.getDouble("depthNoiseOffset"), "depth_noise_offset")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 2, gridY, WIDTH_3_COL))
 
                 // selector noise
-                .add(label(gui, malisisText("selector_noise_group")),
+                .add(wrap(gui, CwgGuiFactory.label("selector_noise_group")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_1_COL * 0, ++gridY, WIDTH_1_COL))
-                .add(wrap(gui, this.selectorNoisePeriodX = makeInvertedPositiveExponentialSlider(
+                .add(wrap(gui, this.selectorNoisePeriodX = CwgGuiFactory.invertedPositiveExponentialSlider(
                         -8, MAX_NOISE_FREQ_POWER, 1.0 / conf.getDouble("selectorNoiseFrequencyX"), "selector_noise_period_x")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 0, ++gridY, WIDTH_3_COL))
-                .add(wrap(gui, this.selectorNoisePeriodY = makeInvertedPositiveExponentialSlider(
+                .add(wrap(gui, this.selectorNoisePeriodY = CwgGuiFactory.invertedPositiveExponentialSlider(
                         -8, MAX_NOISE_FREQ_POWER, 1.0 / conf.getDouble("selectorNoiseFrequencyY"), "selector_noise_period_y")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 1, gridY, WIDTH_3_COL))
-                .add(wrap(gui, this.selectorNoisePeriodZ = makeInvertedPositiveExponentialSlider(
+                .add(wrap(gui, this.selectorNoisePeriodZ = CwgGuiFactory.invertedPositiveExponentialSlider(
                         -8, MAX_NOISE_FREQ_POWER, 1.0 / conf.getDouble("selectorNoiseFrequencyZ"), "selector_noise_period_z")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 2, gridY, WIDTH_3_COL))
 
-                .add(wrap(gui, this.selectorNoiseOctaves = makeIntSlider(
+                .add(wrap(gui, this.selectorNoiseOctaves = CwgGuiFactory.intSlider(
                         1, 16, conf.getInt("selectorNoiseOctaves"), "selector_noise_octaves")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 0, ++gridY, WIDTH_3_COL))
-                .add(wrap(gui, this.selectorNoiseFactor = makePositiveExponentialSlider(
+                .add(wrap(gui, this.selectorNoiseFactor = positiveExponentialSlider(
                         0, 10, conf.getDouble("selectorNoiseFactor"), "selector_noise_factor")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 1, gridY, WIDTH_3_COL))
-                .add(wrap(gui, this.selectorNoiseOffset = makeSymmetricExponentialSlider(
+                .add(wrap(gui, this.selectorNoiseOffset = symmetricExponentialSlider(
                         -5, 5, conf.getDouble("selectorNoiseOffset"), "selector_noise_offset")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 2, gridY, WIDTH_3_COL))
 
 
                 // low noise
-                .add(label(gui, malisisText("low_noise_group")),
+                .add(wrap(gui, CwgGuiFactory.label("low_noise_group")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_1_COL * 0, ++gridY, WIDTH_1_COL))
-                .add(wrap(gui, this.lowNoisePeriodX = makeInvertedPositiveExponentialSlider(
+                .add(wrap(gui, this.lowNoisePeriodX = CwgGuiFactory.invertedPositiveExponentialSlider(
                         -8, MAX_NOISE_FREQ_POWER, 1.0 / conf.getDouble("lowNoiseFrequencyX"), "low_noise_period_x")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 0, ++gridY, WIDTH_3_COL))
-                .add(wrap(gui, this.lowNoisePeriodY = makeInvertedPositiveExponentialSlider(
+                .add(wrap(gui, this.lowNoisePeriodY = CwgGuiFactory.invertedPositiveExponentialSlider(
                         -8, MAX_NOISE_FREQ_POWER, 1.0 / conf.getDouble("lowNoiseFrequencyY"), "low_noise_period_y")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 1, gridY, WIDTH_3_COL))
-                .add(wrap(gui, this.lowNoisePeriodZ = makeInvertedPositiveExponentialSlider(
+                .add(wrap(gui, this.lowNoisePeriodZ = CwgGuiFactory.invertedPositiveExponentialSlider(
                         -8, MAX_NOISE_FREQ_POWER, 1.0 / conf.getDouble("lowNoiseFrequencyZ"), "low_noise_period_z")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 2, gridY, WIDTH_3_COL))
 
-                .add(wrap(gui, this.lowNoiseOctaves = makeIntSlider(
+                .add(wrap(gui, this.lowNoiseOctaves = CwgGuiFactory.intSlider(
                         1, 16, conf.getInt("lowNoiseOctaves"), "low_noise_octaves")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 0, ++gridY, WIDTH_3_COL))
-                .add(wrap(gui, this.lowNoiseFactor = makePositiveExponentialSlider(
+                .add(wrap(gui, this.lowNoiseFactor = positiveExponentialSlider(
                         -10, 10, conf.getDouble("lowNoiseFactor"), "low_noise_factor")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 1, gridY, WIDTH_3_COL))
-                .add(wrap(gui, this.lowNoiseOffset = makeSymmetricExponentialSlider(
+                .add(wrap(gui, this.lowNoiseOffset = symmetricExponentialSlider(
                         -5, 5, conf.getDouble("lowNoiseOffset"), "low_noise_offset")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 2, gridY, WIDTH_3_COL))
 
                 // high noise
-                .add(label(gui, malisisText("high_noise_group")),
+                .add(wrap(gui, CwgGuiFactory.label("high_noise_group")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_1_COL * 0, ++gridY, WIDTH_1_COL))
-                .add(wrap(gui, this.highNoisePeriodX = makeInvertedPositiveExponentialSlider(
+                .add(wrap(gui, this.highNoisePeriodX = CwgGuiFactory.invertedPositiveExponentialSlider(
                         -8, MAX_NOISE_FREQ_POWER, 1.0 / conf.getDouble("highNoiseFrequencyX"), "high_noise_period_x")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 0, ++gridY, WIDTH_3_COL))
-                .add(wrap(gui, this.highNoisePeriodY = makeInvertedPositiveExponentialSlider(
+                .add(wrap(gui, this.highNoisePeriodY = CwgGuiFactory.invertedPositiveExponentialSlider(
                         -8, MAX_NOISE_FREQ_POWER, 1.0 / conf.getDouble("highNoiseFrequencyY"), "high_noise_period_y")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 1, gridY, WIDTH_3_COL))
-                .add(wrap(gui, this.highNoisePeriodZ = makeInvertedPositiveExponentialSlider(
+                .add(wrap(gui, this.highNoisePeriodZ = CwgGuiFactory.invertedPositiveExponentialSlider(
                         -8, MAX_NOISE_FREQ_POWER, 1.0 / conf.getDouble("highNoiseFrequencyZ"), "high_noise_period_z")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 2, gridY, WIDTH_3_COL))
 
-                .add(wrap(gui, this.highNoiseOctaves = makeIntSlider(
+                .add(wrap(gui, this.highNoiseOctaves = CwgGuiFactory.intSlider(
                         1, 16, conf.getInt("highNoiseOctaves"), "high_noise_octaves")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 0, ++gridY, WIDTH_3_COL))
-                .add(wrap(gui, this.highNoiseFactor = makePositiveExponentialSlider(
+                .add(wrap(gui, this.highNoiseFactor = positiveExponentialSlider(
                         -10, 10, conf.getDouble("highNoiseFactor"), "high_noise_factor")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 1, gridY, WIDTH_3_COL))
-                .add(wrap(gui, this.highNoiseOffset = makeSymmetricExponentialSlider(
+                .add(wrap(gui, this.highNoiseOffset = symmetricExponentialSlider(
                         -5, 5, conf.getDouble("highNoiseOffset"), "high_noise_offset")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 2, gridY, WIDTH_3_COL));
 
@@ -259,15 +257,15 @@ class AdvancedTerrainShapeTab {
 
         UIContainer<?> settingsContrainer = new UIVerticalTableLayout<>(gui, 4)
                 .setInsets(1, 1, 0, 0)
-                .add(wrap(gui, keepPreviewVisible = makeCheckBox("keep_preview_visible", true)),
+                .add(wrap(gui, keepPreviewVisible = checkBox("keep_preview_visible", true)),
                         new UIVerticalTableLayout.GridLocation(0, ++gridY, 4))
-                .add(wrap(gui, showPreview = makeCheckBox("show_preview", true)),
+                .add(wrap(gui, showPreview = checkBox("show_preview", true)),
                         new UIVerticalTableLayout.GridLocation(0, ++gridY, 4))
-                .add(wrap(gui, biomeScaleSlider = makeInvertedPositiveExponentialSlider(-10, -6, 64, "biome_scale")),
+                .add(wrap(gui, biomeScaleSlider = CwgGuiFactory.invertedPositiveExponentialSlider(-10, -6, 64, "biome_scale")),
                         new UIVerticalTableLayout.GridLocation(0, ++gridY, 4))
-                .add(wrap(gui, biomeOffsetSlider = makeSlider(0, biomeCount, 0, "biome_offset")),
+                .add(wrap(gui, biomeOffsetSlider = slider(0, biomeCount, 0, "biome_offset")),
                         new UIVerticalTableLayout.GridLocation(0, ++gridY, 4))
-                .add(wrap(gui, lockXZ = makeCheckBox("lock_xz_together", true)),
+                .add(wrap(gui, lockXZ = checkBox("lock_xz_together", true)),
                         new UIVerticalTableLayout.GridLocation(0, ++gridY, 4))
                 .add(horizontalAxis = makeUISelect(gui, Arrays.asList(EnumFacing.Axis.X, EnumFacing.Axis.Z))
                                 .setLabelPattern(malisisText("preview_horizontal_axis", ": %s")),
@@ -360,6 +358,13 @@ class AdvancedTerrainShapeTab {
         this.container = rootSplit;
     }
 
+    private static UIComponent<?> doubleInput(ExtraGui gui, String labelText, GuiTextField field) {
+        UISplitLayout<?> split = new UISplitLayout<>(gui, UISplitLayout.Type.SIDE_BY_SIDE, wrap(gui, label(labelText)), wrap(gui, field));
+        split.setSizeOf(UISplitLayout.Pos.SECOND, 40);
+        split.autoFitToContent(true);
+        return split;
+    }
+
     private UITerrainPreview.TerrainPreviewDataAccess makeDataAccess() {
         return new UITerrainPreview.TerrainPreviewDataAccess()
                 .setWaterLevel(this.getWaterLevel)
@@ -448,28 +453,28 @@ class AdvancedTerrainShapeTab {
          * - If they happen, turn the Cursor to red, as soon as a value is valid, turn back to default grey.
          * - If the customization is left (by pressing Done) when such an error exists, the value resets to default.
          */
-        float expectedBaseHeight, expectedHeightVariation, actualHeight;
+        double expectedBaseHeight, expectedHeightVariation, actualHeight;
         try {
-            expectedBaseHeight = Float.parseFloat(this.expectedBaseHeight.getText());
-            this.expectedBaseHeight.setCursorColor(0xD0D0D0);
+            expectedBaseHeight = Double.parseDouble(this.expectedBaseHeight.getText());
+            this.expectedBaseHeight.setTextColor(0xFFFFFFFF);
         } catch (NumberFormatException e) {
-            this.expectedBaseHeight.setCursorColor(0xD00000);
+            this.expectedBaseHeight.setTextColor(0xFFD00000);
             return;
         }
         
         try {
-            expectedHeightVariation = Float.parseFloat(this.expectedHeightVariation.getText());
-            this.expectedHeightVariation.setCursorColor(0xD0D0D0);
+            expectedHeightVariation = Double.parseDouble(this.expectedHeightVariation.getText());
+            this.expectedHeightVariation.setTextColor(0xFFFFFFFF);
         } catch (NumberFormatException e) {
-            this.expectedHeightVariation.setCursorColor(0xD00000);
+            this.expectedHeightVariation.setTextColor(0xFFD00000);
             return;
         }
         
         try {
-            actualHeight = Float.parseFloat(this.actualHeight.getText());
-            this.actualHeight.setCursorColor(0xD0D0D0);
+            actualHeight = Double.parseDouble(this.actualHeight.getText());
+            this.actualHeight.setTextColor(0xFFFFFFFF);
         } catch (NumberFormatException e) {
-            this.actualHeight.setCursorColor(0xD00000);
+            this.actualHeight.setTextColor(0xFFD00000);
             return;
         }
         conf.put("expectedBaseHeight", expectedBaseHeight);
@@ -482,29 +487,29 @@ class AdvancedTerrainShapeTab {
         conf.put("heightFactor", this.heightFactor.getSliderValue());
         conf.put("heightOffset", this.heightOffset.getSliderValue());
 
-        conf.put("depthNoiseFrequencyX", 1.0f / this.depthNoisePeriodX.getSliderValue());
-        conf.put("depthNoiseFrequencyZ", 1.0f / this.depthNoisePeriodZ.getSliderValue());
+        conf.put("depthNoiseFrequencyX", 1.0 / this.depthNoisePeriodX.getSliderValue());
+        conf.put("depthNoiseFrequencyZ", 1.0 / this.depthNoisePeriodZ.getSliderValue());
         conf.put("depthNoiseOctaves", this.depthNoiseOctaves.getSliderValue());
         conf.put("depthNoiseFactor", this.depthNoiseFactor.getSliderValue());
         conf.put("depthNoiseOffset", this.depthNoiseOffset.getSliderValue());
 
-        conf.put("selectorNoiseFrequencyX", 1.0f / this.selectorNoisePeriodX.getSliderValue());
-        conf.put("selectorNoiseFrequencyY", 1.0f / this.selectorNoisePeriodY.getSliderValue());
-        conf.put("selectorNoiseFrequencyZ", 1.0f / this.selectorNoisePeriodZ.getSliderValue());
+        conf.put("selectorNoiseFrequencyX", 1.0 / this.selectorNoisePeriodX.getSliderValue());
+        conf.put("selectorNoiseFrequencyY", 1.0 / this.selectorNoisePeriodY.getSliderValue());
+        conf.put("selectorNoiseFrequencyZ", 1.0 / this.selectorNoisePeriodZ.getSliderValue());
         conf.put("selectorNoiseOctaves", this.selectorNoiseOctaves.getSliderValue());
         conf.put("selectorNoiseFactor", this.selectorNoiseFactor.getSliderValue());
         conf.put("selectorNoiseOffset", this.selectorNoiseOffset.getSliderValue());
 
-        conf.put("lowNoiseFrequencyX", 1.0f / this.lowNoisePeriodX.getSliderValue());
-        conf.put("lowNoiseFrequencyY", 1.0f / this.lowNoisePeriodY.getSliderValue());
-        conf.put("lowNoiseFrequencyZ", 1.0f / this.lowNoisePeriodZ.getSliderValue());
+        conf.put("lowNoiseFrequencyX", 1.0 / this.lowNoisePeriodX.getSliderValue());
+        conf.put("lowNoiseFrequencyY", 1.0 / this.lowNoisePeriodY.getSliderValue());
+        conf.put("lowNoiseFrequencyZ", 1.0 / this.lowNoisePeriodZ.getSliderValue());
         conf.put("lowNoiseOctaves", this.lowNoiseOctaves.getSliderValue());
         conf.put("lowNoiseFactor", this.lowNoiseFactor.getSliderValue());
         conf.put("lowNoiseOffset", this.lowNoiseOffset.getSliderValue());
 
-        conf.put("highNoiseFrequencyX", 1.0f / this.highNoisePeriodX.getSliderValue());
-        conf.put("highNoiseFrequencyY", 1.0f / this.highNoisePeriodY.getSliderValue());
-        conf.put("highNoiseFrequencyZ", 1.0f / this.highNoisePeriodZ.getSliderValue());
+        conf.put("highNoiseFrequencyX", 1.0 / this.highNoisePeriodX.getSliderValue());
+        conf.put("highNoiseFrequencyY", 1.0 / this.highNoisePeriodY.getSliderValue());
+        conf.put("highNoiseFrequencyZ", 1.0 / this.highNoisePeriodZ.getSliderValue());
         conf.put("highNoiseOctaves", this.highNoiseOctaves.getSliderValue());
         conf.put("highNoiseFactor", this.highNoiseFactor.getSliderValue());
         conf.put("highNoiseOffset", this.highNoiseOffset.getSliderValue());

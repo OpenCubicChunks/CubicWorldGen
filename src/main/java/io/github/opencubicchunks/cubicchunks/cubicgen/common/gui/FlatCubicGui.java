@@ -23,10 +23,12 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui;
 
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.label;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.vanillaText;
 
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiButton;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiLabel;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.FlatGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBorderLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIColoredPanel;
@@ -93,31 +95,29 @@ public class FlatCubicGui extends ExtraGui {
         final int xSize = UIComponent.INHERITED - HORIZONTAL_PADDING * 2 - HORIZONTAL_INSETS * 2;
         final int ySize = VERTICAL_PADDING;
         final int xPos = HORIZONTAL_PADDING + HORIZONTAL_INSETS;
-        CwgGuiButton prev = CwgGuiFactory.makeButton( "previous_page");
-        CwgGuiButton next = CwgGuiFactory.makeButton( "next_page");
+        CwgGuiButton prev = CwgGuiFactory.button( "previous_page");
+        CwgGuiButton next = CwgGuiFactory.button( "next_page");
         prev.setWidth(BTN_WIDTH);
         next.setWidth(BTN_WIDTH);
 
-        CwgGuiButton done = CwgGuiFactory.makeButton( "done", btn -> FlatCubicGui.this.done());
+        CwgGuiButton done = CwgGuiFactory.button( "done", btn -> FlatCubicGui.this.done());
         done.setWidth(BTN_WIDTH);
 
-        UIMultilineLabel label = new UIMultilineLabel(this)
-                .setTextAnchor(Anchor.CENTER)
-                .setFontOptions(FontOptions.builder().color(0xFFFFFF).shadow().build());
+        CwgGuiLabel label = label();
 
         UIBorderLayout upperLayout = new UIBorderLayout(this)
                 .setSize(xSize, ySize)
                 .setPosition(xPos, 0)
                 .add(wrap(this, prev), UIBorderLayout.Border.LEFT)
                 .add(wrap(this, next), UIBorderLayout.Border.RIGHT)
-                .add(label, UIBorderLayout.Border.CENTER);
+                .add(wrap(this, label), UIBorderLayout.Border.CENTER);
 
         UIBorderLayout lowerLayout = new UIBorderLayout(this)
                 .setSize(xSize, ySize)
                 .setAnchor(Anchor.BOTTOM).setPosition(xPos, 0)
                 .add(wrap(this, done), UIBorderLayout.Border.CENTER);
 
-        UITabbedContainer tabGroup = new UITabbedContainer(this, prev, next, label::setText);
+        UITabbedContainer tabGroup = new UITabbedContainer(this, prev, next, label::setTranslationKey);
         tabGroup.add(upperLayout, lowerLayout);
 
         return tabGroup;

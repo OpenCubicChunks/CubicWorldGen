@@ -24,24 +24,11 @@
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui;
 
 import com.google.common.base.Converter;
-import com.google.common.eventbus.Subscribe;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UICheckboxNoAutoSize;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIRangeSlider;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISliderImproved;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.converter.Converters;
-import net.malisis.core.client.gui.Anchor;
 import net.malisis.core.client.gui.MalisisGui;
-import net.malisis.core.client.gui.component.UIComponent;
-import net.malisis.core.client.gui.component.container.UIContainer;
-import net.malisis.core.client.gui.component.decoration.UILabel;
-import net.malisis.core.client.gui.component.interaction.UICheckBox;
 import net.malisis.core.client.gui.component.interaction.UISelect;
-import net.malisis.core.client.gui.component.interaction.UISlider;
-import net.malisis.core.client.gui.component.interaction.UITextField;
-import net.malisis.core.client.gui.event.ComponentEvent;
-import net.malisis.core.renderer.font.FontOptions;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.biome.Biome;
@@ -55,9 +42,6 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.DoubleSupplier;
-import java.util.function.Function;
-
-import static java.lang.Math.round;
 
 public class MalisisGuiUtils {
 
@@ -130,123 +114,6 @@ public class MalisisGuiUtils {
 
         select.maxDisplayedOptions(8);
         return select;
-    }
-
-    public static UIComponent<?> label(MalisisGui gui, String text) {
-        return wrappedCentered(
-                gui, new UILabel(gui, text)
-                        .setFontOptions(FontOptions.builder().color(0xFFFFFF).shadow().build())
-        ).setSize(0, 15);
-    }
-
-    // textInput as argument so that it's easy to access it later
-    // otherwise, to access the value of the text field, it would be necessary to get it out of implementation-specific contaier
-    public static UIComponent<?> floatInput(ExtraGui gui, String text, UITextField textField, float defaultValue) {
-
-        try {
-            Function<String, String> filter = newStr -> {
-                try {
-                    Float.parseFloat(newStr);
-                    return newStr;
-                } catch (NumberFormatException e1) {
-                    // bug in 6.5.1 where the old text is actually the new text
-                    String str = textField.getText();
-                    try {
-                        Float.parseFloat(newStr);
-                        return str; // return old text
-                    } catch (NumberFormatException e2) {
-                        // this is ugly...
-
-                        // first, is it empty or a single character that doesn't parse?
-                        if (str.length() <= 1) {
-                            return "";
-                        }
-                        // this should cover all the "user is typing" cases
-                        int length = str.length();
-                        // iterate end-to-beginning and check if after removing that character, it becomes a valid number
-                        for (int i = length - 1; i >= 0; i--) {
-                            String sub = str.substring(0, i) + str.substring(i + 1);
-                            try {
-                                Float.parseFloat(sub);
-                                return sub;
-                            } catch (NumberFormatException e3) {
-                            }
-                        }
-                        // uh... we still didn't return?
-                        // I don't know what could trigger this, but this is the way we will try to handle it:
-                        // iterate over the characters and remove everything we don't want.
-                        //  * up until the dot, remove everything non-digit
-                        //    * except 'e' if it's second or later character, then assume there was no dot, and after that, that we are past 'e'
-                        //  * if there was no dot, or we are past the dot, remove everything non-digit except 'e'
-                        //  * after an 'e', remove everything non-digit
-                        // If it *still* doesn't parse, give up and return empty string
-                        StringBuilder newsb = new StringBuilder(str.length());
-                        boolean seenFirstDigit = false;
-                        boolean seenDot = false;
-                        boolean seenE = false;
-                        for (char ch : str.toCharArray()) {
-                            if (ch >= '0' && ch <= '9') {
-                                newsb.append(ch);
-                                seenFirstDigit = true;
-                            } else if (ch == 'e' || ch == 'E') {
-                                if (!seenE && seenFirstDigit) {
-                                    newsb.append(ch);
-                                    seenE = true;
-                                    seenDot = true;
-                                }
-                            } else if (ch == '.') {
-                                if (!seenDot) {
-                                    newsb.append(ch);
-                                    seenDot = true;
-                                }
-                            }
-                        }
-                        str = newsb.toString();
-                        try {
-                            Float.parseFloat(str);
-                            return str;
-                        } catch (NumberFormatException e3) {
-                            return "";
-                        }
-                    }
-                }
-            };
-            textField.setFilter(filter);
-            // another (imperfect) hack because filter isn't applied when remoing characters
-            textField.register(new Object() {
-                @Subscribe
-                public void onValueChange(ComponentEvent.ValueChange<UITextField, String> change) {
-                    String newText = filter.apply(change.getNewValue());
-                    if (!newText.equals(change.getNewValue())) {
-                        textField.setText(newText);
-                    }
-                }
-            });
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
-
-        textField.setEditable(true);
-        textField.setText(String.format("%.1f", defaultValue));
-        textField.setFontOptions(FontOptions.builder().color(0xFFFFFF).build());
-        UIComponent<?> label = wrappedMiddle(gui, new UILabel(gui, text).setFontOptions(FontOptions.builder().color(0xFFFFFF).build()));
-        UISplitLayout<?> split = new UISplitLayout<>(gui, UISplitLayout.Type.SIDE_BY_SIDE, label, textField);
-        split.setSizeOf(UISplitLayout.Pos.SECOND, 40);
-        split.autoFitToContent(true);
-        return split;
-    }
-    public static UIContainer<?> wrappedCentered(MalisisGui gui, UIComponent<?> comp) {
-        comp.setAnchor(Anchor.MIDDLE | Anchor.CENTER);
-        UIContainer<?> cont = new UIContainer<>(gui);
-        cont.add(comp);
-        return cont;
-    }
-
-    public static UIContainer<?> wrappedMiddle(MalisisGui gui, UIComponent<?> comp) {
-        comp.setAnchor(Anchor.MIDDLE);
-        UIContainer<?> cont = new UIContainer<>(gui);
-        cont.add(comp);
-        return cont;
     }
 
     public static String vanillaText(String name) {

@@ -33,8 +33,16 @@ public class CwgGuiCheckBox extends GuiCheckBox {
 
     private Consumer<CwgGuiCheckBox> clickHandler = x -> {};
 
-    public CwgGuiCheckBox(String formatString, boolean isChecked) {
-        super(0, 0, 0, I18n.format(formatString), isChecked);
+    public static CwgGuiCheckBox create(String formatString, boolean isChecked) {
+        return new CwgGuiCheckBox(I18n.format(formatString), isChecked);
+    }
+
+    public static CwgGuiCheckBox createUnlocalized(String formatString, boolean isChecked) {
+        return new CwgGuiCheckBox(formatString, isChecked);
+    }
+
+    private CwgGuiCheckBox(String formatString, boolean isChecked) {
+        super(0, 0, 0, formatString, isChecked);
     }
 
     public void onClick(Consumer<CwgGuiCheckBox> action) {

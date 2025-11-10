@@ -56,7 +56,6 @@ public class CwgGuiBlockStateButton extends GuiButton {
     private String tooltip;
     private BlockStateDesc blockState;
     private Consumer<CwgGuiBlockStateButton> onClick;
-    private Consumer<CwgGuiBlockStateButton> onRightClick;
 
     public CwgGuiBlockStateButton(BlockStateDesc blockState) {
         super(0, 0, 0, SIZE, SIZE, "");

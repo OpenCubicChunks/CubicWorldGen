@@ -35,8 +35,16 @@ public class CwgGuiButton extends GuiButtonExt {
 
     private Consumer<CwgGuiButton> onClick;
 
-    public CwgGuiButton(String formatString, @Nullable Consumer<CwgGuiButton> onClick) {
-        super(0, 0, 0, I18n.format(formatString));
+    public static CwgGuiButton create(String formatString, @Nullable Consumer<CwgGuiButton> onClick) {
+        return new CwgGuiButton(I18n.format(formatString), onClick);
+    }
+
+    public static CwgGuiButton createUnlocalized(String text, @Nullable Consumer<CwgGuiButton> onClick) {
+        return new CwgGuiButton(text, onClick);
+    }
+
+    private CwgGuiButton(String text, @Nullable Consumer<CwgGuiButton> onClick) {
+        super(0, 0, 0, text);
         this.onClick = onClick;
     }
 
@@ -46,7 +54,9 @@ public class CwgGuiButton extends GuiButtonExt {
 
     @Override public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
         if (super.mousePressed(mc, mouseX, mouseY)) {
-            this.onClick.accept(this);
+            if (this.onClick != null) {
+                this.onClick.accept(this);
+            }
             return true;
         }
         return false;

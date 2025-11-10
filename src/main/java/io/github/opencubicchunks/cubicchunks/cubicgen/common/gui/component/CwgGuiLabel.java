@@ -30,14 +30,40 @@ import net.minecraft.client.resources.I18n;
 
 public class CwgGuiLabel extends GuiLabel {
 
-    public CwgGuiLabel(String text, int xIn, int yIn, int widthIn, int heightIn, int colorIn) {
-        super(Minecraft.getMinecraft().fontRenderer, 0, xIn, yIn, widthIn, heightIn, colorIn);
-        setText(text);
+    public static CwgGuiLabel create(String formatString, int x, int y, int width, int height, int color) {
+        CwgGuiLabel label = new CwgGuiLabel(x, y, width, height, color);
+        label.setTranslationKey(formatString);
+        return label;
     }
 
-    public void setText(String text) {
+    public static CwgGuiLabel createUnlocalized(String text, int x, int y, int width, int height, int color) {
+        CwgGuiLabel label = new CwgGuiLabel(x, y, width, height, color);
+        label.setUnlocalizedText(text);
+        return label;
+    }
+
+    public static CwgGuiLabel create(int x, int y, int width, int height, int color) {
+        return new CwgGuiLabel(x, y, width, height, color);
+    }
+
+    private CwgGuiLabel(int x, int y, int width, int height, int color) {
+        super(Minecraft.getMinecraft().fontRenderer, 0, x, y, width, height, color);
+    }
+
+    public void setTranslationKey(String text) {
         ((IGuiLabel) this).getLabels().clear();
         for (String s : I18n.format(text).split("\n")) {
+            addLine(s);
+        }
+    }
+
+    public void setUnlocalizedText(String text) {
+        setLines(text.split("\n"));
+    }
+
+    public void setLines(String... text) {
+        ((IGuiLabel) this).getLabels().clear();
+        for (String s : text) {
             addLine(s);
         }
     }

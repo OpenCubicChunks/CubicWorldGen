@@ -24,15 +24,22 @@
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui;
 
 import com.google.common.base.Converter;
+import com.google.common.eventbus.Subscribe;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiCheckBox;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiLabel;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiSeparator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiSlider;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.WrappedVanillaComponent;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.converter.Converters;
 import net.malisis.core.client.gui.MalisisGui;
+import net.malisis.core.client.gui.component.UIComponent;
+import net.malisis.core.client.gui.component.decoration.UILabel;
+import net.malisis.core.client.gui.component.interaction.UITextField;
+import net.malisis.core.client.gui.event.ComponentEvent;
+import net.malisis.core.renderer.font.FontOptions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiLabel;
@@ -63,13 +70,16 @@ public class CwgGuiFactory {
         return WrappedVanillaComponent.of(gui, vanillaComponent);
     }
 
-    public static CwgGuiSeparator makeSeparator() {
+    public static CwgGuiSeparator separator() {
         return new CwgGuiSeparator(0, 0);
     }
 
-    public static GuiTextField makeIntTextField(int defaultValue) {
+    public static GuiTextField intTextField(int defaultValue) {
         GuiTextField field = new GuiTextField(0, Minecraft.getMinecraft().fontRenderer, 0, 0, 0, 20);
         field.setValidator(str -> {
+            if (str.isEmpty()) {
+                return true;
+            }
             try {
                 Integer.parseInt(str);
                 return true;
@@ -81,173 +91,228 @@ public class CwgGuiFactory {
         return field;
     }
 
-    public static CwgGuiLabel makeLabel(String formatString) {
-        return makeLabel(formatString, 0xFFFFFFFF, 0, 0);
+    public static GuiTextField doubleTextField(double defaultValue) {
+        GuiTextField field = new GuiTextField(0, Minecraft.getMinecraft().fontRenderer, 0, 0, 0, 20);
+        field.setValidator(newStr -> {
+            if (newStr.isEmpty()) {
+                return true;
+            }
+            try {
+                Double.parseDouble(newStr);
+                return true;
+            } catch (NumberFormatException e1) {
+                return false;
+            }
+        });
+        field.setText(String.valueOf(defaultValue));
+        return field;
     }
 
-    public static CwgGuiLabel makeLabel(String formatString, int color) {
-        return makeLabel(str(formatString), color, 0, 0);
+    public static CwgGuiLabel label() {
+        return CwgGuiLabel.create(0, 0, 10, 10, 0xFFFFFFFF);
     }
 
-    public static CwgGuiLabel makeLabel(String formatString, int x, int y) {
-        return makeLabel(formatString, 0xFFFFFFFF, x, y);
+    public static CwgGuiLabel label(String formatString) {
+        return label(formatString, 0xFFFFFFFF, 0, 0);
     }
 
-    public static CwgGuiLabel makeLabel(String formatString, int color, int x, int y) {
-        CwgGuiLabel label = new CwgGuiLabel(str(formatString), x, y, 10, 10, color);
+    public static CwgGuiLabel label(String formatString, int color) {
+        return label(str(formatString), color, 0, 0);
+    }
+
+    public static CwgGuiLabel label(String formatString, int x, int y) {
+        return label(formatString, 0xFFFFFFFF, x, y);
+    }
+
+    public static CwgGuiLabel label(String formatString, int color, int x, int y) {
+        return CwgGuiLabel.create(str(formatString), x, y, 10, 10, color);
+    }
+
+    public static CwgGuiLabel labelUnloc(String... lines) {
+        CwgGuiLabel label = label();
+        label.setLines(lines);
         return label;
     }
 
-    public static CwgGuiButton makeButton(String formatString) {
-        return new CwgGuiButton(str(formatString), null);
+    public static CwgGuiLabel labelUnloc(String text) {
+        return labelUnloc(text, 0xFFFFFFFF, 0, 0);
     }
 
-    public static CwgGuiButton makeButton(String formatString, Consumer<CwgGuiButton> onClick) {
-        return new CwgGuiButton(str(formatString), onClick);
+    public static CwgGuiLabel labelUnloc(String text, int color) {
+        return labelUnloc(str(text), color, 0, 0);
     }
 
-    public static CwgGuiCheckBox makeCheckBox(String formatString, boolean defaultValue) {
-        return new CwgGuiCheckBox(str(formatString), defaultValue);
+    public static CwgGuiLabel labelUnloc(String text, int x, int y) {
+        return labelUnloc(text, 0xFFFFFFFF, x, y);
     }
 
-    public static CwgGuiCheckBox makeCheckBoxUnlocalized(String text, boolean defaultValue) {
-        return new CwgGuiCheckBox(text, defaultValue);
+    public static CwgGuiLabel labelUnloc(String text, int color, int x, int y) {
+        return CwgGuiLabel.createUnlocalized(text, x, y, 10, 10, color);
     }
 
-    public static CwgGuiSlider makeSlider(double min, double max, double defVal, String formatString, Function<Double, String> toString) {
+    public static CwgGuiButton button(String formatString) {
+        return CwgGuiButton.create(str(formatString), null);
+    }
+
+    public static CwgGuiButton button(String formatString, Consumer<CwgGuiButton> onClick) {
+        return CwgGuiButton.create(str(formatString), onClick);
+    }
+
+    public static CwgGuiButton buttonUnloc(String formatString) {
+        return CwgGuiButton.createUnlocalized(formatString, null);
+    }
+
+    public static CwgGuiButton buttonUnloc(String formatString, Consumer<CwgGuiButton> onClick) {
+        return CwgGuiButton.createUnlocalized(formatString, onClick);
+    }
+
+    public static CwgGuiCheckBox checkBox(String formatString, boolean defaultValue) {
+        return CwgGuiCheckBox.create(str(formatString), defaultValue);
+    }
+
+    public static CwgGuiCheckBox checkBoxUnloc(String formatString, boolean defaultValue) {
+        return CwgGuiCheckBox.create(formatString, defaultValue);
+    }
+
+    public static CwgGuiSlider slider(double min, double max, double defVal, String formatString, Function<Double, Object[]> params) {
 
         CwgGuiSlider[] wrappedSlider = new CwgGuiSlider[1];
-        BiPredicate<Double, Double> isInRoundRadius = getIsInRoundRadiusPredicate(wrappedSlider);
+        Converter<Double, Double> conv = converter(wrappedSlider, defVal, Converters.builder().linearScale(min, max));
 
-        double defMult = defVal == 0 ? 1 : defVal;
-
-        Converter<Double, Double> conv = Converters.builder()
-                .linearScale(min, max).rounding().withBase(2, 1).withBase(10, 1).withBase(2, defMult).withBase(10, defMult).withMaxExp(128)
-                .withRoundingRadiusPredicate(isInRoundRadius)
-                .build();
-
-        CwgGuiSlider slider = new CwgGuiSlider(str(formatString), toString, conv, defVal);
+        CwgGuiSlider slider = CwgGuiSlider.create(str(formatString), params, conv, defVal);
         wrappedSlider[0] = slider;
         return slider;
     }
 
-
-    public static CwgGuiSlider makeSlider(double min, double max, double defVal, String formatString) {
-        return makeSlider(min, max, defVal, formatString, x -> String.format("%.3f", x));
-    }
-
-    public static CwgGuiSlider makeIntSlider(int min, int max, int defVal, String formatString) {
-        return makeIntSlider(min, max, defVal, formatString, String::valueOf);
-    }
-
-    public static CwgGuiSlider makeIntSlider(int min, int max, int defVal, String formatString, Function<Integer, String> toString) {
-
+    public static CwgGuiSlider slider(double min, double max, double defVal, String formatString) {
         CwgGuiSlider[] wrappedSlider = new CwgGuiSlider[1];
-        BiPredicate<Double, Double> isInRoundRadius = getIsInRoundRadiusPredicate(wrappedSlider);
+        Converter<Double, Double> conv = converter(wrappedSlider, defVal, Converters.builder().linearScale(min, max));
 
-        double defMult = defVal == 0 ? 1 : defVal;
-
-        Converter<Double, Double> conv = Converters.builder()
-                .linearScale(min, max).rounding().withBase(2, 1).withBase(10, 1).withBase(2, defMult).withBase(10, defMult).withMaxExp(128)
-                .withRoundingRadiusPredicate(isInRoundRadius)
-                .build();
-
-        CwgGuiSlider slider = new CwgGuiSlider(str(formatString), x -> toString.apply((int) Math.round(x)), conv, defVal);
+        CwgGuiSlider slider = CwgGuiSlider.create(str(formatString), conv, defVal);
         wrappedSlider[0] = slider;
         return slider;
     }
 
-    public static CwgGuiSlider makePositiveExponentialSlider(double minPos, double maxPos, double defaultVal,
-            String formatString, Function<Double, String> toString) {
+    public static CwgGuiSlider intSlider(int min, int max, int defVal, String formatString) {
+        CwgGuiSlider[] wrappedSlider = new CwgGuiSlider[1];
+        Converter<Double, Double> conv = converter(wrappedSlider, defVal, Converters.builder().linearScale(min, max));
+
+        CwgGuiSlider slider = CwgGuiSlider.create(str(formatString), x -> new Object[]{(int) Math.round(x)}, conv, defVal);
+        wrappedSlider[0] = slider;
+        return slider;
+    }
+
+    public static CwgGuiSlider intSlider(int min, int max, int defVal, String formatString, Function<Integer, Object[]> toString) {
 
         CwgGuiSlider[] wrappedSlider = new CwgGuiSlider[1];
-        BiPredicate<Double, Double> isInRoundRadius = getIsInRoundRadiusPredicate(wrappedSlider);
+        Converter<Double, Double> conv = converter(wrappedSlider, defVal, Converters.builder().linearScale(min, max));
 
-        double defMult = defaultVal == 0 ? 1 : defaultVal;
+        CwgGuiSlider slider = CwgGuiSlider.create(str(formatString), x -> toString.apply((int) Math.round(x)), conv, defVal);
+        wrappedSlider[0] = slider;
+        return slider;
+    }
 
-        Converter<Double, Double> conv = Converters.builder()
+    public static CwgGuiSlider positiveExponentialSlider(double minPos, double maxPos, double defaultVal,
+            String formatString, Function<Double, Object[]> params) {
+
+        CwgGuiSlider[] wrappedSlider = new CwgGuiSlider[1];
+        Converter<Double, Double> conv = converter(wrappedSlider, defaultVal, Converters.builder()
                 .exponential().withBaseValue(2).withPositiveExponentRange(minPos, maxPos)
-                .rounding().withBase(2, 1).withBase(10, 1).withBase(2, defMult).withBase(10, defMult).withMaxExp(128)
-                .withRoundingRadiusPredicate(isInRoundRadius)
-                .withInfinity().positiveAt(Math.pow(2, maxPos)).negativeAt(Double.NaN)
-                .build();
+                .withInfinity().positiveAt(Math.pow(2, maxPos)).negativeAt(Double.NaN));
 
-        CwgGuiSlider slider = new CwgGuiSlider(str(formatString), toString, conv, defaultVal);
+        CwgGuiSlider slider = CwgGuiSlider.create(str(formatString), params, conv, defaultVal);
         wrappedSlider[0] = slider;
         return slider;
     }
 
-    public static CwgGuiSlider makePositiveExponentialSlider(double minPos, double maxPos, double defaultVal, String formatString) {
-        return makePositiveExponentialSlider(minPos, maxPos, defaultVal, formatString, x -> String.format("%.3f", x));
-    }
-
-    public static CwgGuiSlider makeExponentialSlider(double minNeg, double maxNeg, double minPos, double maxPos, double defaultVal,
-            String formatString, Function<Double, String> toString) {
+    public static CwgGuiSlider positiveExponentialSlider(double minPos, double maxPos, double defaultVal, String formatString) {
 
         CwgGuiSlider[] wrappedSlider = new CwgGuiSlider[1];
-        BiPredicate<Double, Double> isInRoundRadius = getIsInRoundRadiusPredicate(wrappedSlider);
+        Converter<Double, Double> conv = converter(wrappedSlider, defaultVal, Converters.builder()
+                .exponential().withBaseValue(2).withPositiveExponentRange(minPos, maxPos)
+                .withInfinity().positiveAt(Math.pow(2, maxPos)).negativeAt(Double.NaN));
 
-        double defMult = defaultVal == 0 ? 1 : defaultVal;
-
-        Converter<Double, Double> conv = Converters.builder()
-                .exponential().withZero().withBaseValue(2).withNegativeExponentRange(minNeg, maxNeg).withPositiveExponentRange(minPos, maxPos)
-                .rounding().withBase(2, 1).withBase(10, 1).withBase(2, defMult).withBase(10, defMult).withMaxExp(128)
-                .withRoundingRadiusPredicate(isInRoundRadius)
-                .build();
-
-        CwgGuiSlider slider = new CwgGuiSlider(str(formatString), toString, conv, defaultVal);
+        CwgGuiSlider slider = CwgGuiSlider.create(str(formatString), conv, defaultVal);
         wrappedSlider[0] = slider;
         return slider;
     }
 
-    public static CwgGuiSlider makeExponentialSlider(double minNeg, double maxNeg, double minPos, double maxPos, double defaultVal, String formatString) {
-        return makeExponentialSlider(minNeg, maxNeg, minPos, maxPos, defaultVal, formatString, x -> String.format("%.3f", x));
-    }
-
-    public static CwgGuiSlider makeSymmetricExponentialSlider(double min, double max, double defaultVal, String formatString, Function<Double, String> toString) {
-        return makeExponentialSlider(min, max, min, max, defaultVal, formatString, toString);
-    }
-
-    public static CwgGuiSlider makeSymmetricExponentialSlider(double min, double max, double defaultVal, String formatString) {
-        return makeExponentialSlider(min, max, min, max, defaultVal, formatString);
-    }
-
-    public static CwgGuiSlider makeInvertedExponentialSlider(double minNeg, double maxNeg, double minPos, double maxPos, double defaultVal,
-            String formatString, Function<Double, String> toString) {
+    public static CwgGuiSlider exponentialSlider(double minNeg, double maxNeg, double minPos, double maxPos, double defaultVal,
+            String formatString, Function<Double, Object[]> params) {
 
         CwgGuiSlider[] wrappedSlider = new CwgGuiSlider[1];
-        BiPredicate<Double, Double> isInRoundRadius = getIsInRoundRadiusPredicate(wrappedSlider);
+        Converter<Double, Double> conv = converter(wrappedSlider, defaultVal, Converters.builder()
+                .exponential().withZero().withBaseValue(2).withNegativeExponentRange(minNeg, maxNeg).withPositiveExponentRange(minPos, maxPos));
 
-        double defMult = defaultVal == 0 ? 1 : defaultVal;
-
-        Converter<Double, Double> conv = Converters.builder()
-                .reverse()
-                .pow(2)
-                .exponential().withZero().withBaseValue(2).withNegativeExponentRange(minNeg, maxNeg).withPositiveExponentRange(minPos, maxPos)
-                .inverse()
-                .rounding().withBase(2, 1).withBase(10, 1).withBase(2, defMult).withBase(10, defMult).withMaxExp(128)
-                .withRoundingRadiusPredicate(isInRoundRadius)
-                .build();
-
-        CwgGuiSlider slider = new CwgGuiSlider(str(formatString), toString, conv, defaultVal);
+        CwgGuiSlider slider = CwgGuiSlider.create(str(formatString), params, conv, defaultVal);
         wrappedSlider[0] = slider;
         return slider;
     }
 
-    public static CwgGuiSlider makeInvertedExponentialSlider(double minNeg, double maxNeg, double minPos, double maxPos, double defaultVal, String formatString) {
-        return makeInvertedExponentialSlider(minNeg, maxNeg, minPos, maxPos, defaultVal, formatString, x -> String.format("%.3f", x));
+    public static CwgGuiSlider exponentialSlider(double minNeg, double maxNeg, double minPos, double maxPos, double defaultVal, String formatString) {
+        CwgGuiSlider[] wrappedSlider = new CwgGuiSlider[1];
+        Converter<Double, Double> conv = converter(wrappedSlider, defaultVal, Converters.builder()
+                .exponential().withZero().withBaseValue(2).withNegativeExponentRange(minNeg, maxNeg).withPositiveExponentRange(minPos, maxPos));
+
+        CwgGuiSlider slider = CwgGuiSlider.create(str(formatString), conv, defaultVal);
+        wrappedSlider[0] = slider;
+        return slider;
     }
 
-    public static CwgGuiSlider makeInvertedPositiveExponentialSlider(double min, double max, double defaultVal, String formatString) {
-        return makeInvertedExponentialSlider(Double.NaN, Double.NaN, min, max, defaultVal, formatString);
+    public static CwgGuiSlider symmetricExponentialSlider(double min, double max, double defaultVal, String formatString, Function<Double, Object[]> params) {
+        return exponentialSlider(min, max, min, max, defaultVal, formatString, params);
     }
 
-    public static CwgGuiSlider makeInvertedPositiveExponentialSlider(double min, double max, double defaultVal,
-            String formatString, Function<Double, String> toString) {
-        return makeInvertedExponentialSlider(Double.NaN, Double.NaN, min, max, defaultVal, formatString, toString);
+    public static CwgGuiSlider symmetricExponentialSlider(double min, double max, double defaultVal, String formatString) {
+        return exponentialSlider(min, max, min, max, defaultVal, formatString);
+    }
+
+    public static CwgGuiSlider invertedExponentialSlider(double minNeg, double maxNeg, double minPos, double maxPos, double defaultVal,
+            String formatString, Function<Double, Object[]> params) {
+
+        CwgGuiSlider[] wrappedSlider = new CwgGuiSlider[1];
+        Converter<Double, Double> conv = converter(wrappedSlider, defaultVal, Converters.builder()
+                .reverse().pow(2)
+                .exponential().withZero().withBaseValue(2).withNegativeExponentRange(minNeg, maxNeg).withPositiveExponentRange(minPos, maxPos)
+                .inverse());
+
+        CwgGuiSlider slider = CwgGuiSlider.create(str(formatString), params, conv, defaultVal);
+        wrappedSlider[0] = slider;
+        return slider;
+    }
+
+    public static CwgGuiSlider invertedExponentialSlider(double minNeg, double maxNeg, double minPos, double maxPos, double defaultVal, String formatString) {
+        CwgGuiSlider[] wrappedSlider = new CwgGuiSlider[1];
+        Converter<Double, Double> conv = converter(wrappedSlider, defaultVal, Converters.builder()
+                .reverse().pow(2)
+                .exponential().withZero().withBaseValue(2).withNegativeExponentRange(minNeg, maxNeg).withPositiveExponentRange(minPos, maxPos)
+                .inverse());
+
+        CwgGuiSlider slider = CwgGuiSlider.create(str(formatString), conv, defaultVal);
+        wrappedSlider[0] = slider;
+        return slider;
+    }
+
+    public static CwgGuiSlider invertedPositiveExponentialSlider(double min, double max, double defaultVal, String formatString) {
+        return invertedExponentialSlider(Double.NaN, Double.NaN, min, max, defaultVal, formatString);
+    }
+
+    public static CwgGuiSlider invertedPositiveExponentialSlider(double min, double max, double defaultVal,
+            String formatString, Function<Double, Object[]> params) {
+        return invertedExponentialSlider(Double.NaN, Double.NaN, min, max, defaultVal, formatString, params);
     }
 
     // internal utils
+    private static Converter<Double, Double> converter(CwgGuiSlider[] wrappedSlider, double defVal, Converters.Builder min) {
+        BiPredicate<Double, Double> isInRoundRadius = getIsInRoundRadiusPredicate(wrappedSlider);
+
+        double defMult = defVal == 0 ? 1 : defVal;
+
+        Converter<Double, Double> conv = min.rounding().withBase(2, 1).withBase(10, 1).withBase(2, defMult).withBase(10, defMult).withMaxExp(128)
+                .withRoundingRadiusPredicate(isInRoundRadius)
+                .build();
+        return conv;
+    }
 
     @Nonnull private static BiPredicate<Double, Double> getIsInRoundRadiusPredicate(CwgGuiSlider[] slider) {
         return getIsInRoundRadiusPredicate(() -> slider[0] == null ? 1000 : slider[0].width);

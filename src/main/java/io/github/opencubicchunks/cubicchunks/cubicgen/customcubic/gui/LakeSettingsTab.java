@@ -23,8 +23,9 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui;
 
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeButton;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeCheckBoxUnlocalized;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.button;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.checkBoxUnloc;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.label;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.*;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_PADDING;
@@ -38,6 +39,7 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.GuiOverlay;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiBlockStateButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiCheckBox;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiLabel;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIList;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIProbabilityDistributionEditor;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
@@ -111,7 +113,7 @@ public class LakeSettingsTab {
         layout.setPadding(HORIZONTAL_PADDING, 0);
         layout.setSize(UIComponent.INHERITED, UIComponent.INHERITED);
 
-        layout.add(wrap(gui, makeButton("add_lake", btn ->
+        layout.add(wrap(gui, button("add_lake", btn ->
                 componentList.add(1, new UILakeEntry(gui, JsonObjectView.of(DEFAULT_LAKE.clone()), this::removeEntry))
         )));
 
@@ -183,12 +185,12 @@ public class LakeSettingsTab {
         private final CwgGuiButton deleteBtn;
 
 
-        private final UIComponent<?> mainProbabilityLabel;
+        private final CwgGuiLabel mainProbabilityLabel;
         private final UIUserFunctionEdit graphMiniViewMain;
-        private final UIComponent<?> surfaceProbabilityLabel;
+        private final CwgGuiLabel surfaceProbabilityLabel;
         private final UIUserFunctionEdit graphMiniViewSurface;
 
-        private final UIComponent<?> biomeSelectionLabel;
+        private final CwgGuiLabel biomeSelectionLabel;
 
         private final UISplitLayout<?> biomeSelectionSplit;
         private final UISelect<CustomGeneratorSettings.FilterType> biomeSelectMode;
@@ -215,11 +217,11 @@ public class LakeSettingsTab {
 
             this.add(wrap(gui, blockstate = new CwgGuiBlockStateButton(new BlockDesc(conf.getString("block")).defaultState())),
                     new GridLocation(0, gridY, 1));
-            this.add(nameLabel = makeLabel(gui), new GridLocation(1, gridY, 4));
-            this.add(wrap(gui, deleteBtn = makeButton("delete")), new GridLocation(5, gridY, 1));
+            this.add(nameLabel = makeBlockstateLabel(gui), new GridLocation(1, gridY, 4));
+            this.add(wrap(gui, deleteBtn = button("delete")), new GridLocation(5, gridY, 1));
 
             gridY++;
-            this.add(mainProbabilityLabel = label(gui, malisisText("lakes.main_probability")), new GridLocation(0, gridY, 6));
+            this.add(wrap(gui, mainProbabilityLabel = label("lakes.main_probability")), new GridLocation(0, gridY, 6));
             gridY++;
             this.add(graphMiniViewMain = new UIUserFunctionEdit(gui,
                             deserializeUserFunction(conf.objectArray("mainProbability").array(), null))
@@ -227,7 +229,7 @@ public class LakeSettingsTab {
                     new GridLocation(0, gridY, 6));
 
             gridY++;
-            this.add(surfaceProbabilityLabel = label(gui, malisisText("lakes.surface_probability")), new GridLocation(0, gridY, 6));
+            this.add(wrap(gui, surfaceProbabilityLabel = label("lakes.surface_probability")), new GridLocation(0, gridY, 6));
             gridY++;
             this.add(graphMiniViewSurface = new UIUserFunctionEdit(gui,
                             deserializeUserFunction(conf.objectArray("surfaceProbability").array(), null))
@@ -235,14 +237,14 @@ public class LakeSettingsTab {
                     new GridLocation(0, gridY, 6));
 
             gridY++;
-            this.add(biomeSelectionLabel = label(gui, malisisText("select_biomes_label")), new GridLocation(0, gridY, 6));
+            this.add(wrap(gui, biomeSelectionLabel = label("select_biomes_label")), new GridLocation(0, gridY, 6));
 
             UIContainer<?> biomeSelectionLeft = new UIVerticalTableLayout<>(gui, 1)
                     .setInsets(1, 1, 0, 0);
             biomeSelectionLeft.add(
                     biomeSelectMode = makeUISelect(gui, Arrays.asList(CustomGeneratorSettings.FilterType.values())),
-                    wrap(gui, selectAllBiomesBtn = makeButton("select_all")),
-                    wrap(gui, invertBiomeSelection = makeButton("invert_selection"))
+                    wrap(gui, selectAllBiomesBtn = button("select_all")),
+                    wrap(gui, invertBiomeSelection = button("invert_selection"))
             );
             biomeSelectMode.select(CustomGeneratorSettings.FilterType.valueOf(conf.getString("biomeSelect")));
 
@@ -311,7 +313,7 @@ public class LakeSettingsTab {
 
         private CwgGuiCheckBox makeBiomeCheckbox(String biome, boolean checked) {
             String biomeName = Objects.requireNonNull(ForgeRegistries.BIOMES.getValue(new ResourceLocation(biome))).getBiomeName();
-            return makeCheckBoxUnlocalized(biomeName, checked);
+            return checkBoxUnloc(biomeName, checked);
         }
 
         int writeJson(JsonObjectView rootJson) {
@@ -335,7 +337,7 @@ public class LakeSettingsTab {
             }
         }
 
-        private UIContainer<?> makeLabel(ExtraGui gui) {
+        private UIContainer<?> makeBlockstateLabel(ExtraGui gui) {
             UIVerticalTableLayout<?> label = new UIVerticalTableLayout<>(gui, 1).setInsets(0, 0, 0, 0);
             updateLabel(gui, label);
             return label;
@@ -343,8 +345,8 @@ public class LakeSettingsTab {
 
         private void updateLabel(ExtraGui gui, UIContainer<?> label) {
             label.removeAll();
-            UIComponent<?> l1 = label(gui, blockstate.getBlockName());
-            UIComponent<?> l2 = label(gui, blockstate.getBlockProperties());
+            UIComponent<?> l1 = wrap(gui, label(blockstate.getBlockName()));
+            UIComponent<?> l2 = wrap(gui, label(blockstate.getBlockProperties()));
             label.add(l1, l2);
             label.setSize(label.getWidth(), l1.getHeight() + l2.getHeight());
         }

@@ -23,7 +23,8 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui;
 
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeButton;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.button;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.label;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.vanillaText;
 
@@ -32,9 +33,11 @@ import blue.endless.jankson.JsonObject;
 import blue.endless.jankson.api.DeserializationException;
 import com.google.common.eventbus.Subscribe;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.GuiOverlay;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiButton;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiLabel;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.NoTranslationFont;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBorderLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIColoredPanel;
@@ -148,28 +151,26 @@ public class CustomCubicGui extends ExtraGui {
         final int xSize = UIComponent.INHERITED - HORIZONTAL_PADDING * 2 - HORIZONTAL_INSETS * 2;
         final int ySize = VERTICAL_PADDING;
         final int xPos = HORIZONTAL_PADDING + HORIZONTAL_INSETS;
-        CwgGuiButton prev = makeButton( "previous_page");
-        CwgGuiButton next = makeButton( "next_page");
+        CwgGuiButton prev = CwgGuiFactory.button( "previous_page");
+        CwgGuiButton next = CwgGuiFactory.button( "next_page");
         prev.setWidth(BTN_WIDTH);
         next.setWidth(BTN_WIDTH);
 
-        UIMultilineLabel label = new UIMultilineLabel(this)
-                .setTextAnchor(Anchor.CENTER)
-                .setFontOptions(FontOptions.builder().color(0xFFFFFF).shadow().build());
+        CwgGuiLabel label = label();
 
         UIBorderLayout upperLayout = new UIBorderLayout(this)
                 .setSize(xSize, ySize)
                 .setPosition(xPos, 0)
                 .add(wrap(this, prev), UIBorderLayout.Border.LEFT)
                 .add(wrap(this, next), UIBorderLayout.Border.RIGHT)
-                .add(label, UIBorderLayout.Border.CENTER);
+                .add(wrap(this, label), UIBorderLayout.Border.CENTER);
 
-        CwgGuiButton done = makeButton("done", btn -> CustomCubicGui.this.done());
+        CwgGuiButton done = button("done", btn -> CustomCubicGui.this.done());
         done.setWidth(BTN_WIDTH);
         done.x = 0;
         done.y = 0;
 
-        CwgGuiButton sharePreset = makeButton("presets");
+        CwgGuiButton sharePreset = CwgGuiFactory.button("presets");
         sharePreset.setWidth(BTN_WIDTH);
         sharePreset.x = BTN_WIDTH + 10;
 
@@ -186,8 +187,8 @@ public class CustomCubicGui extends ExtraGui {
                 UISplitLayout<?> presetsButtonsSplit = new UISplitLayout<>(gui, UISplitLayout.Type.STACKED,
                         presetsSplit,
                         new UISplitLayout<>(gui, UISplitLayout.Type.SIDE_BY_SIDE,
-                                wrap(gui, doneShare = makeButton("presets.done")),
-                                wrap(gui, cancelShare = makeButton("presets.cancel"))
+                                wrap(gui, doneShare = CwgGuiFactory.button("presets.done")),
+                                wrap(gui, cancelShare = CwgGuiFactory.button("presets.cancel"))
                         ).setPadding(0, 3)
                 ).setSizeOf(UISplitLayout.Pos.SECOND, 26).setPadding(HORIZONTAL_PADDING, 0);
 
@@ -258,7 +259,7 @@ public class CustomCubicGui extends ExtraGui {
                 .setAnchor(Anchor.BOTTOM).setPosition(xPos, 0)
                 .add(container, UIBorderLayout.Border.CENTER);
 
-        UITabbedContainer tabGroup = new UITabbedContainer(this, prev, next, label::setText);
+        UITabbedContainer tabGroup = new UITabbedContainer(this, prev, next, label::setTranslationKey);
         tabGroup.add(upperLayout, lowerLayout);
 
         return tabGroup;

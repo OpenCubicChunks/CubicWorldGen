@@ -36,7 +36,6 @@ import java.util.function.Function;
 // TODO: fix vanilla rendering for large widths
 public class CwgGuiSlider extends GuiButtonExt {
 
-    private final String textFormat;
     private final Function<Double, String> valueToString;
     private final Converter<Double, Double> positionToValue;
 
@@ -44,10 +43,17 @@ public class CwgGuiSlider extends GuiButtonExt {
     private boolean mousePressed;
     private Consumer<CwgGuiSlider> updateHandler = x -> {};
 
-    public CwgGuiSlider(String textFormat, Function<Double, String> valueToString, Converter<Double, Double> positionToValue, double defaultValue) {
+    public static CwgGuiSlider create(String fmt, Function<Double, Object[]> val2Params, Converter<Double, Double> pos2val, double defaultValue) {
+        return new CwgGuiSlider(val -> I18n.format(fmt, val2Params.apply(val)), pos2val, defaultValue);
+    }
+
+    public static CwgGuiSlider create(String fmt, Converter<Double, Double> pos2val, double defaultValue) {
+        return new CwgGuiSlider(val -> I18n.format(fmt, val), pos2val, defaultValue);
+    }
+
+    private CwgGuiSlider(Function<Double, String> displayString, Converter<Double, Double> positionToValue, double defaultValue) {
         super(0, 0, 0, "");
-        this.textFormat = textFormat;
-        this.valueToString = valueToString;
+        this.valueToString = displayString;
         this.positionToValue = positionToValue;
         this.sliderPosition = positionToValue.reverse().convert(defaultValue);
     }
@@ -84,7 +90,7 @@ public class CwgGuiSlider extends GuiButtonExt {
             updateHandler.accept(this);
         }
 
-        this.displayString = I18n.format(textFormat, valueToString.apply(getSliderValue()));
+        this.displayString = valueToString.apply(getSliderValue());
 
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         this.drawTexturedModalRect(this.x + (int)(this.sliderPosition * (this.width - 8)), this.y, 0, 66, 4, 20);

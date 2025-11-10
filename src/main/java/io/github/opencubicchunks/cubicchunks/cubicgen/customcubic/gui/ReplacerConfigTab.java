@@ -23,17 +23,13 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui;
 
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.floatInput;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.malisisText;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.WIDTH_2_COL;
 
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UITextFieldFixed;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIVerticalTableLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.JsonObjectView;
-import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.interaction.UITextField;
-import net.minecraft.util.math.MathHelper;
 
 public class ReplacerConfigTab {
 
@@ -65,10 +61,10 @@ public class ReplacerConfigTab {
         private void init(ExtraGui gui) {
             this.removeAll();
             int gridY = -1;
-            add(floatInput(gui, malisisText("minY"), this.minY = new UITextField(gui, ""), (int) config.getDouble("minY")),
-                    new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, ++gridY, WIDTH_2_COL));
-            add(floatInput(gui, malisisText("maxY"), this.maxY = new UITextField(gui, ""), (int) config.getDouble("maxY")),
-                    new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, gridY, WIDTH_2_COL));
+            //add(floatInput(gui, malisisText("minY"), this.minY = new UITextField(gui, ""), (int) config.getDouble("minY")),
+            //        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, ++gridY, WIDTH_2_COL));
+            //add(floatInput(gui, malisisText("maxY"), this.maxY = new UITextField(gui, ""), (int) config.getDouble("maxY")),
+            //        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, gridY, WIDTH_2_COL));
         }
     }
     private static class UIDensityRangeReplacerEntry extends UIReplacerEntry<UIDensityRangeReplacerEntry> {
@@ -86,10 +82,10 @@ public class ReplacerConfigTab {
             //        public FilterType blockFilterType;
             //        public double minDensity;
             //        public double maxDensity;
-            add(floatInput(gui, malisisText("minY"), this.minY = new UITextField(gui, ""), (int) config.getDouble("minY")),
-                    new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, ++gridY, WIDTH_2_COL));
-            add(floatInput(gui, malisisText("maxY"), this.maxY = new UITextField(gui, ""), (int) config.getDouble("maxY")),
-                    new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, gridY, WIDTH_2_COL));
+            //add(floatInput(gui, malisisText("minY"), this.minY = new UITextField(gui, ""), (int) config.getDouble("minY")),
+            //        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, ++gridY, WIDTH_2_COL));
+            //add(floatInput(gui, malisisText("maxY"), this.maxY = new UITextField(gui, ""), (int) config.getDouble("maxY")),
+            //        new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, gridY, WIDTH_2_COL));
         }
     }
 }

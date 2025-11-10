@@ -23,9 +23,10 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui;
 
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeButton;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeIntSlider;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeSlider;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.button;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.intSlider;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.label;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.slider;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.*;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_PADDING;
@@ -39,6 +40,7 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common.IUIContai
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiBlockStateButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiButton;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiLabel;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiSlider;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIList;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIRangeSlider;
@@ -51,7 +53,6 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.preset.fixer.JsonTransform
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
-import net.malisis.core.client.gui.component.decoration.UILabel;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -139,7 +140,7 @@ public class CaveSettingsTab {
         layout.setPadding(HORIZONTAL_PADDING, VERTICAL_INSETS);
         layout.setSize(UIComponent.INHERITED, UIComponent.INHERITED);
 
-        layout.add(wrap(gui, makeButton("add_cave", btn ->
+        layout.add(wrap(gui, button("add_cave", btn ->
                 componentList.add(1, new UICaveOptionEntry(gui, JsonObjectView.of(DEFAULT_STANDARD_CAVE.clone()), this::removeEntry))
         )));
 
@@ -185,7 +186,7 @@ public class CaveSettingsTab {
     private class UICaveOptionEntry extends UIVerticalTableLayout<UICaveOptionEntry> {
 
         private final CwgGuiBlockStateButton caveBlock;
-        private final UILabel caveBlockLabel;
+        private final CwgGuiLabel caveBlockLabel;
         private final UIRangeSlider<Float> caveCubeHeight;
         private final CwgGuiSlider caveRarity;
         private final CwgGuiSlider maxInitNodes;
@@ -216,7 +217,7 @@ public class CaveSettingsTab {
             super(gui, 1);
             this.conf = conf;
 
-            deleteBtn = makeButton("delete", btn -> deleteFunc.accept(UICaveOptionEntry.this));
+            deleteBtn = button("delete", btn -> deleteFunc.accept(UICaveOptionEntry.this));
             deleteBtn.setWidth(10);
 
             this.caveBlock = new CwgGuiBlockStateButton(conf.getBlockState("caveBlock"));
@@ -226,33 +227,31 @@ public class CaveSettingsTab {
                     updateCaveLabel();
                 }).display();
             });
-            this.caveBlockLabel = new UILabel(gui, "");
+            this.caveBlockLabel = label();
             updateCaveLabel();
 
-            this.caveRarity = makeIntSlider(1, 128, conf.getInt("caveRarity"), "cave_rarity");
+            this.caveRarity = intSlider(1, 128, conf.getInt("caveRarity"), "cave_rarity");
             this.caveCubeHeight = makeRangeSlider(gui, vanillaText("cave_cube_height"),
                     (float) (-2f * (heightVariation.getAsDouble() / 4) + (baseHeight.getAsDouble() / 8)) / 100,
                     (float) (2f * (heightVariation.getAsDouble() / 8) + (baseHeight.getAsDouble() / 16)) / 100,
-                    conf.getFloat("caveMinHeight"), conf.getFloat("caveMaxHeight"));
-            this.maxInitNodes = makeIntSlider(1, 128, conf.getInt("maxInitNodes"), "max_init_nodes");
-            this.largeNodeRarity = makeIntSlider(1, 128, conf.getInt("largeNodeRarity"), "large_node_rarity");
-            this.largeNodeMaxBranches = makeIntSlider(1, 256, conf.getInt("largeNodeMaxBranches"), "large_node_max_branches");
-            this.bigCaveRarity = makeIntSlider(1, 128, conf.getInt("bigCaveRarity"), "big_cave_rarity");
-            this.caveSizeAdd = makeSlider(0, 16, conf.getFloat("caveSizeAdd"), "cave_size_add");
-            this.steepStepRarity = makeIntSlider(1, 128, conf.getInt("steepStepRarity"), "steep_step_rarity");
-            this.flattenFactor = makeSlider(0, 1, conf.getFloat("flattenFactor"), "flatten_factor");
-            this.steeperFlattenFactor = makeSlider(0, 1, conf.getFloat("steeperFlattenFactor"), "steeper_flatten_factor");
-            this.directionChangeFactor = makeSlider(0, 1, conf.getFloat("directionChangeFactor"), "direction_change_factor");
-            this.prevHorizDirectionChangeWeight =
-                    makeSlider(0, 1, conf.getFloat("prevHorizDirectionChangeWeight"), "prev_horiz_direction_change_weight");
-            this.prevVertDirectionChangeWeight =
-                    makeSlider(0, 1, conf.getFloat("prevVertDirectionChangeWeight"), "prev_vert_direction_change_weight");
-            this.maxAddDirectionChangeHoriz = makeSlider(0, 128, conf.getFloat("maxAddDirectionChangeHoriz"), "max_add_direction_change_horiz");
-            this.maxAddDirectionChangeVert = makeSlider(0, 128, conf.getFloat("maxAddDirectionChangeVert"), "max_add_direction_change_vert");
-            this.carveStepRarity = makeIntSlider(1, 128, conf.getInt("carveStepRarity"), "carve_step_rarity");
-            this.caveFloorDepth = makeSlider(-1, 1, conf.getFloat("caveFloorDepth"), "cave_floor_depth");
+                    (float) conf.getDouble("caveMinHeight"), (float) conf.getDouble("caveMaxHeight"));
+            this.maxInitNodes = intSlider(1, 128, conf.getInt("maxInitNodes"), "max_init_nodes");
+            this.largeNodeRarity = intSlider(1, 128, conf.getInt("largeNodeRarity"), "large_node_rarity");
+            this.largeNodeMaxBranches = intSlider(1, 256, conf.getInt("largeNodeMaxBranches"), "large_node_max_branches");
+            this.bigCaveRarity = intSlider(1, 128, conf.getInt("bigCaveRarity"), "big_cave_rarity");
+            this.caveSizeAdd = slider(0, 16, conf.getDouble("caveSizeAdd"), "cave_size_add");
+            this.steepStepRarity = intSlider(1, 128, conf.getInt("steepStepRarity"), "steep_step_rarity");
+            this.flattenFactor = slider(0, 1, conf.getDouble("flattenFactor"), "flatten_factor");
+            this.steeperFlattenFactor = slider(0, 1, conf.getDouble("steeperFlattenFactor"), "steeper_flatten_factor");
+            this.directionChangeFactor = slider(0, 1, conf.getDouble("directionChangeFactor"), "direction_change_factor");
+            this.prevHorizDirectionChangeWeight = slider(0, 1, conf.getDouble("prevHorizDirectionChangeWeight"), "prev_horiz_direction_change_weight");
+            this.prevVertDirectionChangeWeight = slider(0, 1, conf.getDouble("prevVertDirectionChangeWeight"), "prev_vert_direction_change_weight");
+            this.maxAddDirectionChangeHoriz = slider(0, 128, conf.getDouble("maxAddDirectionChangeHoriz"), "max_add_direction_change_horiz");
+            this.maxAddDirectionChangeVert = slider(0, 128, conf.getDouble("maxAddDirectionChangeVert"), "max_add_direction_change_vert");
+            this.carveStepRarity = intSlider(1, 128, conf.getInt("carveStepRarity"), "carve_step_rarity");
+            this.caveFloorDepth = slider(-1, 1, conf.getDouble("caveFloorDepth"), "cave_floor_depth");
 
-            this.addReplaceableBtn = makeButton("cave_replacer", btn ->
+            this.addReplaceableBtn = button("cave_replacer", btn ->
                     UIBlockStateSelect.makeOverlay(gui, state -> {
                         addReplaceableBlock(gui, new BlockStateDesc(state));
                     }).display()
@@ -270,7 +269,7 @@ public class CaveSettingsTab {
         private void setupMainArea(UIVerticalTableLayout<?> mainArea) {
             int y = -1;
             mainArea.add(wrap(getGui(), this.caveBlock), new GridLocation(0, ++y, 1));
-            mainArea.add(this.caveBlockLabel, new GridLocation(1, y, 4));
+            mainArea.add(wrap(getGui(), this.caveBlockLabel), new GridLocation(1, y, 4));
             mainArea.add(this.caveCubeHeight, new GridLocation(0, ++y, 6));
             mainArea.add(wrap(getGui(), this.caveRarity), new GridLocation(0, ++y, 3));
             mainArea.add(wrap(getGui(), this.maxInitNodes), new GridLocation(3, y, 3));
@@ -362,12 +361,7 @@ public class CaveSettingsTab {
         }
 
         private void updateCaveLabel() {
-            String name = caveBlock.getBlockState().getBlockId();
-            String props = caveBlock.getBlockState().getProperties().entrySet().stream()
-                    .map(e -> e.getKey() + "=" + e.getValue())
-                    .reduce((a, b) -> a + ", " + b).orElse("");
-
-            caveBlockLabel.setText(String.format("%s   [%s]", name, props));
+            caveBlockLabel.setLines(caveBlock.getBlockName(), caveBlock.getBlockProperties());
         }
     }
 }

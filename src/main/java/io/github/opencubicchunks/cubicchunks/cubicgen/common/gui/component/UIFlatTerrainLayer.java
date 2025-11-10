@@ -28,10 +28,10 @@ import net.malisis.core.client.gui.component.container.UIContainer;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.init.Blocks;
 
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeButton;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeIntTextField;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeLabel;
-import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.makeSeparator;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.button;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.intTextField;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.label;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.separator;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
 
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.FlatLayer;
@@ -47,8 +47,7 @@ public final class UIFlatTerrainLayer extends UIVerticalTableLayout<UIFlatTerrai
     private final CwgGuiButton addLayer;
     private final CwgGuiButton removeLayer;
     private final CwgGuiBlockStateButton block;
-    private final CwgGuiLabel blockName;
-    private final CwgGuiLabel blockProperties;
+    private final CwgGuiLabel blockInfo;
     private final CwgGuiLabel from;
     private final CwgGuiLabel to;
     private final CwgGuiSeparator separator;
@@ -68,27 +67,25 @@ public final class UIFlatTerrainLayer extends UIVerticalTableLayout<UIFlatTerrai
             updateLabels();
         }).display());
 
-        this.blockName = makeLabel("");
-        this.blockProperties = makeLabel("");
-
+        this.blockInfo = label();
         updateLabels();
 
-        addLayer = makeButton("add_layer");
+        addLayer = button("add_layer");
         addLayer.onClick(btn -> addLayer());
 
-        removeLayer = makeButton("remove_layer");
+        removeLayer = button("remove_layer");
         removeLayer.y = 20;
         removeLayer.onClick(btn -> removeLayer());
 
-        from = makeLabel("from");
-        to = makeLabel("to_exclusively");
+        from = label("from");
+        to = label("to_exclusively");
 
-        fromField = makeIntTextField(layer.fromY);
-        toField = makeIntTextField(layer.toY);
+        fromField = intTextField(layer.fromY);
+        toField = intTextField(layer.toY);
 
-        separator = makeSeparator();
+        separator = separator();
 
-                /*
+        /*
         The layout:
 
                   left/right split, size to fit second
@@ -103,8 +100,7 @@ public final class UIFlatTerrainLayer extends UIVerticalTableLayout<UIFlatTerrai
 
         UIContainer<?> blockstateContainer = new UIContainer<>(gui);
         blockstateContainer.add(wrap(gui, block));
-        blockstateContainer.add(wrap(gui, blockName).setPosition(CwgGuiBlockStateButton.PADDED_SIZE, 0));
-        blockstateContainer.add(wrap(gui, blockProperties).setPosition(CwgGuiBlockStateButton.PADDED_SIZE, 10));
+        blockstateContainer.add(wrap(gui, blockInfo).setPosition(CwgGuiBlockStateButton.PADDED_SIZE, 0));
         blockstateContainer.setSize(0, CwgGuiBlockStateButton.PADDED_SIZE); // width set by layout
 
         UIVerticalTableLayout<?> buttonsContainer = new UIVerticalTableLayout<>(gui, 1).autoFitToContent(true);
@@ -128,8 +124,7 @@ public final class UIFlatTerrainLayer extends UIVerticalTableLayout<UIFlatTerrai
     }
 
     private void updateLabels() {
-        blockName.setText(block.getBlockName());
-        blockProperties.setText(block.getBlockProperties());
+        blockInfo.setLines(block.getBlockName(), block.getBlockProperties());
     }
 
     protected void removeLayer() {
