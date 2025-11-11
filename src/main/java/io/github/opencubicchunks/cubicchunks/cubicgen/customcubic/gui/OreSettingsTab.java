@@ -319,7 +319,7 @@ class OreSettingsTab {
                     ForgeRegistries.BIOMES.getKeys().stream().map(ResourceLocation::toString).collect(Collectors.toList()),
                     name1 -> wrap(gui, makeBiomeCheckbox(name1)));
 
-            this.block.onClick(btn ->
+            this.block.setOnClick(btn ->
                     UIBlockStateSelect.makeOverlay(gui, state -> {
                         block.setBlockState(new BlockStateDesc(state));
                         updateLabel();

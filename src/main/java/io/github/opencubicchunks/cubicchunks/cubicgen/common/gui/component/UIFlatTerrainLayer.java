@@ -66,7 +66,7 @@ public final class UIFlatTerrainLayer extends UIVerticalTableLayout<UIFlatTerrai
         this.gui = guiFor;
 
         this.block = new CwgGuiBlockStateButton(layer.blockState);
-        this.block.onClick(btn -> UIBlockStateSelect.makeOverlay(gui, state -> {
+        this.block.setOnClick(btn -> UIBlockStateSelect.makeOverlay(gui, state -> {
             block.setBlockState(new BlockStateDesc(state));
             updateLabels();
         }).display());

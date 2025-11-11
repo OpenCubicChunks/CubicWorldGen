@@ -25,18 +25,35 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 
 import net.minecraft.client.Minecraft;
 
-public class CwgGuiSeparator extends CwgGuiComponent {
+public interface ICwgGuiComponent {
+    int getX();
+    int getY();
+    int getWidth();
+    int getHeight();
 
-    private final int colorOverride;
+    void setX(int x);
+    void setY(int y);
+    void setWidth(int width);
+    void setHeight(int height);
 
-    public CwgGuiSeparator(int x, int y, int colorOverride) {
-        super(0, 5);
-        this.colorOverride = colorOverride;
+    boolean isEnabled();
+    boolean isVisible();
+    void setEnabled(boolean enabled);
+    void setVisible(boolean visible);
+
+    default void preDraw(Minecraft mc, int mouseX, int mouseY, float partialTick) {}
+    void drawBackground(Minecraft mc, int mouseX, int mouseY, float partialTick);
+    default void drawForeground(Minecraft mc, int mouseX, int mouseY, float partialTick) {}
+
+    default boolean onMousePressed(Minecraft mc, int mouseX, int mouseY) {
+        return false;
     }
 
-    @Override public void drawBackground(Minecraft mc, int mouseX, int mouseY, float partialTick) {
-        if (isVisible()) {
-            drawHorizontalLine(getX(), getX() + getWidth(), getY() + getHeight() / 2, colorOverride == 0 ? 0xFF767676 : colorOverride);
-        }
+    default boolean onMouseReleased(Minecraft mc, int mouseX, int mouseY) {
+        return false;
+    }
+
+    default boolean onKeyTyped(char keyChar, int keyCode) {
+        return false;
     }
 }

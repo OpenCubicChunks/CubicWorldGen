@@ -37,10 +37,6 @@ public class UITextFieldFixed extends UITextField {
         super(gui, text);
     }
 
-    public UITextFieldFixed(MalisisGui gui, boolean multiLine) {
-        super(gui, multiLine);
-    }
-
     @Override
     public void setOffsetY(float offsetY, int delta) {
         lineOffset = Math.round(offsetY * (lines.size() - getVisibleLines()));

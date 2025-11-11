@@ -24,23 +24,18 @@
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui;
 
 import com.google.common.base.Converter;
-import com.google.common.eventbus.Subscribe;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiCheckBox;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiLabel;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiSeparator;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiSlider;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.ICwgGuiComponent;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.WrappedVanillaComponent;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.converter.Converters;
 import net.malisis.core.client.gui.MalisisGui;
-import net.malisis.core.client.gui.component.UIComponent;
-import net.malisis.core.client.gui.component.decoration.UILabel;
-import net.malisis.core.client.gui.component.interaction.UITextField;
-import net.malisis.core.client.gui.event.ComponentEvent;
-import net.malisis.core.renderer.font.FontOptions;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiLabel;
 import net.minecraft.client.gui.GuiTextField;
@@ -70,8 +65,12 @@ public class CwgGuiFactory {
         return WrappedVanillaComponent.of(gui, vanillaComponent);
     }
 
+    public static <T extends Gui & ICwgGuiComponent> WrappedVanillaComponent<T> wrap(MalisisGui gui, T vanillaComponent) {
+        return WrappedVanillaComponent.of(gui, vanillaComponent);
+    }
+
     public static CwgGuiSeparator separator() {
-        return new CwgGuiSeparator(0, 0);
+        return new CwgGuiSeparator(0, 0, 0);
     }
 
     public static GuiTextField intTextField(int defaultValue) {

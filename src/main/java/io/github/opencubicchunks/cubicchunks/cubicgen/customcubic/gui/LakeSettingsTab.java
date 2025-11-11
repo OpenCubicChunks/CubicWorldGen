@@ -286,7 +286,7 @@ public class LakeSettingsTab {
                 }
             });
 
-            blockstate.onClick(btn ->
+            blockstate.setOnClick(btn ->
                     UIBlockStateSelect.makeDefaultStatesOverlay(gui, state -> {
                         blockstate.setBlockState(new BlockStateDesc(state));
                         updateLabel();

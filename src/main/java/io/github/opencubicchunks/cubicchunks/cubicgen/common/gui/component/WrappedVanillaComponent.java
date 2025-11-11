@@ -122,6 +122,20 @@ public final class WrappedVanillaComponent<T extends Gui> extends UIComponent<Wr
         );
     }
 
+    public static <T extends Gui & ICwgGuiComponent> WrappedVanillaComponent<T> of(MalisisGui gui, T comp) {
+        return new WrappedVanillaComponent<>(
+                gui, comp,
+                comp::getX, comp::getY, comp::setX, comp::setY,
+                comp::getWidth, comp::getHeight, comp::setWidth, comp::setHeight,
+                comp::isEnabled, comp::setEnabled, comp::isVisible,
+                (mc, mouseX, mouseY, partialTick) -> {
+                    comp.preDraw(mc, mouseX, mouseY, partialTick);
+                    comp.drawBackground(mc, mouseX, mouseY, partialTick);
+                },
+                comp::drawForeground, comp::onMousePressed, comp::onMouseReleased, comp::onKeyTyped
+        );
+    }
+
     private WrappedVanillaComponent(MalisisGui malisisGui, T vanillaComponent,
             IntSupplier getX, IntSupplier getY, IntConsumer setX, IntConsumer setY,
             IntSupplier getWidth, IntSupplier getHeight, IntConsumer setWidth, IntConsumer setHeight,

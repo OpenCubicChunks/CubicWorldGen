@@ -222,7 +222,7 @@ public class CaveSettingsTab {
             deleteBtn.setWidth(10);
 
             this.caveBlock = new CwgGuiBlockStateButton(conf.getBlockState("caveBlock"));
-            this.caveBlock.onClick(evnt -> {
+            this.caveBlock.setOnClick(evnt -> {
                 UIBlockStateSelect.makeOverlay(gui, state -> {
                     caveBlock.setBlockState(new BlockStateDesc(state));
                     updateCaveLabel();
@@ -320,7 +320,7 @@ public class CaveSettingsTab {
                 }
             }
             CwgGuiBlockStateButton newButton = new CwgGuiBlockStateButton(blockState);
-            newButton.onClick((evt) -> {
+            newButton.setOnClick((evt) -> {
                 removeReplaceableBlock(newButton);
                 UIBlockStateSelect.makeOverlay(gui, state -> {
                     addReplaceableBlock(gui, new BlockStateDesc(state));

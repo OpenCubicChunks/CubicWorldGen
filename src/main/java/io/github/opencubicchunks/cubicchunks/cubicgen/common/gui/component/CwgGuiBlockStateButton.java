@@ -23,15 +23,12 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.DummyWorld;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.wrapper.BlockStateDesc;
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.RenderHelper;
 import org.lwjgl.opengl.GL11;
@@ -51,29 +48,24 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 
-public class CwgGuiBlockStateButton extends GuiButton {
+public class CwgGuiBlockStateButton extends CwgGuiComponent {
 
     public static final int SIZE = 24;
     public static final int PADDED_SIZE = SIZE + 6;
-    private final List<String> tooltipLines = new ArrayList<>();
     private BlockStateDesc blockState;
     private Consumer<CwgGuiBlockStateButton> onClick;
 
     public CwgGuiBlockStateButton(BlockStateDesc blockState) {
-        super(0, 0, 0, SIZE, SIZE, "");
+        super(SIZE, SIZE);
         this.blockState = blockState;
         updateTooltip();
     }
 
-    public void onClick(Consumer<CwgGuiBlockStateButton> action) {
-        this.onClick = action;
-    }
-
     private void updateTooltip() {
-        this.tooltipLines.clear();
-        this.tooltipLines.add(blockState.getBlockId());
+        clearTooltip();
+        addTooltipLine(blockState.getBlockId());
         for (Entry<String, String> entry : blockState.getProperties().entrySet()) {
-            this.tooltipLines.add(entry.getKey() + " = " + entry.getValue());
+            addTooltipLine(entry.getKey() + " = " + entry.getValue());
         }
     }
 
@@ -87,18 +79,10 @@ public class CwgGuiBlockStateButton extends GuiButton {
     }
 
     @Override
-    public boolean mousePressed(Minecraft mc, int x, int y) {
-        onClick.accept(this);
-        return true;
-    }
-
-    @Override
-    public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTick) {
-        if (!visible || blockState == null || blockState.getBlockState() == null) {
+    public void drawBackground(Minecraft mc, int mouseX, int mouseY, float partialTick) {
+        if (!isVisible() || blockState == null || blockState.getBlockState() == null) {
             return;
         }
-        this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
-
         IBlockState state = blockState.getBlockState();
         RenderHelper.disableStandardItemLighting();
         GlStateManager.enableDepth();
@@ -109,7 +93,7 @@ public class CwgGuiBlockStateButton extends GuiButton {
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, blockTexture.getGlTextureId());
         VertexFormat format = DefaultVertexFormats.BLOCK;
         GlStateManager.pushMatrix();
-        GlStateManager.translate(this.x, this.y + 16f, 100.0F);
+        GlStateManager.translate(this.getX(), this.getY() + 16f, 100.0F);
         GlStateManager.scale(12.0F, 12.0F, -12.0F);
         GlStateManager.rotate(210.0F, 1.0F, 0.0F, 0.0F);
         GlStateManager.rotate(45.0F, 0.0F, 1.0F, 0.0F);
@@ -134,11 +118,6 @@ public class CwgGuiBlockStateButton extends GuiButton {
         GlStateManager.enableLighting();
     }
 
-    @Override public void drawButtonForegroundLayer(int mouseX, int mouseY) {
-        if (hovered) {
-            Minecraft.getMinecraft().currentScreen.drawHoveringText(tooltipLines, mouseX, mouseY);
-        }
-    }
 
     public String getBlockName() {
         return this.blockState.getBlockId();
