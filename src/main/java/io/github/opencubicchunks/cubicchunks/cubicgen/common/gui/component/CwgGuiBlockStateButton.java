@@ -23,6 +23,8 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -53,39 +55,35 @@ public class CwgGuiBlockStateButton extends GuiButton {
 
     public static final int SIZE = 24;
     public static final int PADDED_SIZE = SIZE + 6;
-    private String tooltip;
+    private final List<String> tooltipLines = new ArrayList<>();
     private BlockStateDesc blockState;
     private Consumer<CwgGuiBlockStateButton> onClick;
 
     public CwgGuiBlockStateButton(BlockStateDesc blockState) {
         super(0, 0, 0, SIZE, SIZE, "");
         this.blockState = blockState;
-        this.tooltip = generateTooltip(this.blockState);
+        updateTooltip();
     }
 
     public void onClick(Consumer<CwgGuiBlockStateButton> action) {
         this.onClick = action;
     }
 
-    private static String generateTooltip(BlockStateDesc blockState) {
-        StringBuffer sb = new StringBuffer(128);
-        sb.append(blockState.getBlockId());
+    private void updateTooltip() {
+        this.tooltipLines.clear();
+        this.tooltipLines.add(blockState.getBlockId());
         for (Entry<String, String> entry : blockState.getProperties().entrySet()) {
-            sb.append(" \n ");
-            sb.append(entry.getKey());
-            sb.append(" = ");
-            sb.append(entry.getValue());
+            this.tooltipLines.add(entry.getKey() + " = " + entry.getValue());
         }
-        return sb.toString();
     }
 
     public BlockStateDesc getBlockState() {
         return blockState;
     }
 
-    public void setBlockState(BlockStateDesc iBlockState1) {
-        blockState = iBlockState1;
-        tooltip = generateTooltip(blockState);
+    public void setBlockState(BlockStateDesc state) {
+        blockState = state;
+        updateTooltip();
     }
 
     @Override
@@ -101,7 +99,7 @@ public class CwgGuiBlockStateButton extends GuiButton {
         }
         this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
 
-        IBlockState blockstate = blockState.getBlockState();
+        IBlockState state = blockState.getBlockState();
         RenderHelper.disableStandardItemLighting();
         GlStateManager.enableDepth();
         GlStateManager.enableRescaleNormal();
@@ -116,16 +114,16 @@ public class CwgGuiBlockStateButton extends GuiButton {
         GlStateManager.rotate(210.0F, 1.0F, 0.0F, 0.0F);
         GlStateManager.rotate(45.0F, 0.0F, 1.0F, 0.0F);
         buffer.begin(GL11.GL_QUADS, format);
-        Minecraft.getMinecraft().getBlockRendererDispatcher().renderBlock(blockstate, BlockPos.ORIGIN,
-                DummyWorld.getInstanceWithBlockState(blockstate), buffer);
+        Minecraft.getMinecraft().getBlockRendererDispatcher().renderBlock(state, BlockPos.ORIGIN,
+                DummyWorld.getInstanceWithBlockState(state), buffer);
         Tessellator.getInstance().draw();
-        if (blockstate.getBlock().hasTileEntity(blockstate)) {
-            TileEntity te = blockstate.getBlock().createTileEntity(null, blockstate);
+        if (state.getBlock().hasTileEntity(state)) {
+            TileEntity te = state.getBlock().createTileEntity(null, state);
             if (te != null) {
                 TileEntitySpecialRenderer<TileEntity> tileentityspecialrenderer =
                         TileEntityRendererDispatcher.instance.getRenderer(te);
                 if (tileentityspecialrenderer != null) {
-                    TileEntityItemStackRenderer.instance.renderByItem(new ItemStack(blockstate.getBlock()));
+                    TileEntityItemStackRenderer.instance.renderByItem(new ItemStack(state.getBlock()));
                 }
             }
         }
@@ -138,7 +136,7 @@ public class CwgGuiBlockStateButton extends GuiButton {
 
     @Override public void drawButtonForegroundLayer(int mouseX, int mouseY) {
         if (hovered) {
-            Minecraft.getMinecraft().currentScreen.drawHoveringText(tooltip, mouseX, mouseY);
+            Minecraft.getMinecraft().currentScreen.drawHoveringText(tooltipLines, mouseX, mouseY);
         }
     }
 
