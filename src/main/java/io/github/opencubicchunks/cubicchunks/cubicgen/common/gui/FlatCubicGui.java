@@ -32,14 +32,12 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGu
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.FlatGeneratorSettings;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBorderLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIColoredPanel;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIMultilineLabel;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UITabbedContainer;
 import mcp.MethodsReturnNonnullByDefault;
 import net.malisis.core.client.gui.Anchor;
 import net.malisis.core.client.gui.MalisisGui;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
-import net.malisis.core.renderer.font.FontOptions;
 import net.minecraft.client.gui.GuiCreateWorld;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -104,6 +102,7 @@ public class FlatCubicGui extends ExtraGui {
         done.setWidth(BTN_WIDTH);
 
         CwgGuiLabel label = label();
+        label.setCentered();
 
         UIBorderLayout upperLayout = new UIBorderLayout(this)
                 .setSize(xSize, ySize)

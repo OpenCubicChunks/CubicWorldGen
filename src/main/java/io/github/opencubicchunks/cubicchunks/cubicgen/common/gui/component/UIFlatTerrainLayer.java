@@ -33,6 +33,8 @@ import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFa
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.label;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.separator;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.FlatLayersTab.HORIZONTAL_INSETS;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.FlatLayersTab.VERTICAL_INSETS;
 
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.FlatLayer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.FlatCubicGui;
@@ -58,6 +60,7 @@ public final class UIFlatTerrainLayer extends UIVerticalTableLayout<UIFlatTerrai
 
     public UIFlatTerrainLayer(FlatCubicGui guiFor, FlatLayersTab flatLayersTabFor, FlatLayer layer) {
         super(guiFor, 2);
+        setInsets(VERTICAL_INSETS, VERTICAL_INSETS, HORIZONTAL_INSETS, HORIZONTAL_INSETS);
         this.flatLayersTab = flatLayersTabFor;
         this.gui = guiFor;
 

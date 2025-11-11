@@ -50,8 +50,8 @@ public class FlatLayersTab implements Comparator<UIFlatTerrainLayer> {
     FlatLayersTab(FlatCubicGui guiFor, FlatGeneratorSettings settings1) {
         this.settings = settings1;
         this.gui = guiFor;
-        int i = settings.layers.entrySet().size();
-        uiLayersList = new ArrayList<UIFlatTerrainLayer>(i);
+        int i = settings.layers.size();
+        uiLayersList = new ArrayList<>(i);
         for (Entry<Integer, FlatLayer> entry : settings.layers.entrySet()) {
             UIFlatTerrainLayer uiLayer = new UIFlatTerrainLayer(gui, this, entry.getValue());
             uiLayersList.add(uiLayer);
