@@ -27,13 +27,13 @@ import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFa
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.label;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.vanillaText;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiLabel.Type.CENTERED;
 
 import blue.endless.jankson.JsonGrammar;
 import blue.endless.jankson.JsonObject;
 import blue.endless.jankson.api.DeserializationException;
 import com.google.common.eventbus.Subscribe;
 import io.github.opencubicchunks.cubicchunks.cubicgen.CustomCubicMod;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.ExtraGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.GuiOverlay;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiButton;
@@ -41,7 +41,6 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGu
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.NoTranslationFont;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIBorderLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIColoredPanel;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIMultilineLabel;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UITabbedContainer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UITextFieldFixed;
@@ -56,7 +55,6 @@ import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
 import net.malisis.core.client.gui.component.interaction.UITextField;
 import net.malisis.core.client.gui.event.ComponentEvent;
-import net.malisis.core.renderer.font.FontOptions;
 import net.minecraft.client.gui.GuiCreateWorld;
 import net.minecraft.client.resources.I18n;
 
@@ -151,12 +149,12 @@ public class CustomCubicGui extends ExtraGui {
         final int xSize = UIComponent.INHERITED - HORIZONTAL_PADDING * 2 - HORIZONTAL_INSETS * 2;
         final int ySize = VERTICAL_PADDING;
         final int xPos = HORIZONTAL_PADDING + HORIZONTAL_INSETS;
-        CwgGuiButton prev = CwgGuiFactory.button( "previous_page");
-        CwgGuiButton next = CwgGuiFactory.button( "next_page");
+        CwgGuiButton prev = button( "previous_page");
+        CwgGuiButton next = button( "next_page");
         prev.setWidth(BTN_WIDTH);
         next.setWidth(BTN_WIDTH);
 
-        CwgGuiLabel label = label();
+        CwgGuiLabel label = label(CENTERED);
 
         UIBorderLayout upperLayout = new UIBorderLayout(this)
                 .setSize(xSize, ySize)
@@ -170,7 +168,7 @@ public class CustomCubicGui extends ExtraGui {
         done.x = 0;
         done.y = 0;
 
-        CwgGuiButton sharePreset = CwgGuiFactory.button("presets");
+        CwgGuiButton sharePreset = button("presets");
         sharePreset.setWidth(BTN_WIDTH);
         sharePreset.x = BTN_WIDTH + 10;
 
@@ -187,8 +185,8 @@ public class CustomCubicGui extends ExtraGui {
                 UISplitLayout<?> presetsButtonsSplit = new UISplitLayout<>(gui, UISplitLayout.Type.STACKED,
                         presetsSplit,
                         new UISplitLayout<>(gui, UISplitLayout.Type.SIDE_BY_SIDE,
-                                wrap(gui, doneShare = CwgGuiFactory.button("presets.done")),
-                                wrap(gui, cancelShare = CwgGuiFactory.button("presets.cancel"))
+                                wrap(gui, doneShare = button("presets.done")),
+                                wrap(gui, cancelShare = button("presets.cancel"))
                         ).setPadding(0, 3)
                 ).setSizeOf(UISplitLayout.Pos.SECOND, 26).setPadding(HORIZONTAL_PADDING, 0);
 

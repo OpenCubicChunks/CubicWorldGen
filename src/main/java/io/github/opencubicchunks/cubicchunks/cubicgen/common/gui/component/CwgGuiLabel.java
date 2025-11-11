@@ -34,20 +34,30 @@ import java.util.List;
 
 public class CwgGuiLabel extends GuiLabel {
 
-    public static CwgGuiLabel create(String formatString, int x, int y, int width, int height, int color) {
+    public static CwgGuiLabel create(String formatString,Type type, int x, int y, int width, int height, int color) {
         CwgGuiLabel label = new CwgGuiLabel(x, y, width, height, color);
+        if (type == Type.CENTERED) {
+            label.setCentered();
+        }
         label.setTranslationKey(formatString);
         return label;
     }
 
-    public static CwgGuiLabel createUnlocalized(String text, int x, int y, int width, int height, int color) {
+    public static CwgGuiLabel createUnlocalized(String text, Type type, int x, int y, int width, int height, int color) {
         CwgGuiLabel label = new CwgGuiLabel(x, y, width, height, color);
+        if (type == Type.CENTERED) {
+            label.setCentered();
+        }
         label.setUnlocalizedText(text);
         return label;
     }
 
-    public static CwgGuiLabel create(int x, int y, int width, int height, int color) {
-        return new CwgGuiLabel(x, y, width, height, color);
+    public static CwgGuiLabel create(Type type, int x, int y, int width, int height, int color) {
+        CwgGuiLabel label = new CwgGuiLabel(x, y, width, height, color);
+        if (type == Type.CENTERED) {
+            label.setCentered();
+        }
+        return label;
     }
 
     private CwgGuiLabel(int x, int y, int width, int height, int color) {
@@ -77,5 +87,9 @@ public class CwgGuiLabel extends GuiLabel {
         labels.clear();
         Collections.addAll(labels, text);
         this.height = text.length * 10;
+    }
+
+    public enum Type {
+        LEFT_ALIGN, CENTERED
     }
 }

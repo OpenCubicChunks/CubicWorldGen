@@ -28,7 +28,10 @@ import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFa
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.label;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.*;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiLabel.Type.CENTERED;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiLabel.Type.LEFT_ALIGN;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_PADDING;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.VERTICAL_INSETS;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.preset.CustomGenSettingsSerialization.deserializeUserFunction;
 
 import blue.endless.jankson.JsonArray;
@@ -110,7 +113,7 @@ public class LakeSettingsTab {
     <T> LakeSettingsTab(ExtraGui gui, JsonObjectView conf) {
         this.componentList = new ArrayList<>();
         UIList<UIComponent<?>, UIComponent<?>> layout = new UIList<>(gui, this.componentList, x -> x);
-        layout.setPadding(HORIZONTAL_PADDING, 0);
+        layout.setPadding(HORIZONTAL_PADDING, VERTICAL_INSETS);
         layout.setSize(UIComponent.INHERITED, UIComponent.INHERITED);
 
         layout.add(wrap(gui, button("add_lake", btn ->
@@ -180,7 +183,7 @@ public class LakeSettingsTab {
 
         private final CwgGuiBlockStateButton blockstate;
 
-        private final UIContainer<?> nameLabel;
+        private final CwgGuiLabel nameLabel;
 
         private final CwgGuiButton deleteBtn;
 
@@ -217,11 +220,11 @@ public class LakeSettingsTab {
 
             this.add(wrap(gui, blockstate = new CwgGuiBlockStateButton(new BlockDesc(conf.getString("block")).defaultState())),
                     new GridLocation(0, gridY, 1));
-            this.add(nameLabel = makeBlockstateLabel(gui), new GridLocation(1, gridY, 4));
+            this.add(wrap(gui, nameLabel = label(LEFT_ALIGN)), new GridLocation(1, gridY, 4));
             this.add(wrap(gui, deleteBtn = button("delete")), new GridLocation(5, gridY, 1));
 
             gridY++;
-            this.add(wrap(gui, mainProbabilityLabel = label("lakes.main_probability")), new GridLocation(0, gridY, 6));
+            this.add(wrap(gui, mainProbabilityLabel = label(CENTERED, "lakes.main_probability")), new GridLocation(0, gridY, 6));
             gridY++;
             this.add(graphMiniViewMain = new UIUserFunctionEdit(gui,
                             deserializeUserFunction(conf.objectArray("mainProbability").array(), null))
@@ -229,7 +232,7 @@ public class LakeSettingsTab {
                     new GridLocation(0, gridY, 6));
 
             gridY++;
-            this.add(wrap(gui, surfaceProbabilityLabel = label("lakes.surface_probability")), new GridLocation(0, gridY, 6));
+            this.add(wrap(gui, surfaceProbabilityLabel = label(CENTERED, "lakes.surface_probability")), new GridLocation(0, gridY, 6));
             gridY++;
             this.add(graphMiniViewSurface = new UIUserFunctionEdit(gui,
                             deserializeUserFunction(conf.objectArray("surfaceProbability").array(), null))
@@ -237,7 +240,7 @@ public class LakeSettingsTab {
                     new GridLocation(0, gridY, 6));
 
             gridY++;
-            this.add(wrap(gui, biomeSelectionLabel = label("select_biomes_label")), new GridLocation(0, gridY, 6));
+            this.add(wrap(gui, biomeSelectionLabel = label(LEFT_ALIGN, "select_biomes_label")), new GridLocation(0, gridY, 6));
 
             UIContainer<?> biomeSelectionLeft = new UIVerticalTableLayout<>(gui, 1)
                     .setInsets(1, 1, 0, 0);
@@ -286,7 +289,7 @@ public class LakeSettingsTab {
             blockstate.onClick(btn ->
                     UIBlockStateSelect.makeDefaultStatesOverlay(gui, state -> {
                         blockstate.setBlockState(new BlockStateDesc(state));
-                        updateLabel(gui, nameLabel);
+                        updateLabel();
                     }).display()
             );
 
@@ -337,18 +340,8 @@ public class LakeSettingsTab {
             }
         }
 
-        private UIContainer<?> makeBlockstateLabel(ExtraGui gui) {
-            UIVerticalTableLayout<?> label = new UIVerticalTableLayout<>(gui, 1).setInsets(0, 0, 0, 0);
-            updateLabel(gui, label);
-            return label;
-        }
-
-        private void updateLabel(ExtraGui gui, UIContainer<?> label) {
-            label.removeAll();
-            UIComponent<?> l1 = wrap(gui, label(blockstate.getBlockName()));
-            UIComponent<?> l2 = wrap(gui, label(blockstate.getBlockProperties()));
-            label.add(l1, l2);
-            label.setSize(label.getWidth(), l1.getHeight() + l2.getHeight());
+        private void updateLabel() {
+            nameLabel.setLines(blockstate.getBlockName(), blockstate.getBlockProperties());
         }
     }
 }

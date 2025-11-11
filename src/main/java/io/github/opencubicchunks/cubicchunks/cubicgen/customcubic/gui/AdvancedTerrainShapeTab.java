@@ -32,6 +32,8 @@ import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFa
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeUISelect;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.malisisText;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiLabel.Type.CENTERED;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiLabel.Type.LEFT_ALIGN;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_INSETS;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_PADDING;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.VERTICAL_INSETS;
@@ -122,7 +124,7 @@ class AdvancedTerrainShapeTab {
                 .setRightPadding(6)
 
                 //expected heights
-                .add(wrap(gui, CwgGuiFactory.label("expected_heights_group")),
+                .add(wrap(gui, label(CENTERED, "expected_heights_group")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_1_COL * 0, gridY += 2, WIDTH_1_COL))
                 .add(wrap(gui, this.lockExpectedHeights = checkBox("lock_expected_heights", true)),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 0, ++gridY, WIDTH_2_COL))
@@ -135,7 +137,7 @@ class AdvancedTerrainShapeTab {
                         this.expectedHeightVariation = doubleTextField(conf.getDouble("expectedHeightVariation"))),
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, gridY, WIDTH_2_COL))
                 // height variation
-                .add(wrap(gui, CwgGuiFactory.label("height_variation_group")),
+                .add(wrap(gui, label(CENTERED, "height_variation_group")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_1_COL * 0, ++gridY, WIDTH_1_COL))
                 .add(wrap(gui, this.heightVariationFactor = positiveExponentialSlider(
                                 0, 20, conf.getDouble("heightVariationFactor"), "height_variation_factor_slider")),
@@ -149,7 +151,7 @@ class AdvancedTerrainShapeTab {
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 2, gridY, WIDTH_3_COL))
 
                 // height
-                .add(wrap(gui, CwgGuiFactory.label("height_group")),
+                .add(wrap(gui, label(CENTERED, "height_group")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_1_COL * 0, ++gridY, WIDTH_1_COL))
                 .add(wrap(gui, this.heightFactor = symmetricExponentialSlider(
                         1, 20, conf.getDouble("heightFactor"), "height_factor")),
@@ -159,7 +161,7 @@ class AdvancedTerrainShapeTab {
                         new UIVerticalTableLayout.GridLocation(WIDTH_2_COL * 1, gridY, WIDTH_2_COL))
 
                 // depth noise
-                .add(wrap(gui, CwgGuiFactory.label("depth_noise_group")),
+                .add(wrap(gui, label(CENTERED, "depth_noise_group")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_1_COL * 0, ++gridY, WIDTH_1_COL))
                 .add(wrap(gui, this.depthNoisePeriodX = CwgGuiFactory.invertedPositiveExponentialSlider(
                         -8, MAX_NOISE_FREQ_POWER, 1.0 / conf.getDouble("depthNoiseFrequencyX"), "depth_noise_period_x")),
@@ -179,7 +181,7 @@ class AdvancedTerrainShapeTab {
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 2, gridY, WIDTH_3_COL))
 
                 // selector noise
-                .add(wrap(gui, CwgGuiFactory.label("selector_noise_group")),
+                .add(wrap(gui, label(CENTERED, "selector_noise_group")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_1_COL * 0, ++gridY, WIDTH_1_COL))
                 .add(wrap(gui, this.selectorNoisePeriodX = CwgGuiFactory.invertedPositiveExponentialSlider(
                         -8, MAX_NOISE_FREQ_POWER, 1.0 / conf.getDouble("selectorNoiseFrequencyX"), "selector_noise_period_x")),
@@ -203,7 +205,7 @@ class AdvancedTerrainShapeTab {
 
 
                 // low noise
-                .add(wrap(gui, CwgGuiFactory.label("low_noise_group")),
+                .add(wrap(gui, label(CENTERED, "low_noise_group")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_1_COL * 0, ++gridY, WIDTH_1_COL))
                 .add(wrap(gui, this.lowNoisePeriodX = CwgGuiFactory.invertedPositiveExponentialSlider(
                         -8, MAX_NOISE_FREQ_POWER, 1.0 / conf.getDouble("lowNoiseFrequencyX"), "low_noise_period_x")),
@@ -226,7 +228,7 @@ class AdvancedTerrainShapeTab {
                         new UIVerticalTableLayout.GridLocation(WIDTH_3_COL * 2, gridY, WIDTH_3_COL))
 
                 // high noise
-                .add(wrap(gui, CwgGuiFactory.label("high_noise_group")),
+                .add(wrap(gui, label(CENTERED, "high_noise_group")),
                         new UIVerticalTableLayout.GridLocation(WIDTH_1_COL * 0, ++gridY, WIDTH_1_COL))
                 .add(wrap(gui, this.highNoisePeriodX = CwgGuiFactory.invertedPositiveExponentialSlider(
                         -8, MAX_NOISE_FREQ_POWER, 1.0 / conf.getDouble("highNoiseFrequencyX"), "high_noise_period_x")),
@@ -359,7 +361,7 @@ class AdvancedTerrainShapeTab {
     }
 
     private static UIComponent<?> doubleInput(ExtraGui gui, String labelText, GuiTextField field) {
-        UISplitLayout<?> split = new UISplitLayout<>(gui, UISplitLayout.Type.SIDE_BY_SIDE, wrap(gui, label(labelText)), wrap(gui, field));
+        UISplitLayout<?> split = new UISplitLayout<>(gui, UISplitLayout.Type.SIDE_BY_SIDE, wrap(gui, label(LEFT_ALIGN, labelText)), wrap(gui, field));
         split.setSizeOf(UISplitLayout.Pos.SECOND, 40);
         split.autoFitToContent(true);
         return split;

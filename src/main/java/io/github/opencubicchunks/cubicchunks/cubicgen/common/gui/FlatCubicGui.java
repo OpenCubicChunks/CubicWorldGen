@@ -26,6 +26,7 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.label;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.vanillaText;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiLabel.Type.CENTERED;
 
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiLabel;
@@ -101,8 +102,7 @@ public class FlatCubicGui extends ExtraGui {
         CwgGuiButton done = CwgGuiFactory.button( "done", btn -> FlatCubicGui.this.done());
         done.setWidth(BTN_WIDTH);
 
-        CwgGuiLabel label = label();
-        label.setCentered();
+        CwgGuiLabel label = label(CENTERED);
 
         UIBorderLayout upperLayout = new UIBorderLayout(this)
                 .setSize(xSize, ySize)

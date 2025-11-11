@@ -29,6 +29,7 @@ import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFa
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.slider;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.*;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiLabel.Type.LEFT_ALIGN;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_PADDING;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.VERTICAL_INSETS;
 
@@ -227,7 +228,7 @@ public class CaveSettingsTab {
                     updateCaveLabel();
                 }).display();
             });
-            this.caveBlockLabel = label();
+            this.caveBlockLabel = label(LEFT_ALIGN);
             updateCaveLabel();
 
             this.caveRarity = intSlider(1, 128, conf.getInt("caveRarity"), "cave_rarity");

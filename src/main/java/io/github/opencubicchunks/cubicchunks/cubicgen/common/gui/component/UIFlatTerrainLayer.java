@@ -35,6 +35,7 @@ import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFa
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.FlatLayersTab.HORIZONTAL_INSETS;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.FlatLayersTab.VERTICAL_INSETS;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiLabel.Type.LEFT_ALIGN;
 
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.FlatLayer;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.FlatCubicGui;
@@ -70,7 +71,7 @@ public final class UIFlatTerrainLayer extends UIVerticalTableLayout<UIFlatTerrai
             updateLabels();
         }).display());
 
-        this.blockInfo = label();
+        this.blockInfo = label(LEFT_ALIGN);
         updateLabels();
 
         addLayer = button("add_layer");
@@ -80,8 +81,8 @@ public final class UIFlatTerrainLayer extends UIVerticalTableLayout<UIFlatTerrai
         removeLayer.y = 20;
         removeLayer.onClick(btn -> removeLayer());
 
-        from = label("from");
-        to = label("to_exclusively");
+        from = label(LEFT_ALIGN, "from");
+        to = label(LEFT_ALIGN, "to_exclusively");
 
         fromField = intTextField(layer.fromY);
         toField = intTextField(layer.toY);

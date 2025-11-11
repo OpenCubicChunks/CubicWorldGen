@@ -108,46 +108,46 @@ public class CwgGuiFactory {
         return field;
     }
 
-    public static CwgGuiLabel label() {
-        return CwgGuiLabel.create(0, 0, 10, 10, 0xFFFFFFFF);
+    public static CwgGuiLabel label(CwgGuiLabel.Type type) {
+        return CwgGuiLabel.create(type, 0, 0, 10, 10, 0xFFFFFFFF);
     }
 
-    public static CwgGuiLabel label(String formatString) {
-        return label(formatString, 0xFFFFFFFF, 0, 0);
+    public static CwgGuiLabel label(CwgGuiLabel.Type type, String formatString) {
+        return label(type, formatString, 0xFFFFFFFF, 0, 0);
     }
 
-    public static CwgGuiLabel label(String formatString, int color) {
-        return label(str(formatString), color, 0, 0);
+    public static CwgGuiLabel label(CwgGuiLabel.Type type, String formatString, int color) {
+        return label(type, str(formatString), color, 0, 0);
     }
 
-    public static CwgGuiLabel label(String formatString, int x, int y) {
-        return label(formatString, 0xFFFFFFFF, x, y);
+    public static CwgGuiLabel label(CwgGuiLabel.Type type, String formatString, int x, int y) {
+        return label(type, formatString, 0xFFFFFFFF, x, y);
     }
 
-    public static CwgGuiLabel label(String formatString, int color, int x, int y) {
-        return CwgGuiLabel.create(str(formatString), x, y, 10, 10, color);
+    public static CwgGuiLabel label(CwgGuiLabel.Type type, String formatString, int color, int x, int y) {
+        return CwgGuiLabel.create(str(formatString), type, x, y, 10, 10, color);
     }
 
-    public static CwgGuiLabel labelUnloc(String... lines) {
-        CwgGuiLabel label = label();
+    public static CwgGuiLabel labelUnloc(CwgGuiLabel.Type type, String... lines) {
+        CwgGuiLabel label = label(type);
         label.setLines(lines);
         return label;
     }
 
-    public static CwgGuiLabel labelUnloc(String text) {
-        return labelUnloc(text, 0xFFFFFFFF, 0, 0);
+    public static CwgGuiLabel labelUnloc(CwgGuiLabel.Type type, String text) {
+        return labelUnloc(type, text, 0xFFFFFFFF, 0, 0);
     }
 
-    public static CwgGuiLabel labelUnloc(String text, int color) {
-        return labelUnloc(str(text), color, 0, 0);
+    public static CwgGuiLabel labelUnloc(CwgGuiLabel.Type type, String text, int color) {
+        return labelUnloc(type, str(text), color, 0, 0);
     }
 
-    public static CwgGuiLabel labelUnloc(String text, int x, int y) {
-        return labelUnloc(text, 0xFFFFFFFF, x, y);
+    public static CwgGuiLabel labelUnloc(CwgGuiLabel.Type type, String text, int x, int y) {
+        return labelUnloc(type, text, 0xFFFFFFFF, x, y);
     }
 
-    public static CwgGuiLabel labelUnloc(String text, int color, int x, int y) {
-        return CwgGuiLabel.createUnlocalized(text, x, y, 10, 10, color);
+    public static CwgGuiLabel labelUnloc(CwgGuiLabel.Type type, String text, int color, int x, int y) {
+        return CwgGuiLabel.createUnlocalized(text, type, x, y, 10, 10, color);
     }
 
     public static CwgGuiButton button(String formatString) {

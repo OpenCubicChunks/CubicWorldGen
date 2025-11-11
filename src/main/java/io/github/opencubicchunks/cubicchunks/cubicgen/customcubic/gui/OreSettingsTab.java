@@ -69,6 +69,7 @@ import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFa
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.slider;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.*;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiLabel.Type.LEFT_ALIGN;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_PADDING;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.VERTICAL_INSETS;
 
@@ -280,7 +281,7 @@ class OreSettingsTab {
         private void init(ExtraGui gui) {
             this.removeAll();
             this.block = new CwgGuiBlockStateButton(conf.getBlockState("blockstate"));
-            this.name = label();
+            this.name = label(LEFT_ALIGN);
             UIButton delete = new UIButton(gui, malisisText("delete")).setSize(10, 20).setAutoSize(false);
             UISelect<OreGenType> type = makeUISelect(gui, Arrays.asList(OreGenType.values()));
 
