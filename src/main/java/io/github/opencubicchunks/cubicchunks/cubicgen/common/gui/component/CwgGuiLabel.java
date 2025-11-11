@@ -28,6 +28,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiLabel;
 import net.minecraft.client.resources.I18n;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 public class CwgGuiLabel extends GuiLabel {
 
     public static CwgGuiLabel create(String formatString, int x, int y, int width, int height, int color) {
@@ -50,11 +54,18 @@ public class CwgGuiLabel extends GuiLabel {
         super(Minecraft.getMinecraft().fontRenderer, 0, x, y, width, height, color);
     }
 
-    public void setTranslationKey(String text) {
-        ((IGuiLabel) this).getLabels().clear();
-        for (String s : I18n.format(text).split("\n")) {
-            addLine(s);
+    @Override public void addLine(String line) {
+        super.addLine(line);
+        this.height += 10;
+    }
+
+    public void setTranslationKey(String... text) {
+        List<String> labels = ((IGuiLabel) this).getLabels();
+        labels.clear();
+        for (String translationKey : text) {
+            labels.addAll(Arrays.asList(I18n.format(translationKey).split("\n")));
         }
+        this.height = labels.size() * 10;
     }
 
     public void setUnlocalizedText(String text) {
@@ -62,9 +73,9 @@ public class CwgGuiLabel extends GuiLabel {
     }
 
     public void setLines(String... text) {
-        ((IGuiLabel) this).getLabels().clear();
-        for (String s : text) {
-            addLine(s);
-        }
+        List<String> labels = ((IGuiLabel) this).getLabels();
+        labels.clear();
+        Collections.addAll(labels, text);
+        this.height = text.length * 10;
     }
 }
