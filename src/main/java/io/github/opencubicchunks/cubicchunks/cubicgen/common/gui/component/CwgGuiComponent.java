@@ -34,7 +34,7 @@ import java.util.function.Consumer;
 public abstract class CwgGuiComponent extends Gui implements ICwgGuiComponent {
 
     private int x, y, width, height;
-    private boolean enabled, visible, hovered;
+    private boolean enabled = true, visible = true, hovered;
     private final List<String> tooltipLines = new ArrayList<>();
     private Consumer<? super CwgGuiComponent> onClick;
 
@@ -128,7 +128,10 @@ public abstract class CwgGuiComponent extends Gui implements ICwgGuiComponent {
     }
 
     @Override
-    public boolean onMousePressed(Minecraft mc, int x, int y) {
+    public boolean onMousePressed(Minecraft mc, int x, int y, int mouseButton) {
+        if (mouseButton != 0) {
+            return false;
+        }
         if (onClick == null) {
             return false;
         }

@@ -24,8 +24,10 @@
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 
 import io.github.opencubicchunks.cubicchunks.cubicgen.asm.mixin.common.accessor.IGuiLabel;
+import net.malisis.core.client.gui.ClipArea;
 import net.malisis.core.client.gui.GuiRenderer;
 import net.malisis.core.client.gui.MalisisGui;
+import net.malisis.core.client.gui.component.IClipable;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.UIContainer;
 import net.malisis.core.client.gui.component.decoration.UITooltip;
@@ -45,7 +47,7 @@ import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 
 @Deprecated // this is temporary for incremental migration only
-public final class WrappedVanillaComponent<T extends Gui> extends UIComponent<WrappedVanillaComponent<T>> {
+public final class WrappedVanillaComponent<T extends Gui> extends UIComponent<WrappedVanillaComponent<T>> implements IClipable {
 
     private final T vanillaComponent;
     private final IntSupplier getX;
@@ -63,6 +65,8 @@ public final class WrappedVanillaComponent<T extends Gui> extends UIComponent<Wr
     private final GuiRender drawForeground;
     private final MouseHandler mousePressed;
     private final MouseHandler mouseReleased;
+    private final MouseDragHandler mouseDragged;
+    private final MouseScrollHandler mouseScroll;
     private final KeyHandler keyHandler;
 
     public static <T extends GuiButton> WrappedVanillaComponent<T> of(MalisisGui gui, T btn) {
@@ -73,9 +77,20 @@ public final class WrappedVanillaComponent<T extends Gui> extends UIComponent<Wr
                 () -> btn.enabled, val -> btn.enabled = val, () -> btn.visible,
                 btn::drawButton,
                 (mc, mouseX, mouseY, partialTick) -> btn.drawButtonForegroundLayer(mouseX, mouseY),
-                btn::mousePressed,
-                (mc, mouseX, mouseY) -> btn.mouseReleased(mouseX, mouseY),
-                KeyHandler.NULL
+                (mc, mouseX, mouseY, button) -> {
+                    if (button == 0) {
+                        return btn.mousePressed(mc, mouseX, mouseY);
+                    }
+                    return false;
+                },
+                (mc, mouseX, mouseY, button) -> {
+                    if (button == 0) {
+                        btn.mouseReleased(mouseX, mouseY);
+                        return true;
+                    }
+                    return false;
+                },
+                MouseDragHandler.NULL, MouseScrollHandler.NULL, KeyHandler.NULL
         );
     }
 
@@ -86,7 +101,7 @@ public final class WrappedVanillaComponent<T extends Gui> extends UIComponent<Wr
                 ((IGuiLabel) lbl)::getWidth, ((IGuiLabel) lbl)::getHeight, ((IGuiLabel) lbl)::setWidth, ((IGuiLabel) lbl)::setHeight,
                 () -> lbl.visible, val -> lbl.visible = val, () -> lbl.visible,
                 (mc, mouseX, mouseY, partialTick) -> lbl.drawLabel(mc, mouseX, mouseY),
-                GuiRender.NULL, MouseHandler.NULL, MouseHandler.NULL, KeyHandler.NULL
+                GuiRender.NULL, MouseHandler.NULL, MouseHandler.NULL, MouseDragHandler.NULL, MouseScrollHandler.NULL, KeyHandler.NULL
         );
     }
 
@@ -117,22 +132,34 @@ public final class WrappedVanillaComponent<T extends Gui> extends UIComponent<Wr
                     }
                 },
                 GuiRender.NULL,
-                (mc, mouseX, mouseY) -> fld.mouseClicked(mouseX, mouseY, 0),
-                MouseHandler.NULL, fld::textboxKeyTyped
+                (mc, mouseX, mouseY, button) -> {
+                    if (button == 0) {
+                        return fld.mouseClicked(mouseX, mouseY, 0);
+                    }
+                    return false;
+                },
+                MouseHandler.NULL, MouseDragHandler.NULL, MouseScrollHandler.NULL, fld::textboxKeyTyped
         );
     }
 
     public static <T extends Gui & ICwgGuiComponent> WrappedVanillaComponent<T> of(MalisisGui gui, T comp) {
+        // this local variable IS necessary because due to JAVAC bug, JVM's lambda metafactory freaks out with "T extends Gui & ICwgGuiComponent"
+        // crashes with this exception without this variable:
+        // Caused by: java.lang.invoke.LambdaConversionException: Invalid receiver type class net.minecraft.client.gui.Gui; not a subtype of
+        // implementation type interface io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.ICwgGuiComponent
+        // Java 8's javac generates INVOKEDYNAMIC with Gui class being referenced instead of ICwgGuiComponent for this intersection type
+        @SuppressWarnings("UnnecessaryLocalVariable") ICwgGuiComponent c = comp;
         return new WrappedVanillaComponent<>(
                 gui, comp,
-                comp::getX, comp::getY, comp::setX, comp::setY,
-                comp::getWidth, comp::getHeight, comp::setWidth, comp::setHeight,
-                comp::isEnabled, comp::setEnabled, comp::isVisible,
+                c::getX, c::getY, c::setX, c::setY,
+                c::getWidth, c::getHeight, c::setWidth, c::setHeight,
+                c::isEnabled, c::setEnabled, c::isVisible,
                 (mc, mouseX, mouseY, partialTick) -> {
-                    comp.preDraw(mc, mouseX, mouseY, partialTick);
-                    comp.drawBackground(mc, mouseX, mouseY, partialTick);
+                    c.preDraw(mc, mouseX, mouseY, partialTick);
+                    c.drawBackground(mc, mouseX, mouseY, partialTick);
                 },
-                comp::drawForeground, comp::onMousePressed, comp::onMouseReleased, comp::onKeyTyped
+                c::drawForeground, c::onMousePressed, c::onMouseReleased,
+                c::onMouseDragged, c::onScrollWheel, c::onKeyTyped
         );
     }
 
@@ -142,7 +169,8 @@ public final class WrappedVanillaComponent<T extends Gui> extends UIComponent<Wr
             BooleanSupplier isEnabled, Consumer<Boolean> setEnabled,
             BooleanSupplier isVisible,
             GuiRender drawBackground, GuiRender drawForeground,
-            MouseHandler mousePressed, MouseHandler mouseReleased, KeyHandler keyHandler) {
+            MouseHandler mousePressed, MouseHandler mouseReleased, MouseDragHandler mouseDragged,
+            MouseScrollHandler mouseScroll, KeyHandler keyHandler) {
         super(malisisGui);
         this.vanillaComponent = vanillaComponent;
         this.getX = getX;
@@ -160,6 +188,8 @@ public final class WrappedVanillaComponent<T extends Gui> extends UIComponent<Wr
         this.drawForeground = drawForeground;
         this.mousePressed = mousePressed;
         this.mouseReleased = mouseReleased;
+        this.mouseDragged = mouseDragged;
+        this.mouseScroll = mouseScroll;
         this.keyHandler = keyHandler;
 
         setSize(getWidth.getAsInt(), getHeight.getAsInt());
@@ -245,32 +275,64 @@ public final class WrappedVanillaComponent<T extends Gui> extends UIComponent<Wr
     }
 
     @Override public boolean onButtonPress(int x, int y, MouseButton button) {
-        if (button != MouseButton.LEFT) {
-            return super.onButtonPress(x, y, button);
-        }
         if (!(isEnabled.getAsBoolean() && isVisible.getAsBoolean())) {
             return super.onButtonPress(x, y, button);
         }
-        mousePressed.handle(Minecraft.getMinecraft(), x, y);
-        return true;
+        if (mousePressed.handle(Minecraft.getMinecraft(), x, y, button.getCode())) {
+            return true;
+        }
+        return super.onButtonPress(x, y, button);
     }
 
     @Override public boolean onButtonRelease(int x, int y, MouseButton button) {
-        if (button != MouseButton.LEFT) {
-            return super.onButtonPress(x, y, button);
-        }
         if (!(isEnabled.getAsBoolean() && isVisible.getAsBoolean())) {
-            return super.onButtonPress(x, y, button);
+            return super.onButtonRelease(x, y, button);
         }
-        mouseReleased.handle(Minecraft.getMinecraft(), x, y);
-        return true;
+        if (mouseReleased.handle(Minecraft.getMinecraft(), x, y, button.getCode())) {
+            return true;
+        }
+        return super.onButtonRelease(x, y, button);
+    }
+
+    @Override public boolean onDrag(int lastX, int lastY, int x, int y, MouseButton button) {
+        if (!(isEnabled.getAsBoolean() && isVisible.getAsBoolean())) {
+            return super.onDrag(lastX, lastY, x, y, button);
+        }
+        if (mouseDragged.onMouseDragged(Minecraft.getMinecraft(), lastX ,lastY, x, y, button.getCode())) {
+            return true;
+        }
+        return super.onDrag(lastX, lastY, x, y, button);
+    }
+
+    @Override public boolean onScrollWheel(int x, int y, int delta) {
+        if (!(isEnabled.getAsBoolean() && isVisible.getAsBoolean())) {
+            return super.onScrollWheel(x, y, delta);
+        }
+        if (mouseScroll.onScrollWheel(Minecraft.getMinecraft(), x, y, delta)) {
+            return true;
+        }
+        return super.onScrollWheel(x, y, delta);
     }
 
     @Override public boolean onKeyTyped(char keyChar, int keyCode) {
         if (!(isEnabled.getAsBoolean() && isVisible.getAsBoolean())) {
             return super.onKeyTyped(keyChar, keyCode);
         }
-        return keyHandler.handle(keyChar, keyCode);
+        if (keyHandler.handle(keyChar, keyCode)) {
+            return true;
+        }
+        return super.onKeyTyped(keyChar, keyCode);
+    }
+
+    @Override public ClipArea getClipArea() {
+        return new ClipArea(this);
+    }
+
+    @Override public void setClipContent(boolean clip) {
+    }
+
+    @Override public boolean shouldClipContent() {
+        return true;
     }
 
     private interface GuiRender {
@@ -280,12 +342,22 @@ public final class WrappedVanillaComponent<T extends Gui> extends UIComponent<Wr
     }
 
     private interface MouseHandler {
-        MouseHandler NULL = (mc, mouseX, mouseY) -> {};
-        void handle(Minecraft mc, int mouseX, int mouseY);
+        MouseHandler NULL = (mc, mouseX, mouseY, btn) -> false;
+        boolean handle(Minecraft mc, int mouseX, int mouseY, int button);
     }
 
     private interface KeyHandler {
         KeyHandler NULL = (chr, code) -> false;
         boolean handle(char keyChar, int keyCode);
+    }
+
+    private interface MouseDragHandler {
+        MouseDragHandler NULL = (mc, px, py, x, y, btn) -> false;
+        boolean onMouseDragged(Minecraft mc, int prevMouseX, int prevMouseY, int x, int y, int mouseButton);
+    }
+
+    private interface MouseScrollHandler {
+        MouseScrollHandler NULL = (mc, x, y, delta) -> false;
+        boolean onScrollWheel(Minecraft mc, int x, int y, double delta);
     }
 }

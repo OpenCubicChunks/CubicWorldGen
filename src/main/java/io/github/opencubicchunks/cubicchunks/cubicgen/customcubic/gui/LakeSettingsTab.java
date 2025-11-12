@@ -43,10 +43,10 @@ import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGu
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiButton;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiCheckBox;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiLabel;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.CwgGuiUserFunctionEdit;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIList;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIProbabilityDistributionEditor;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UISplitLayout;
-import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIUserFunctionEdit;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component.UIVerticalTableLayout;
 import io.github.opencubicchunks.cubicchunks.cubicgen.preset.CustomGenSettingsSerialization;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
@@ -189,9 +189,9 @@ public class LakeSettingsTab {
 
 
         private final CwgGuiLabel mainProbabilityLabel;
-        private final UIUserFunctionEdit graphMiniViewMain;
+        private final CwgGuiUserFunctionEdit graphMiniViewMain;
         private final CwgGuiLabel surfaceProbabilityLabel;
-        private final UIUserFunctionEdit graphMiniViewSurface;
+        private final CwgGuiUserFunctionEdit graphMiniViewSurface;
 
         private final CwgGuiLabel biomeSelectionLabel;
 
@@ -226,18 +226,19 @@ public class LakeSettingsTab {
             gridY++;
             this.add(wrap(gui, mainProbabilityLabel = label(CENTERED, "lakes.main_probability")), new GridLocation(0, gridY, 6));
             gridY++;
-            this.add(graphMiniViewMain = new UIUserFunctionEdit(gui,
-                            deserializeUserFunction(conf.objectArray("mainProbability").array(), null))
-                            .setSize(INHERITED, 30).autoYLockWithMinMax(0, 0, 0.001, 1, 0.1),
+            this.add(wrap(gui, graphMiniViewMain = new CwgGuiUserFunctionEdit(
+                            deserializeUserFunction(conf.objectArray("mainProbability").array(), null), 0, 30)
+                            .autoYLockWithMinMax(0, 0, 0.001, 1, 0.1)),
                     new GridLocation(0, gridY, 6));
 
             gridY++;
             this.add(wrap(gui, surfaceProbabilityLabel = label(CENTERED, "lakes.surface_probability")), new GridLocation(0, gridY, 6));
             gridY++;
-            this.add(graphMiniViewSurface = new UIUserFunctionEdit(gui,
-                            deserializeUserFunction(conf.objectArray("surfaceProbability").array(), null))
-                            .setSize(INHERITED, 30).autoYLockWithMinMax(0, 0, 0.001, 1, 0.1),
+            this.add(wrap(gui, graphMiniViewSurface = new CwgGuiUserFunctionEdit(
+                            deserializeUserFunction(conf.objectArray("surfaceProbability").array(), null), 0, 30)
+                            .autoYLockWithMinMax(0, 0, 0.001, 1, 0.1)),
                     new GridLocation(0, gridY, 6));
+            graphMiniViewSurface.setHeight(30);
 
             gridY++;
             this.add(wrap(gui, biomeSelectionLabel = label(LEFT_ALIGN, "select_biomes_label")), new GridLocation(0, gridY, 6));
@@ -294,7 +295,7 @@ public class LakeSettingsTab {
             );
 
             deleteBtn.onClick(btn -> deleteFunc.accept(UILakeEntry.this));
-            graphMiniViewMain.onClick(c -> {
+            graphMiniViewMain.setOnClick(c -> {
                 new GuiOverlay(gui,
                         overlay ->
                                 new UIProbabilityDistributionEditor(overlay,
@@ -303,7 +304,7 @@ public class LakeSettingsTab {
                 ).guiScreenAlpha(255).display();
             });
 
-            graphMiniViewSurface.onClick(c -> {
+            graphMiniViewSurface.setOnClick(c -> {
                 new GuiOverlay(gui,
                         overlay ->
                                 new UIProbabilityDistributionEditor(overlay,

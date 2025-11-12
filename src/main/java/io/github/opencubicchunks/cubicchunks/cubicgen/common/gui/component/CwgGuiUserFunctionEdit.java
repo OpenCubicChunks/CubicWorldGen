@@ -26,12 +26,8 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.DynamicLerpAnimation;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.DrawUtils;
 import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
-import net.malisis.core.client.gui.ClipArea;
-import net.malisis.core.client.gui.GuiRenderer;
-import net.malisis.core.client.gui.MalisisGui;
-import net.malisis.core.client.gui.component.IClipable;
-import net.malisis.core.client.gui.component.UIComponent;
-import net.malisis.core.util.MouseButton;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.input.Mouse;
@@ -46,7 +42,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implements IClipable {
+public class CwgGuiUserFunctionEdit extends CwgGuiComponent {
 
     private static final double SNAP_DISTANCE = 3;
 
@@ -90,12 +86,12 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
 
     private CustomGeneratorSettings.UserFunction.Entry dragging;
 
-    private Consumer<UIUserFunctionEdit> onClickHandler;
     private Runnable toRunLater;
     private Runnable autoYLockHandler;
+    private int scaleFactor;
 
-    public UIUserFunctionEdit(MalisisGui gui, CustomGeneratorSettings.UserFunction start) {
-        super(gui);
+    public CwgGuiUserFunctionEdit(CustomGeneratorSettings.UserFunction start, int width, int height) {
+        super(width, height);
         this.entries = new ArrayList<>(Arrays.asList(start.values));
     }
 
@@ -155,7 +151,7 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
         return toUserFunction(entries);
     }
 
-    public UIUserFunctionEdit autoValueLockForParams(double minArg, double maxArg) {
+    public CwgGuiUserFunctionEdit autoValueLockForParams(double minArg, double maxArg) {
         int i = 0;
         Runnable old = toRunLater;
         this.toRunLater = () -> {
@@ -191,7 +187,7 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
         return this;
     }
 
-    public UIUserFunctionEdit autoYLockWithMinMax(double minMin, double maxMin, double minMax, double maxMax, double margin) {
+    public CwgGuiUserFunctionEdit autoYLockWithMinMax(double minMin, double maxMin, double minMax, double maxMax, double margin) {
         this.autoYLockHandler = () -> {
             CustomGeneratorSettings.UserFunction func = toUserFunction(entries);
             double min = Double.MAX_VALUE, max = -Double.MAX_VALUE;
@@ -217,7 +213,7 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
         return this;
     }
 
-    public UIUserFunctionEdit setLockedMin(double minValue) {
+    public CwgGuiUserFunctionEdit setLockedMin(double minValue) {
         Runnable old = toRunLater;
         toRunLater = () -> {
             if (old != null) {
@@ -229,7 +225,7 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
         return this;
     }
 
-    public UIUserFunctionEdit setLockedMax(double maxValue) {
+    public CwgGuiUserFunctionEdit setLockedMax(double maxValue) {
         Runnable old = toRunLater;
         toRunLater = () -> {
             if (old != null) {
@@ -241,21 +237,21 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
         return this;
     }
 
-    public UIUserFunctionEdit lockValueRange(double minValue, double maxValue) {
+    public CwgGuiUserFunctionEdit lockValueRange(double minValue, double maxValue) {
         this.lockYRange = true;
         this.minLockedY = minValue;
         this.maxLockedY = maxValue;
         return this;
     }
 
-    public UIUserFunctionEdit unlockValueRange() {
+    public CwgGuiUserFunctionEdit unlockValueRange() {
         this.lockYRange = false;
         this.scaleY = 1;
         this.offsetY = 0;
         return this;
     }
 
-    public UIUserFunctionEdit switchXY(boolean value) {
+    public CwgGuiUserFunctionEdit switchXY(boolean value) {
         this.flipXY = value;
         return this;
     }
@@ -263,8 +259,8 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
     /**
      * Adds a custom click handler and disabled normal user interactions
      */
-    public void onClick(Consumer<UIUserFunctionEdit> consumer) {
-        this.onClickHandler = consumer;
+    @Override public void setOnClick(Consumer<? super CwgGuiComponent> action) {
+        super.setOnClick(action);
         this.isInteractionEnabled = false;
     }
 
@@ -301,11 +297,11 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
     }
 
     private float getMouseXDirectNoflip() {
-        return Mouse.getX() / (float) renderer.getScaleFactor() - screenX();
+        return Mouse.getX() / (float) scaleFactor - getX();
     }
 
     private float getMouseYDirectNoflip() {
-        return (Display.getHeight() - Mouse.getY()) / (float) renderer.getScaleFactor() - screenY();
+        return (Display.getHeight() - Mouse.getY()) / (float) scaleFactor - getY();
     }
 
     private float getMouseXDirect() {
@@ -367,45 +363,38 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
 
     // handle input
 
-    @Override public boolean onClick(int x, int y) {
-        // intentionally run even if disabled
-        if (this.onClickHandler != null) {
-            this.onClickHandler.accept(this);
-            return true;
-        }
-        return false;
-    }
-
-    @Override public boolean onButtonPress(int x, int y, MouseButton button) {
+    @Override public boolean onMousePressed(Minecraft mc, int x, int y, int button) {
         if (!isInteractionEnabled) {
-            return false;
+            return super.onMousePressed(mc, x, y, button);
         }
+
         float localX = getMouseXDirect();
         float localY = getMouseYDirect();
-        if (button == MouseButton.LEFT) {
+        if (button == 0) {
             modifyForClick(entries);
             this.dragging = getClosest(entries, localX, localY, false);
-        } else if (button == MouseButton.RIGHT) {
+        } else if (button == 1) {
             CustomGeneratorSettings.UserFunction.Entry closest = getClosest(entries, localX, localY, true);
             if (closest != null) {
                 entries.remove(closest);
             }
         }
+        super.onMousePressed(mc, x, y, button);
         return true;
     }
 
-    @Override public boolean onButtonRelease(int x, int y, MouseButton button) {
+    @Override public boolean onMouseReleased(Minecraft mc, int x, int y, int button) {
         if (!isInteractionEnabled) {
             return false;
         }
-        if (button == MouseButton.LEFT) {
+        if (button == 0) {
             this.dragging = null;
         }
         return true;
     }
 
-    @Override public boolean onDrag(int prevMouseX, int prevMouseY, int x, int y, MouseButton button) {
-        if (button == MouseButton.MIDDLE) {
+    @Override public boolean onMouseDragged(Minecraft mc, int prevMouseX, int prevMouseY, int x, int y, int button) {
+        if (button == 2) {
             double dx = x - prevMouseX;
             double dy = y - prevMouseY;
             if (flipXY) {
@@ -455,9 +444,9 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
         return true;
     }
 
-    @Override public boolean onScrollWheel(int x, int y, int delta) {
+    @Override public boolean onScrollWheel(Minecraft mc, int x, int y, double delta) {
         if (!isInteractionEnabled) {
-            return super.onScrollWheel(x, y, delta);
+            return super.onScrollWheel(mc, x, y, delta);
         }
         this.scaleCenterX = flipXY ?
                 DrawUtils.posToY(getHeight(), getMouseYDirectNoflip(), xOffset(), xScale()) :
@@ -494,19 +483,11 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
 
     // render
 
-    @Override
-    public ClipArea getClipArea() {
-        return new ClipArea(this);
-    }
 
-    @Override public void setClipContent(boolean b) {
-    }
-
-    @Override public boolean shouldClipContent() {
-        return true;
-    }
-
-    @Override public void drawBackground(GuiRenderer guiRenderer, int mouseX, int mouseY, float partialTick) {
+    @Override public void preDraw(Minecraft mc, int mouseX, int mouseY, float partialTick) {
+        super.preDraw(mc, mouseX, mouseY, partialTick);
+        ScaledResolution sr = new ScaledResolution(mc);
+        this.scaleFactor = sr.getScaleFactor();
         if (toRunLater != null) {
             toRunLater.run();
             toRunLater = null;
@@ -516,35 +497,32 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
         }
         scaleAnimationX.tick();
         scaleAnimationY.tick();
-
-        renderer.disableTextures();
-        this.rp.setColor(0xFFFFFF);
-        this.rp.setAlpha(50);
-        guiRenderer.drawShape(this.shape, this.rp);
-        renderer.next();
-        renderer.enableTextures();
     }
 
+    @Override public void drawBackground(Minecraft mc, int mouseX, int mouseY, float partialTick) {
 
-    @Override public void drawForeground(GuiRenderer guiRenderer, int mouseX, int mouseY, float partialTick) {
+        GlStateManager.disableTexture2D();
+        drawRect(getX(), getY(), getX() + getWidth(), getY() + getHeight(), 0x32FFFFFF);
+        GlStateManager.enableTexture2D();
+
         float xAxisY = (float) DrawUtils.yToPos(getHeight(), 0,
                 flipXY ? -xOffset() : yOffset(),
                 flipXY ? -xScale() : yScale());
         if (xAxisY >= 0 && xAxisY < getHeight()) {
-            DrawUtils.drawLineF(guiRenderer, 0, xAxisY, getWidth(), xAxisY, 0xFF000000, 0.5f);
+            DrawUtils.drawLineF(getX(), getY() + xAxisY, getX() + getWidth(), getY() + xAxisY, 0xFF000000, 0.5f);
         }
         // vertical line, changes with offset
         float yAxisX = (float) DrawUtils.xToPos(getWidth(), 0,
                 flipXY ? -yOffset() : xOffset(),
                 flipXY ? -yScale() : xScale());
         if (yAxisX >= 0 && yAxisX <= getWidth()) {
-            DrawUtils.drawLineF(guiRenderer, yAxisX, 0, yAxisX, getHeight(), 0xFF000000, 0.5f);
+            DrawUtils.drawLineF(getX() + yAxisX, getY(), getX() + yAxisX, getY() + getHeight(), 0xFF000000, 0.5f);
         }
 
-        DrawUtils.drawXScale(guiRenderer, getWidth(), getHeight(),
+        DrawUtils.drawXScale(getX(), getY(), getWidth(), getHeight(),
                 flipXY ? yOffset() : xOffset(),
                 flipXY ? yScale() : xScale());
-        DrawUtils.drawYScale(guiRenderer, getWidth(), getHeight(),
+        DrawUtils.drawYScale(getX(), getY(), getWidth(), getHeight(),
                 flipXY ? xOffset() : yOffset(),
                 flipXY ? xScale() : yScale());
 
@@ -587,9 +565,9 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
             float screenXRaw = (float) DrawUtils.xToPos(getWidthFlip(), currY, xOffset, xScale);
             float screenYRaw = (float) DrawUtils.yToPos(getHeightFlip(), currV, yOffset, yScale);
 
-            float screenX = flipXY ? getWidth() - screenYRaw : screenXRaw;
-            float screenY = flipXY ? getHeight() - screenXRaw : screenYRaw;
-            DrawUtils.drawRectF(guiRenderer, screenX - r, screenY - r, screenX + r, screenY + r, 0xAAFFFFFF);
+            float screenX = getX() + (flipXY ? getWidth() - screenYRaw : screenXRaw);
+            float screenY = getY() + (flipXY ? getHeight() - screenXRaw : screenYRaw);
+            DrawUtils.drawRectF(screenX - r, screenY - r, screenX + r, screenY + r, 0xAAFFFFFF);
         }
     }
 
@@ -599,14 +577,11 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
         double yScale = yScale();
         double yOffset = yOffset();
 
-        renderer.next();
-        GlStateManager.disableTexture2D();
-
         CustomGeneratorSettings.UserFunction func = toUserFunction(entries);
 
         final float maxGraphY = (float) DrawUtils.posToX(getWidthFlip(), getWidthFlip(), xOffset, xScale);
 
-        float lineWidth = 0.9f / renderer.getScaleFactor();
+        float lineWidth = 0.9f / scaleFactor;
 
         double currY = DrawUtils.posToX(getWidthFlip(), 0, xOffset, xScale);
         double currV = func.getValue(currY);
@@ -623,12 +598,12 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
                 float pointScreenYRaw = (float) DrawUtils.yToPos(getHeightFlip(), entry.v, yOffset, yScale);
 
 
-                float startX = flipXY ? getWidth() - startYRaw : startXRaw;
-                float startY = flipXY ? getHeight() - startXRaw : startYRaw;
-                float pointScreenX = flipXY ? getWidth() - pointScreenYRaw : pointScreenXRaw;
-                float pointScreenY = flipXY ? getHeight() - pointScreenXRaw : pointScreenYRaw;
+                float startX = getX() + (flipXY ? getWidth() - startYRaw : startXRaw);
+                float startY = getY() + (flipXY ? getHeight() - startXRaw : startYRaw);
+                float pointScreenX = getX() + (flipXY ? getWidth() - pointScreenYRaw : pointScreenXRaw);
+                float pointScreenY = getY() + (flipXY ? getHeight() - pointScreenXRaw : pointScreenYRaw);
 
-                DrawUtils.drawLineF(renderer,
+                DrawUtils.drawLineF(
                         startX,
                         startY,
                         pointScreenX,
@@ -637,7 +612,7 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
                 currY = entry.y;
                 currV = entry.v;
 
-                DrawUtils.drawRectF(renderer,
+                DrawUtils.drawRectF(
                         pointScreenX - 2, pointScreenY - 2,
                         pointScreenX + 2, pointScreenY + 2,
                         0xFFFFFF | (alpha << 24));
@@ -657,13 +632,11 @@ public class UIUserFunctionEdit extends UIComponent<UIUserFunctionEdit> implemen
         float pointScreenY = (float) DrawUtils.yToPos(getHeightFlip(), lastV, yOffset, yScale);
 
 
-        DrawUtils.drawLineF(renderer,
-                flipXY ? getWidth() - startY : startX,
-                flipXY ? getHeight() - startX : startY,
-                flipXY ? getWidth() - pointScreenY : pointScreenX,
-                flipXY ? getHeight() - pointScreenX : pointScreenY,
+        DrawUtils.drawLineF(
+                getX() + (flipXY ? getWidth() - startY : startX),
+                getY() + (flipXY ? getHeight() - startX : startY),
+                getX() + (flipXY ? getWidth() - pointScreenY : pointScreenX),
+                getY() + (flipXY ? getHeight() - pointScreenX : pointScreenY),
                 0xFFFFFF | (alpha << 24), lineWidth);
-
-        renderer.next();
     }
 }

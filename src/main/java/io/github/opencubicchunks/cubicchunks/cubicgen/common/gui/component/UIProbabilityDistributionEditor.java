@@ -23,6 +23,7 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.component;
 
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.CwgGuiFactory.wrap;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.malisisText;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_INSETS;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.HORIZONTAL_PADDING;
@@ -49,7 +50,7 @@ public class UIProbabilityDistributionEditor extends UIContainer<UIProbabilityDi
 
     private final UserFunction start;
     private final Consumer<UserFunction> saveHandler;
-    private final UIUserFunctionEdit functionEdit;
+    private final CwgGuiUserFunctionEdit functionEdit;
 
     /*
       +------------+------------+
@@ -73,7 +74,7 @@ public class UIProbabilityDistributionEditor extends UIContainer<UIProbabilityDi
         this.saveHandler = saveHandler;
         this.add(makeButtonsContainer());
         UISplitLayout<?> split = new UISplitLayout<>(gui, UISplitLayout.Type.STACKED,
-                this.functionEdit = new UIUserFunctionEdit(gui, start).autoYLockWithMinMax(0, 0, 0.001f, 1, 0.1).switchXY(true),
+                wrap(gui, this.functionEdit = new CwgGuiUserFunctionEdit(start, 0, 0).autoYLockWithMinMax(0, 0, 0.001f, 1, 0.1).switchXY(true)),
                 makeOptionsButtons(gui, functionEdit));
         split.setPadding(HORIZONTAL_PADDING, 5);
         split.setSizeOf(UISplitLayout.Pos.SECOND, 20);
@@ -85,11 +86,10 @@ public class UIProbabilityDistributionEditor extends UIContainer<UIProbabilityDi
 
     @Override public void drawBackground(GuiRenderer renderer, int mouseX, int mouseY, float partialTick) {
         rp.useTexture.set(false);
-        int i = 0;
     }
 
 
-    private UIContainer<?> makeOptionsButtons(ExtraGui gui, UIUserFunctionEdit editor) {
+    private UIContainer<?> makeOptionsButtons(ExtraGui gui, CwgGuiUserFunctionEdit editor) {
         UIVerticalTableLayout<?> layout = new UIVerticalTableLayout<>(gui, 3);
 
         UIButton reset = new UIButton(gui, malisisText("reset")).setSize(20, 20);

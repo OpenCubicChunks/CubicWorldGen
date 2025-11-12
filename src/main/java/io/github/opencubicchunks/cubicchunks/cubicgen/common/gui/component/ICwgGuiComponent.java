@@ -45,11 +45,21 @@ public interface ICwgGuiComponent {
     void drawBackground(Minecraft mc, int mouseX, int mouseY, float partialTick);
     default void drawForeground(Minecraft mc, int mouseX, int mouseY, float partialTick) {}
 
-    default boolean onMousePressed(Minecraft mc, int mouseX, int mouseY) {
+    // Mouse buttons: LEFT = 0, RIGHT = 1, MIDDLE = 2
+
+    default boolean onMousePressed(Minecraft mc, int mouseX, int mouseY, int mouseButton) {
         return false;
     }
 
-    default boolean onMouseReleased(Minecraft mc, int mouseX, int mouseY) {
+    default boolean onMouseReleased(Minecraft mc, int mouseX, int mouseY, int mouseButton) {
+        return false;
+    }
+
+    default boolean onMouseDragged(Minecraft mc, int prevMouseX, int prevMouseY, int x, int y, int mouseButton) {
+        return false;
+    }
+
+    default boolean onScrollWheel(Minecraft mc, int x, int y, double delta) {
         return false;
     }
 
