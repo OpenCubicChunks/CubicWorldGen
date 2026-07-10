@@ -191,11 +191,45 @@ public class BiomeSource {
     }
 
     public double getHeight(int x, int y, int z) {
-        return biomeDataCache.get(new Vec3i(x / 4.0, 0, z / 4.0)).height;
+        if ((x & 3) == 0 && (z & 3) == 0) {
+            return biomeDataCache.get(new Vec3i(x / 4.0, 0, z / 4.0)).height;
+        } else {
+            int x0 = x >> 2;
+            int z0 = z >> 2;
+            double xf = (x & 3) * 0.25;
+            double zf = (z & 3) * 0.25;
+
+            double v00 = biomeDataCache.get(new Vec3i(x0, 0, z0)).height;
+            double v01 = biomeDataCache.get(new Vec3i(x0, 0, z0 + 1)).height;
+            double v10 = biomeDataCache.get(new Vec3i(x0 + 1, 0, z0)).height;
+            double v11 = biomeDataCache.get(new Vec3i(x0 + 1, 0, z0 + 1)).height;
+
+            double vx0 = MathUtil.lerp(xf, v00, v10);
+            double vx1 = MathUtil.lerp(xf, v01, v11);
+
+            return MathUtil.lerp(zf, vx0, vx1);
+        }
     }
 
     public double getVolatility(int x, int y, int z) {
-        return biomeDataCache.get(new Vec3i(x / 4.0, 0, z / 4.0)).heightVariation;
+        if ((x & 3) == 0 && (z & 3) == 0) {
+            return biomeDataCache.get(new Vec3i(x / 4.0, 0, z / 4.0)).heightVariation;
+        } else {
+            int x0 = x >> 2;
+            int z0 = z >> 2;
+            double xf = (x & 3) * 0.25;
+            double zf = (z & 3) * 0.25;
+
+            double v00 = biomeDataCache.get(new Vec3i(x0, 0, z0)).heightVariation;
+            double v01 = biomeDataCache.get(new Vec3i(x0, 0, z0 + 1)).heightVariation;
+            double v10 = biomeDataCache.get(new Vec3i(x0 + 1, 0, z0)).heightVariation;
+            double v11 = biomeDataCache.get(new Vec3i(x0 + 1, 0, z0 + 1)).heightVariation;
+
+            double vx0 = MathUtil.lerp(xf, v00, v10);
+            double vx1 = MathUtil.lerp(xf, v01, v11);
+
+            return MathUtil.lerp(zf, vx0, vx1);
+        }
     }
 
     public CubicBiome getBiome(int blockX, int blockY, int blockZ) {
