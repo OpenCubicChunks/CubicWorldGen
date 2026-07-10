@@ -294,6 +294,6 @@ public class CustomCubicGui extends ExtraGui {
     @Deprecated // should use JsonObject directly
     public CustomGeneratorSettings getConfig() throws DeserializationException {
         updateConfig();
-        return CustomGenSettingsSerialization.jankson().fromJsonCarefully(jsonConf, CustomGeneratorSettings.class);
+        return CustomGenSettingsSerialization.jankson().fromJsonCarefully(jsonConf, CustomGeneratorSettings.class).validate();
     }
 }

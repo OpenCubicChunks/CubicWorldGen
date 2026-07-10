@@ -122,43 +122,47 @@ public class CustomGeneratorSettings {
      * Terrain shape
      */
 
-    public float expectedBaseHeight = 64;
-    public float expectedHeightVariation = 64;
-    public float actualHeight = 256;
+    public double expectedBaseHeight = 64;
+    public double expectedHeightVariation = 64;
+    public double actualHeight = 256;
 
-    public float heightVariationFactor = 64;
-    public float specialHeightVariationFactorBelowAverageY = 0.25f;
-    public float heightVariationOffset = 0;
-    public float heightFactor = 64;// height scale
-    public float heightOffset = 64;// sea level
+    public double heightVariationFactor = 64;
+    public double specialHeightVariationFactorBelowAverageY = 0.25f;
+    public double heightVariationOffset = 0;
+    public double heightFactor = 64;// height scale
+    public double heightOffset = 64;// sea level
 
-    public float depthNoiseFactor = ConversionUtils.VANILLA_DEPTH_NOISE_FACTOR;
-    public float depthNoiseOffset = 0;
-    public float depthNoiseFrequencyX = ConversionUtils.VANILLA_DEPTH_NOISE_FREQUENCY;
-    public float depthNoiseFrequencyZ = ConversionUtils.VANILLA_DEPTH_NOISE_FREQUENCY;
+    public double depthNoiseFactor = ConversionUtils.VANILLA_DEPTH_NOISE_FACTOR;
+    public double depthNoiseOffset = 0;
+    public double depthNoiseFrequencyX = ConversionUtils.VANILLA_DEPTH_NOISE_FREQUENCY;
+    public double depthNoiseFrequencyZ = ConversionUtils.VANILLA_DEPTH_NOISE_FREQUENCY;
     public int depthNoiseOctaves = 16;
 
-    public float selectorNoiseFactor = ConversionUtils.VANILLA_SELECTOR_NOISE_FACTOR;
-    public float selectorNoiseOffset = ConversionUtils.VANILLA_SELECTOR_NOISE_OFFSET;
-    public float selectorNoiseFrequencyX = ConversionUtils.VANILLA_SELECTOR_NOISE_FREQUENCY_XZ;
-    public float selectorNoiseFrequencyY = ConversionUtils.VANILLA_SELECTOR_NOISE_FREQUENCY_Y;
-    public float selectorNoiseFrequencyZ = ConversionUtils.VANILLA_SELECTOR_NOISE_FREQUENCY_XZ;
+    public double selectorNoiseFactor = ConversionUtils.VANILLA_SELECTOR_NOISE_FACTOR;
+    public double selectorNoiseOffset = ConversionUtils.VANILLA_SELECTOR_NOISE_OFFSET;
+    public double selectorNoiseFrequencyX = ConversionUtils.VANILLA_SELECTOR_NOISE_FREQUENCY_XZ;
+    public double selectorNoiseFrequencyY = ConversionUtils.VANILLA_SELECTOR_NOISE_FREQUENCY_Y;
+    public double selectorNoiseFrequencyZ = ConversionUtils.VANILLA_SELECTOR_NOISE_FREQUENCY_XZ;
     public int selectorNoiseOctaves = 8;
 
-    public float lowNoiseFactor = 1;
-    public float lowNoiseOffset = 0;
-    public float lowNoiseFrequencyX = ConversionUtils.VANILLA_LOWHIGH_NOISE_FREQUENCY_XZ;
-    public float lowNoiseFrequencyY = ConversionUtils.VANILLA_LOWHIGH_NOISE_FREQUENCY_Y;
-    public float lowNoiseFrequencyZ = ConversionUtils.VANILLA_LOWHIGH_NOISE_FREQUENCY_XZ;
+    public double lowNoiseFactor = 1;
+    public double lowNoiseOffset = 0;
+    public double lowNoiseFrequencyX = ConversionUtils.VANILLA_LOWHIGH_NOISE_FREQUENCY_XZ;
+    public double lowNoiseFrequencyY = ConversionUtils.VANILLA_LOWHIGH_NOISE_FREQUENCY_Y;
+    public double lowNoiseFrequencyZ = ConversionUtils.VANILLA_LOWHIGH_NOISE_FREQUENCY_XZ;
     public int lowNoiseOctaves = 16;
 
-    public float highNoiseFactor = 1;
-    public float highNoiseOffset = 0;
-    public float highNoiseFrequencyX = ConversionUtils.VANILLA_LOWHIGH_NOISE_FREQUENCY_XZ;
-    public float highNoiseFrequencyY = ConversionUtils.VANILLA_LOWHIGH_NOISE_FREQUENCY_Y;
-    public float highNoiseFrequencyZ = ConversionUtils.VANILLA_LOWHIGH_NOISE_FREQUENCY_XZ;
+    public double highNoiseFactor = 1;
+    public double highNoiseOffset = 0;
+    public double highNoiseFrequencyX = ConversionUtils.VANILLA_LOWHIGH_NOISE_FREQUENCY_XZ;
+    public double highNoiseFrequencyY = ConversionUtils.VANILLA_LOWHIGH_NOISE_FREQUENCY_Y;
+    public double highNoiseFrequencyZ = ConversionUtils.VANILLA_LOWHIGH_NOISE_FREQUENCY_XZ;
     public int highNoiseOctaves = 16;
     public List<ReplacerConfig> replacers = new ArrayList<>();
+
+    public int noiseSampleSizeX = 4;
+    public int noiseSampleSizeY = 8;
+    public int noiseSampleSizeZ = 4;
 
     // note: the AABB uses cube coords to simplify the generator
     public CubeAreas cubeAreas = new CubeAreas(new ArrayList<>());
@@ -240,7 +244,7 @@ public class CustomGeneratorSettings {
             IWorldInfoAccess wia = (IWorldInfoAccess) world.getWorldInfo();
             wia.setGeneratorOptions(jsonString);
 
-            return CustomGenSettingsSerialization.jankson().fromJsonCarefully(jsonString, CustomGeneratorSettings.class);
+            return CustomGenSettingsSerialization.jankson().fromJsonCarefully(jsonString, CustomGeneratorSettings.class).validate();
         } catch (PresetLoadError | DeserializationException err) {
             throw new RuntimeException(err);
         } catch (SyntaxError err) {
@@ -264,7 +268,7 @@ public class CustomGeneratorSettings {
             Files.write(presetFile.toPath(), jsonString.getBytes(StandardCharsets.UTF_8),
                     StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 
-            return CustomGenSettingsSerialization.jankson().fromJsonCarefully(jsonString, CustomGeneratorSettings.class);
+            return CustomGenSettingsSerialization.jankson().fromJsonCarefully(jsonString, CustomGeneratorSettings.class).validate();
         } catch (PresetLoadError | DeserializationException | IOException err) {
             throw new RuntimeException(err);
         } catch (SyntaxError err) {
@@ -285,6 +289,20 @@ public class CustomGeneratorSettings {
             CustomCubicMod.LOGGER.error(json);
             CustomCubicMod.LOGGER.catching(e);
         }
+    }
+
+    public CustomGeneratorSettings validate() {
+        int[] allowed = {1, 2, 4, 8, 16};
+        if (Arrays.stream(allowed).noneMatch(v -> v == noiseSampleSizeX)) {
+            throw new IllegalArgumentException("Invalid noiseSampleSizeX, allowed values are " + Arrays.toString(allowed));
+        }
+        if (Arrays.stream(allowed).noneMatch(v -> v == noiseSampleSizeY)) {
+            throw new IllegalArgumentException("Invalid noiseSampleSizeY, allowed values are " + Arrays.toString(allowed));
+        }
+        if (Arrays.stream(allowed).noneMatch(v -> v == noiseSampleSizeZ)) {
+            throw new IllegalArgumentException("Invalid noiseSampleSizeZ, allowed values are " + Arrays.toString(allowed));
+        }
+        return this;
     }
 
     public static CustomGeneratorSettings hybridDefaults(DimensionType dimType) {
@@ -981,37 +999,37 @@ public class CustomGeneratorSettings {
         /**
          * After each step the Y direction component will be multiplied by this value, unless steeper cave is allowed
          */
-        public float flattenFactor = 0.7f;
+        public double flattenFactor = 0.7f;
 
         /**
          * If steeper cave is allowed - this value will be used instead of FLATTEN_FACTOR
          */
-        public float steeperFlattenFactor = 0.92f;
+        public double steeperFlattenFactor = 0.92f;
 
         /**
          * Each step cave direction angles will be changed by this fraction of values that specify how direction changes
          */
-        public float directionChangeFactor = 0.1f;
+        public double directionChangeFactor = 0.1f;
 
         /**
          * This fraction of the previous value that controls horizontal direction changes will be used in next step
          */
-        public float prevHorizDirectionChangeWeight = 0.75f;
+        public double prevHorizDirectionChangeWeight = 0.75f;
 
         /**
          * This fraction of the previous value that controls vertical direction changes will be used in next step
          */
-        public float prevVertDirectionChangeWeight = 0.9f;
+        public double prevVertDirectionChangeWeight = 0.9f;
 
         /**
          * Maximum value by which horizontal cave direction randomly changes each step, lower values are much more likely.
          */
-        public float maxAddDirectionChangeHoriz = 4.0f;
+        public double maxAddDirectionChangeHoriz = 4.0f;
 
         /**
          * Maximum value by which vertical cave direction randomly changes each step, lower values are much more likely.
          */
-        public float maxAddDirectionChangeVert = 2.0f;
+        public double maxAddDirectionChangeVert = 2.0f;
 
         /**
          * 1 in this amount of steps will actually carve any blocks,
@@ -1074,37 +1092,37 @@ public class CustomGeneratorSettings {
                 return this;
             }
 
-            public CaveConfig.Builder setFlattenFactor(float flattenFactor) {
+            public CaveConfig.Builder setFlattenFactor(double flattenFactor) {
                 config.flattenFactor = flattenFactor;
                 return this;
             }
 
-            public CaveConfig.Builder setSteeperFlattenFactor(float steeperFlattenFactor ) {
+            public CaveConfig.Builder setSteeperFlattenFactor(double steeperFlattenFactor ) {
                 config.steeperFlattenFactor = steeperFlattenFactor;
                 return this;
             }
 
-            public CaveConfig.Builder set(float directionChangeFactor) {
+            public CaveConfig.Builder set(double directionChangeFactor) {
                 config.directionChangeFactor = directionChangeFactor;
                 return this;
             }
 
-            public CaveConfig.Builder setPrevHorizDirectionChangeWeight(float prevHorizDirectionChangeWeight) {
+            public CaveConfig.Builder setPrevHorizDirectionChangeWeight(double prevHorizDirectionChangeWeight) {
                 config.prevHorizDirectionChangeWeight = prevHorizDirectionChangeWeight;
                 return this;
             }
 
-            public CaveConfig.Builder setPrevVertDirectionChangeWeight(float prevVertDirectionChangeWeight) {
+            public CaveConfig.Builder setPrevVertDirectionChangeWeight(double prevVertDirectionChangeWeight) {
                 config.prevVertDirectionChangeWeight = prevVertDirectionChangeWeight;
                 return this;
             }
 
-            public CaveConfig.Builder setMaxAddDirectionChangeHoriz(float maxAddDirectionChangeHoriz) {
+            public CaveConfig.Builder setMaxAddDirectionChangeHoriz(double maxAddDirectionChangeHoriz) {
                 config.maxAddDirectionChangeHoriz = maxAddDirectionChangeHoriz;
                 return this;
             }
 
-            public CaveConfig.Builder setMaxAddDirectionChangeVert(float maxAddDirectionChangeVert) {
+            public CaveConfig.Builder setMaxAddDirectionChangeVert(double maxAddDirectionChangeVert) {
                 config.maxAddDirectionChangeVert = maxAddDirectionChangeVert;
                 return this;
             }
@@ -1969,7 +1987,7 @@ public class CustomGeneratorSettings {
 
     public static class UserFunction {
 
-        // TODO: flatten to float array for performance?
+        // TODO: flatten to double array for performance?
         public Entry[] values;
 
         public UserFunction() {
@@ -2096,9 +2114,9 @@ public class CustomGeneratorSettings {
         public GenerationCondition generateWhen;
         public int spawnSize;
         public int spawnTries;
-        public float spawnProbability = 1.0f;
-        public float minHeight = Float.NEGATIVE_INFINITY;
-        public float maxHeight = Float.POSITIVE_INFINITY;
+        public double spawnProbability = 1.0f;
+        public double minHeight = Float.NEGATIVE_INFINITY;
+        public double maxHeight = Float.POSITIVE_INFINITY;
 
         public StandardOreConfig() {
         }
@@ -2106,7 +2124,7 @@ public class CustomGeneratorSettings {
         private StandardOreConfig(BlockStateDesc state, Set<BiomeDesc> biomes,
                                   GenerationCondition placeBlockWhen, GenerationCondition generateWhen,
                                   int spawnSize, int spawnTries,
-                                  float spawnProbability, float minHeight, float maxHeight) {
+                                  double spawnProbability, double minHeight, double maxHeight) {
             this.blockstate = state;
             this.biomes = biomes;
             this.placeBlockWhen = placeBlockWhen;
@@ -2130,9 +2148,9 @@ public class CustomGeneratorSettings {
             private GenerationCondition generateWhen;
             private int spawnSize;
             private int spawnTries;
-            private float spawnProbability;
-            private float minHeight = Float.NEGATIVE_INFINITY;
-            private float maxHeight = Float.POSITIVE_INFINITY;
+            private double spawnProbability;
+            private double minHeight = Float.NEGATIVE_INFINITY;
+            private double maxHeight = Float.POSITIVE_INFINITY;
 
             public Builder block(IBlockState blockstate) {
                 this.blockstate = new BlockStateDesc(blockstate);
@@ -2154,17 +2172,17 @@ public class CustomGeneratorSettings {
                 return this;
             }
 
-            public Builder probability(float spawnProbability) {
+            public Builder probability(double spawnProbability) {
                 this.spawnProbability = spawnProbability;
                 return this;
             }
 
-            public Builder minHeight(float minHeight) {
+            public Builder minHeight(double minHeight) {
                 this.minHeight = minHeight;
                 return this;
             }
 
-            public Builder maxHeight(float maxHeight) {
+            public Builder maxHeight(double maxHeight) {
                 this.maxHeight = maxHeight;
                 return this;
             }
@@ -2223,12 +2241,12 @@ public class CustomGeneratorSettings {
         public GenerationCondition generateWhen;
         public int spawnSize;
         public int spawnTries;
-        public float spawnProbability;
-        public float heightMean;
-        public float heightStdDeviation;
-        public float heightSpacing;
-        public float minHeight;
-        public float maxHeight;
+        public double spawnProbability;
+        public double heightMean;
+        public double heightStdDeviation;
+        public double heightSpacing;
+        public double minHeight;
+        public double maxHeight;
 
         public PeriodicGaussianOreConfig() {
         }
@@ -2236,8 +2254,8 @@ public class CustomGeneratorSettings {
         private PeriodicGaussianOreConfig(BlockStateDesc blockstate, Set<BiomeDesc> biomes,
                                           GenerationCondition placeBlockWhen, GenerationCondition generateWhen,
                                           int spawnSize, int spawnTries,
-                                          float spawnProbability, float heightMean,
-                                          float heightStdDeviation, float heightSpacing, float minHeight, float maxHeight) {
+                                          double spawnProbability, double heightMean,
+                                          double heightStdDeviation, double heightSpacing, double minHeight, double maxHeight) {
             this.blockstate = blockstate;
             this.biomes = biomes;
             this.placeBlockWhen = placeBlockWhen;
@@ -2264,12 +2282,12 @@ public class CustomGeneratorSettings {
             private GenerationCondition generateWhen;
             private int spawnSize;
             private int spawnTries;
-            private float spawnProbability;
-            private float heightMean;
-            private float heightStdDeviation;
-            private float heightSpacing;
-            private float minHeight = Float.NEGATIVE_INFINITY;
-            private float maxHeight = Float.POSITIVE_INFINITY;
+            private double spawnProbability;
+            private double heightMean;
+            private double heightStdDeviation;
+            private double heightSpacing;
+            private double minHeight = Float.NEGATIVE_INFINITY;
+            private double maxHeight = Float.POSITIVE_INFINITY;
 
             public Builder block(IBlockState blockstate) {
                 this.blockstate = new BlockStateDesc(blockstate);
@@ -2291,32 +2309,32 @@ public class CustomGeneratorSettings {
                 return this;
             }
 
-            public Builder probability(float spawnProbability) {
+            public Builder probability(double spawnProbability) {
                 this.spawnProbability = spawnProbability;
                 return this;
             }
 
-            public Builder heightMean(float heightMean) {
+            public Builder heightMean(double heightMean) {
                 this.heightMean = heightMean;
                 return this;
             }
 
-            public Builder heightStdDeviation(float heightStdDeviation) {
+            public Builder heightStdDeviation(double heightStdDeviation) {
                 this.heightStdDeviation = heightStdDeviation;
                 return this;
             }
 
-            public Builder heightSpacing(float heightSpacing) {
+            public Builder heightSpacing(double heightSpacing) {
                 this.heightSpacing = heightSpacing;
                 return this;
             }
 
-            public Builder minHeight(float minHeight) {
+            public Builder minHeight(double minHeight) {
                 this.minHeight = minHeight;
                 return this;
             }
 
-            public Builder maxHeight(float maxHeight) {
+            public Builder maxHeight(double maxHeight) {
                 this.maxHeight = maxHeight;
                 return this;
             }

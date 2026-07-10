@@ -37,7 +37,7 @@ import javax.annotation.Nullable;
 
 public class CustomGeneratorSettingsFixer {
 
-    public static final int LATEST = 8;
+    public static final int LATEST = 9;
     public static final CustomGeneratorSettingsFixer INSTANCE = new CustomGeneratorSettingsFixer();
 
     private final V3Preprocessor legacyPreprocessor = new V3Preprocessor();
@@ -51,7 +51,8 @@ public class CustomGeneratorSettingsFixer {
             new V5Fix(),
             new V6Fix(),
             new V7Fix(),
-            new V8Fix()
+            new V8Fix(),
+            new V9Fix()
     );
 
     private CustomGeneratorSettingsFixer() {
@@ -90,7 +91,7 @@ public class CustomGeneratorSettingsFixer {
         if (json.isEmpty()) {
             return CustomGeneratorSettings.defaults();
         }
-        return CustomGenSettingsSerialization.jankson().fromJsonCarefully(fixJson(json), CustomGeneratorSettings.class);
+        return CustomGenSettingsSerialization.jankson().fromJsonCarefully(fixJson(json), CustomGeneratorSettings.class).validate();
     }
 
     JsonObject fixJsonNew(JsonObject toFix) throws UnsupportedPresetException {

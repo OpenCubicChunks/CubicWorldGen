@@ -327,9 +327,12 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
             initGenerator(42);
         }
 
-        BlockPos start = new BlockPos(cubeX * 4, cubeY * 2, cubeZ * 4);
-        BlockPos end = start.add(4, 2, 4);
-        terrainBuilder.forEachScaled(start, end, new Vec3i(4, 8, 4),
+        int countX = 16 / conf.noiseSampleSizeX;
+        int countY = 16 / conf.noiseSampleSizeY;
+        int countZ = 16 / conf.noiseSampleSizeZ;
+        BlockPos start = new BlockPos(cubeX * countX, cubeY * countY, cubeZ * countZ);
+        BlockPos end = start.add(countX, countY, countZ);
+        terrainBuilder.forEachScaled(start, end, new Vec3i(conf.noiseSampleSizeX, conf.noiseSampleSizeY, conf.noiseSampleSizeZ),
                 (x, y, z, dx, dy, dz, v) ->
                         cubePrimer.setBlockState(
                                 blockToLocal(x), blockToLocal(y), blockToLocal(z),
