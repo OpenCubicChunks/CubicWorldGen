@@ -124,11 +124,12 @@ repositories {
         setUrl("https://files.minecraftforge.net/maven/")
     }
     maven {
-        setUrl("https://maven.daporkchop.net/")
-    }
-    maven {
         setUrl("https://oss.sonatype.org/content/repositories/public/")
     }
+    maven {
+        setUrl("https://maven.daporkchop.net/")
+    }
+
     // Note: sponge repository needs to be the second one because flow-noise is both in sponge and sonatype repository
     // but sponge has older one, and we need the newer one from sonatype
     // currently gradle seems to resolve dependencies from repositories in the order they are defined here
