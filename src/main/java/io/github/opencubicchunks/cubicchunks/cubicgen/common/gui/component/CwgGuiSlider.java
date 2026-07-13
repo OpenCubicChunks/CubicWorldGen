@@ -39,7 +39,7 @@ public class CwgGuiSlider extends GuiButtonExt {
     private final Function<Double, String> valueToString;
     private final Converter<Double, Double> positionToValue;
 
-    private double sliderPosition;
+    private double sliderValue; // store value, not position, to avoid changing it when not intended
     private boolean mousePressed;
     private Consumer<CwgGuiSlider> updateHandler = x -> {};
 
@@ -55,7 +55,7 @@ public class CwgGuiSlider extends GuiButtonExt {
         super(0, 0, 0, "");
         this.valueToString = displayString;
         this.positionToValue = positionToValue;
-        this.sliderPosition = positionToValue.reverse().convert(defaultValue);
+        this.sliderValue = defaultValue;
     }
 
     public void onUpdate(Consumer<CwgGuiSlider> updateHandler) {
@@ -63,15 +63,15 @@ public class CwgGuiSlider extends GuiButtonExt {
     }
 
     public double getSliderPosition() {
-        return sliderPosition;
+        return positionToValue.reverse().convert(sliderValue);
     }
 
     public double getSliderValue() {
-        return positionToValue.convert(getSliderPosition());
+        return sliderValue;
     }
 
     public void setSliderValue(double sliderValue) {
-        this.sliderPosition = positionToValue.reverse().convert(sliderValue);
+        this.sliderValue = sliderValue;
     }
 
     @Override protected int getHoverState(boolean mouseOver) {
@@ -86,15 +86,15 @@ public class CwgGuiSlider extends GuiButtonExt {
         }
         if (mousePressed && enabled) {
             double position = (mouseX - (this.x + 4.0)) / (this.width - 8.0);
-            this.sliderPosition = MathHelper.clamp(position, 0, 1);
+            this.sliderValue = positionToValue.convert(MathHelper.clamp(position, 0, 1));
             updateHandler.accept(this);
         }
 
         this.displayString = valueToString.apply(getSliderValue());
 
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-        this.drawTexturedModalRect(this.x + (int)(this.sliderPosition * (this.width - 8)), this.y, 0, 66, 4, 20);
-        this.drawTexturedModalRect(this.x + (int)(this.sliderPosition * (this.width - 8)) + 4, this.y, 196, 66, 4, 20);
+        this.drawTexturedModalRect(this.x + (int)(this.getSliderPosition() * (this.width - 8)), this.y, 0, 66, 4, 20);
+        this.drawTexturedModalRect(this.x + (int)(this.getSliderPosition() * (this.width - 8)) + 4, this.y, 196, 66, 4, 20);
     }
 
     @Override public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
@@ -104,7 +104,7 @@ public class CwgGuiSlider extends GuiButtonExt {
         this.mousePressed = true;
 
         double position = (mouseX - (this.x + 4.0)) / (this.width - 8.0);
-        this.sliderPosition = MathHelper.clamp(position, 0, 1);
+        this.sliderValue = positionToValue.convert(MathHelper.clamp(position, 0, 1));
         updateHandler.accept(this);
 
         return true;
