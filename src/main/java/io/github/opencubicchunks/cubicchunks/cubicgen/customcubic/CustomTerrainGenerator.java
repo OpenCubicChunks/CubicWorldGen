@@ -79,10 +79,9 @@ import static io.github.opencubicchunks.cubicchunks.api.util.Coords.blockToLocal
 @MethodsReturnNonnullByDefault
 public class CustomTerrainGenerator extends BasicCubeGenerator {
 
-    private static final int CACHE_SIZE_2D = 16 * 16;
-    private static final int CACHE_SIZE_3D = 16 * 16 * 16;
-    private static final ToIntFunction<Vec3i> HASH_2D = (v) -> v.getX() + v.getZ() * 5;
-    private static final ToIntFunction<Vec3i> HASH_3D = (v) -> v.getX() + v.getZ() * 5 + v.getY() * 25;
+    private static final int CACHE_SIZE_2D = 16 * 16 * 2;
+    private static final int CACHE_SIZE_3D = 16 * 16 * 16 * 2;
+
     private final Map<CustomGeneratorSettings.IntAABB, CustomTerrainGenerator> areaGenerators = new HashMap<>();
     // Number of octaves for the noise function
     private IBuilder terrainBuilder;
@@ -190,6 +189,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
                 .create()
                 .mul(conf.highNoiseFactor).add(conf.highNoiseOffset);
 
+        int cacheXSize = (conf.noiseSampleSizeX + 1);
         IBuilder randomHeight2d = NoiseSource.perlin()
                 .seed(rnd.nextLong())
                 .normalizeTo(-1, 1)
@@ -200,7 +200,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
                 .mulIf(IBuilder.NEGATIVE, -0.3).mul(3).sub(2).clamp(-2, 1)
                 .divIf(IBuilder.NEGATIVE, 2 * 2 * 1.4).divIf(IBuilder.POSITIVE, 8)
                 .mul(0.2 * 17 / 64.0)
-                .cached2d(CACHE_SIZE_2D, HASH_2D);
+                .cached2d(CACHE_SIZE_2D,  (v) -> v.getX() + v.getZ() * cacheXSize);
 
         IBuilder height = ((IBuilder) biomeSource::getHeight)
                 .mul(conf.heightFactor)
@@ -212,10 +212,11 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
                 .mul(conf.heightVariationFactor)
                 .add(conf.heightVariationOffset);
 
+        int cacheXZSize = (conf.noiseSampleSizeZ + 1) * cacheXSize;
         this.terrainBuilder = selector
                 .lerp(low, high).add(randomHeight2d).mul(volatility).add(height)
                 .sub(volatility.signum().mul((x, y, z) -> y))
-                .cached(CACHE_SIZE_3D, HASH_3D);
+                .cached(CACHE_SIZE_3D, (v) -> v.getX() + v.getZ() * cacheXSize + v.getY() * cacheXZSize);
 
         this.replacers = new IBiomeBlockReplacer[conf.replacers.size()];
         for (int i = 0; i < conf.replacers.size(); i++) {
