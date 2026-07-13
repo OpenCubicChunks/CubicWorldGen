@@ -250,6 +250,7 @@ public final class WrappedVanillaComponent<T extends Gui> extends UIComponent<Wr
         setHeight.accept(getHeight());
 
         guiRenderer.draw();
+        resyncGlState(guiRenderer);
         drawBackground.draw(Minecraft.getMinecraft(), mouseX, mouseY, partialTick);
         resyncGlState(guiRenderer);
     }
@@ -267,7 +268,10 @@ public final class WrappedVanillaComponent<T extends Gui> extends UIComponent<Wr
         // resync blending state, by default disabled in vanilla, enabled in malisis
         GlStateManager.enableBlend();
         guiRenderer.enableBlending();
-        // Malisis always uses GL11.GL_SMOOTH shade model, vanilla uses flat by default
+        // resync alpha state, by default enabled in MC, malisis desyncs it *somewhere*
+        GlStateManager.disableAlpha();
+        GlStateManager.enableAlpha();
+
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
     }
 

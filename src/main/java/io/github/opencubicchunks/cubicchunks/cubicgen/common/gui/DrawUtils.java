@@ -113,6 +113,7 @@ public class DrawUtils {
         int count = max(1, (int) (width / entryWidth));
         double increment = getIncrement(blockLeft, blockRight, count);
         double start = Math.round(blockLeft / increment) * increment;
+        GlStateManager.enableBlend();
 
         for (int i = 0; i < count; i++) {
             double x = start + i * increment;
@@ -148,6 +149,7 @@ public class DrawUtils {
         FontRenderer font = Minecraft.getMinecraft().fontRenderer;
 
         int maxSrtY = MathHelper.ceil(height - font.FONT_HEIGHT);
+        GlStateManager.enableBlend();
 
         float[] yMarkYCoords = new float[count];
         for (int i = 0; i < count; i++) {
