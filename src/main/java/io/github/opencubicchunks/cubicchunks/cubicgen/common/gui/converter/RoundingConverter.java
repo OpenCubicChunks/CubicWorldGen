@@ -51,6 +51,11 @@ public class RoundingConverter extends Converter<Double, Double> {
     }
 
     @Override protected Double doForward(Double input) {
+        // special case zero, infinity and NaN
+        if (!Double.isFinite(input) || input == 0) {
+            return input;
+        }
+
         double max = -Double.MAX_VALUE;
         double best = 0;
 
@@ -63,7 +68,7 @@ public class RoundingConverter extends Converter<Double, Double> {
                 if (Double.isNaN(roundValue) || Double.isInfinite(roundValue)) {
                     break;
                 }
-                double roundedSlideValue = reverse.convert((double) roundValue);
+                double roundedSlideValue = reverse.convert(roundValue);
                 if (isValueInRadius.test(slideValue, roundedSlideValue)) {
                     double v = getDivisor(trySnapDivExp, e);
                     if (v > max) {
@@ -74,7 +79,7 @@ public class RoundingConverter extends Converter<Double, Double> {
                 }
             }
         }
-        return (double) best;
+        return best;
     }
 
     private double getDivisor(int trySnapDivExp, RoundingEntry e) {
